@@ -1,0 +1,47 @@
+Engineering Forge Docs - Deployment Summary
+==========================================
+Deployment Date: Wed Sep  3 19:35:53 -03 2025
+Project Version: 0.0.0
+Build Status: ✅ Success
+
+Files Deployed:
+deploy-package-20250903-193552/DEPLOY-SUMMARY.txt
+deploy-package-20250903-193552/assets/index-CWnKeDX8.js
+deploy-package-20250903-193552/assets/index-DNcaQxN3.css
+deploy-package-20250903-193552/docs/GDD-v1.0.md
+deploy-package-20250903-193552/docs/GDD-v1.1.md
+deploy-package-20250903-193552/docs/Progress-Summary.md
+deploy-package-20250903-193552/docs/Project-Plan-v1.1.md
+deploy-package-20250903-193552/docs/TDD-Index.md
+deploy-package-20250903-193552/docs/TDD-v1.0.md
+deploy-package-20250903-193552/docs/TDD-v1.1.md
+deploy-package-20250903-193552/docs/assets/diagrams/system-architecture-diagram.md
+deploy-package-20250903-193552/docs/assets/mockups/ui-mockups.md
+deploy-package-20250903-193552/docs/specifications/api-design.md
+deploy-package-20250903-193552/docs/specifications/appendices.md
+deploy-package-20250903-193552/docs/specifications/backend-architecture-part2.md
+deploy-package-20250903-193552/docs/specifications/backend-architecture.md
+deploy-package-20250903-193552/docs/specifications/blockchain-integration.md
+deploy-package-20250903-193552/docs/specifications/database-design.md
+deploy-package-20250903-193552/docs/specifications/development-workflow.md
+deploy-package-20250903-193552/docs/specifications/devops-deployment.md
+deploy-package-20250903-193552/docs/specifications/frontend-architecture.md
+deploy-package-20250903-193552/docs/specifications/monitoring-analytics.md
+deploy-package-20250903-193552/docs/specifications/performance-scalability.md
+deploy-package-20250903-193552/docs/specifications/security-architecture.md
+deploy-package-20250903-193552/docs/specifications/system-architecture.md
+deploy-package-20250903-193552/docs/specifications/technology-stack.md
+deploy-package-20250903-193552/docs/specifications/testing-strategy.md
+deploy-package-20250903-193552/index.html
+deploy-package-20250903-193552/vite.svg
+
+Deployment Instructions:
+1. Upload ALL files from this directory to your Hostinger docs folder
+2. Maintain the exact folder structure
+3. Ensure .htaccess is uploaded (if present)
+4. Test the site at: https://engineeringforge.guildeng.com/docs
+
+Troubleshooting:
+- Check file permissions (644 for files, 755 for folders)
+- Verify .htaccess is in the correct location
+- Wait for DNS propagation if using new subdomain
