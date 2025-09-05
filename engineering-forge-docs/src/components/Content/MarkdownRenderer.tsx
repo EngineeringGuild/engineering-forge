@@ -41,13 +41,14 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) =>
       </div>
       <SyntaxHighlighter
         language={language}
-        style={{}}
         customStyle={{
           margin: 0,
           borderRadius: '0.5rem',
           fontSize: '0.875rem',
           lineHeight: '1.5',
-          backgroundColor: 'transparent',
+          backgroundColor: '#1f2937',
+          color: '#f9fafb',
+          padding: '1rem',
         }}
         showLineNumbers
         wrapLines

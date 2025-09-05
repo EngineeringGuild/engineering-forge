@@ -39,13 +39,11 @@ export const useDebounce = <T>(value: T, delay: number): T => {
  * Custom hook for debouncing callback functions
  * @param callback - The callback function to debounce
  * @param delay - The delay in milliseconds
- * @param deps - Dependencies array for the callback
  * @returns The debounced callback function
  */
-export const useDebouncedCallback = <T extends (...args: any[]) => any>(
+export const useDebouncedCallback = <T extends (...args: unknown[]) => unknown>(
   callback: T,
-  delay: number,
-  deps: React.DependencyList = []
+  delay: number
 ): T => {
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const callbackRef = useRef(callback);
@@ -53,7 +51,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   // Update callback ref when dependencies change
   useEffect(() => {
     callbackRef.current = callback;
-  }, deps);
+  }, [callback]); // Simplified dependencies to avoid spread warning
 
   const debouncedCallback = ((...args: Parameters<T>) => {
     if (timeoutRef.current) {

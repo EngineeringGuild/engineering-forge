@@ -12,8 +12,14 @@ interface SidebarProps {
   onMobileClose: () => void;
 }
 
+interface SidebarSubsection {
+  id: string;
+  title: string;
+  subsections?: SidebarSubsection[];
+}
+
 interface SidebarItemProps {
-  section: any;
+  section: SidebarSubsection;
   level?: number;
   isActive?: boolean;
   onSectionClick: (sectionId: string) => void;
@@ -81,7 +87,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
       {hasSubsections && isExpanded && (
         <div className="space-y-1">
-          {section.subsections!.map((subsection: any) => (
+          {section.subsections!.map((subsection) => (
             <SidebarItem
               key={subsection.id}
               section={subsection}

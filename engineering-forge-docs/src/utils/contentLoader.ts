@@ -400,7 +400,8 @@ export const loadRealContent = async (
           processedContent = await translateContent(processedContent, language);
         } else {
           // Add translation note for unsupported languages
-          const languageInfo = require('../i18n').SUPPORTED_LANGUAGES[language];
+          const { SUPPORTED_LANGUAGES } = await import('../i18n');
+          const languageInfo = SUPPORTED_LANGUAGES[language];
           processedContent = `${processedContent}\n\n---\n\n*This content is being translated to ${languageInfo.nativeName}. Please check back soon.*`;
         }
       }

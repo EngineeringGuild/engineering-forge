@@ -10,7 +10,7 @@ export const useTranslation = (namespace?: string) => {
   const currentLanguage = useCurrentLanguage();
 
   // Enhanced translation function with fallback handling
-  const translate = (key: string, options?: any): string => {
+  const translate = (key: string, options?: Record<string, unknown>): string => {
     if (!ready) {
       return key; // Return key if i18n is not ready
     }
@@ -46,7 +46,7 @@ export const useTranslation = (namespace?: string) => {
   };
 
   // Get all translations for a namespace
-  const getTranslations = (namespace?: string): Record<string, any> => {
+  const getTranslations = (namespace?: string): Record<string, unknown> => {
     if (!ready) return {};
     
     try {
@@ -116,7 +116,7 @@ export const useTranslation = (namespace?: string) => {
 export const usePluralization = () => {
   const { t } = useTranslation();
 
-  const pluralize = (key: string, count: number, options?: any): string => {
+  const pluralize = (key: string, count: number, options?: Record<string, unknown>): string => {
     try {
       // Use i18next pluralization
       return t(key, { count, ...options });
@@ -133,7 +133,7 @@ export const usePluralization = () => {
 export const useInterpolation = () => {
   const { t } = useTranslation();
 
-  const interpolate = (key: string, values: Record<string, any>): string => {
+  const interpolate = (key: string, values: Record<string, unknown>): string => {
     try {
       return t(key, values);
     } catch {

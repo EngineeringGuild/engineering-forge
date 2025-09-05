@@ -15,7 +15,7 @@ const applyInitialTheme = () => {
       if (parsed.state?.theme === 'dark') {
         document.documentElement.classList.add('dark');
       }
-    } catch (e) {
+    } catch {
       // Default to dark theme if parsing fails
       document.documentElement.classList.add('dark');
     }

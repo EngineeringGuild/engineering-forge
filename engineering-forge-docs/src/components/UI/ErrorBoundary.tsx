@@ -39,7 +39,7 @@ class ErrorBoundary extends Component<Props, State> {
     this.setState({ error, errorInfo });
   }
 
-  componentDidUpdate(_prevProps: Props, _prevState: State) {
+  componentDidUpdate() {
     // Prevent infinite error loops
     if (this.state.hasError && this.state.errorCount < this.maxRetries) {
       if (this.retryTimeout) {
