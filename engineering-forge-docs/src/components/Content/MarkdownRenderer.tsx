@@ -47,6 +47,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) =>
           borderRadius: '0.5rem',
           fontSize: '0.875rem',
           lineHeight: '1.5',
+          backgroundColor: 'transparent',
         }}
         showLineNumbers
         wrapLines
