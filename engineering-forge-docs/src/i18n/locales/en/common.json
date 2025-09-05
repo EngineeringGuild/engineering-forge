@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "Engineering Forge",
+    "subtitle": "Documentation",
+    "description": "Comprehensive documentation for the Engineering Forge project"
+  },
+  "navigation": {
+    "home": "Home",
+    "gdd": "Game Design Document",
+    "tdd": "Technical Design Document",
+    "search": "Search documentation...",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "actions": {
+    "search": "Search",
+    "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language",
+    "reload": "Reload",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry"
+  },
+  "content": {
+    "loading": "Loading content...",
+    "error": "Error Loading Content",
+    "reload": "Reload Page",
+    "notFound": "Content not found",
+    "lastUpdated": "Last updated",
+    "readingTime": "Reading time",
+    "wordCount": "Word count"
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Current Language",
+    "change": "Change Language"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "toggle": "Toggle Theme"
+  },
+  "search": {
+    "placeholder": "Search documentation...",
+    "noResults": "No results found",
+    "results": "results found",
+    "clear": "Clear search",
+    "history": "Search History"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "network": "Network error",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "serverError": "Server error"
+  }
+}

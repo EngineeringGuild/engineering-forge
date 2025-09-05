@@ -7,7 +7,6 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 
 interface MarkdownRendererProps {
@@ -16,7 +15,7 @@ interface MarkdownRendererProps {
 }
 
 interface CodeBlockProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   inline?: boolean;
 }
@@ -28,7 +27,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) =>
   if (inline) {
     return (
       <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-2 py-1 rounded text-sm font-mono">
-        {children}
+        {children || ''}
       </code>
     );
   }
@@ -42,7 +41,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) =>
       </div>
       <SyntaxHighlighter
         language={language}
-        style={tomorrow}
+        style={{}}
         customStyle={{
           margin: 0,
           borderRadius: '0.5rem',
@@ -52,7 +51,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) =>
         showLineNumbers
         wrapLines
       >
-        {String(children).replace(/\n$/, '')}
+        {String(children || '').replace(/\n$/, '')}
       </SyntaxHighlighter>
     </div>
   );
@@ -98,7 +97,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
           ),
           
           // Custom code components
-          code: ({ children, className, ...props }: any) => (
+          code: ({ children, className, ...props }: CodeBlockProps) => (
             <CodeBlock className={className} inline={false} {...props}>
               {children}
             </CodeBlock>

@@ -3,7 +3,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCurrentDocument, useCurrentSection } from '../store/navigationStore';
+import { useCurrentLanguage } from '../store/languageStore';
 import { loadRealContent } from '../utils/contentLoader';
+import { type SupportedLanguage } from '../i18n';
 
 interface ContentState {
   content: string;
@@ -20,9 +22,10 @@ export const useContent = () => {
 
   const currentDocument = useCurrentDocument();
   const currentSection = useCurrentSection();
+  const currentLanguage = useCurrentLanguage();
 
   // Memoize content loading function to prevent infinite loops
-  const loadContent = useCallback(async (document: 'GDD' | 'TDD', section: string) => {
+  const loadContent = useCallback(async (document: 'GDD' | 'TDD', section: string, language: string) => {
     if (!section) {
       setContentState({
         content: getDefaultContent(document),
@@ -40,8 +43,8 @@ export const useContent = () => {
     }));
 
     try {
-      // Load real content from markdown files
-      const realContent = await loadRealContent(document, section);
+      // Load real content from markdown files with language support
+      const realContent = await loadRealContent(document, section, language as SupportedLanguage);
       setContentState({
         content: realContent,
         isLoading: false,
@@ -60,8 +63,8 @@ export const useContent = () => {
 
   // Simple content loading without complex state management
   useEffect(() => {
-    loadContent(currentDocument, currentSection);
-  }, [currentDocument, currentSection, loadContent]);
+    loadContent(currentDocument, currentSection, currentLanguage);
+  }, [currentDocument, currentSection, currentLanguage, loadContent]);
 
   // Memoize reload function to prevent unnecessary re-renders
   const reloadContent = useCallback(() => {

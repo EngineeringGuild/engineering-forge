@@ -1,0 +1,40 @@
+{
+  "sections": {
+    "gdd": {
+      "overview": "Aperçu et Concept du Jeu",
+      "coreMechanics": "Mécaniques Principales",
+      "gameSystems": "Systèmes de Jeu",
+      "contentAssets": "Contenu et Ressources",
+      "businessModel": "Modèle Commercial",
+      "projectPlan": "Plan du Projet"
+    },
+    "tdd": {
+      "apiDesign": "Conception API",
+      "frontendArchitecture": "Architecture Frontend",
+      "backendArchitecture": "Architecture Backend",
+      "backendArchitecturePart2": "Architecture Backend Partie 2",
+      "blockchainIntegration": "Intégration Blockchain",
+      "securityArchitecture": "Architecture de Sécurité",
+      "performanceScalability": "Performance et Évolutivité",
+      "devopsDeployment": "DevOps et Déploiement",
+      "testingStrategy": "Stratégie de Tests",
+      "monitoringAnalytics": "Surveillance et Analytiques",
+      "developmentWorkflow": "Flux de Développement",
+      "databaseDesign": "Conception de Base de Données",
+      "technologyStack": "Stack Technologique",
+      "systemArchitecture": "Architecture Système",
+      "appendices": "Annexes"
+    }
+  },
+  "breadcrumbs": {
+    "home": "Accueil",
+    "documentation": "Documentation",
+    "gdd": "Document de Conception de Jeu",
+    "tdd": "Document de Conception Technique"
+  },
+  "toc": {
+    "title": "Table des Matières",
+    "jumpTo": "Aller à la section",
+    "backToTop": "Retour en haut"
+  }
+}

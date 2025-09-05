@@ -1,0 +1,40 @@
+{
+  "sections": {
+    "gdd": {
+      "overview": "Огляд та Концепція Гри",
+      "coreMechanics": "Основні Механіки",
+      "gameSystems": "Ігрові Системи",
+      "contentAssets": "Контент та Ресурси",
+      "businessModel": "Бізнес-модель",
+      "projectPlan": "План Проекту"
+    },
+    "tdd": {
+      "apiDesign": "Дизайн API",
+      "frontendArchitecture": "Архітектура Frontend",
+      "backendArchitecture": "Архітектура Backend",
+      "backendArchitecturePart2": "Архітектура Backend Частина 2",
+      "blockchainIntegration": "Інтеграція Blockchain",
+      "securityArchitecture": "Архітектура Безпеки",
+      "performanceScalability": "Продуктивність та Масштабованість",
+      "devopsDeployment": "DevOps та Розгортання",
+      "testingStrategy": "Стратегія Тестування",
+      "monitoringAnalytics": "Моніторинг та Аналітика",
+      "developmentWorkflow": "Робочий Процес Розробки",
+      "databaseDesign": "Дизайн Бази Даних",
+      "technologyStack": "Технологічний Стек",
+      "systemArchitecture": "Системна Архітектура",
+      "appendices": "Додатки"
+    }
+  },
+  "breadcrumbs": {
+    "home": "Головна",
+    "documentation": "Документація",
+    "gdd": "Документ Дизайну Гри",
+    "tdd": "Технічний Документ Дизайну"
+  },
+  "toc": {
+    "title": "Зміст",
+    "jumpTo": "Перейти до розділу",
+    "backToTop": "Повернутися нагору"
+  }
+}

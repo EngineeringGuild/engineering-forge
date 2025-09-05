@@ -1,0 +1,40 @@
+{
+  "sections": {
+    "gdd": {
+      "overview": "游戏概述与概念",
+      "coreMechanics": "核心机制",
+      "gameSystems": "游戏系统",
+      "contentAssets": "内容与资源",
+      "businessModel": "商业模式",
+      "projectPlan": "项目计划"
+    },
+    "tdd": {
+      "apiDesign": "API 设计",
+      "frontendArchitecture": "前端架构",
+      "backendArchitecture": "后端架构",
+      "backendArchitecturePart2": "后端架构 第2部分",
+      "blockchainIntegration": "区块链集成",
+      "securityArchitecture": "安全架构",
+      "performanceScalability": "性能与可扩展性",
+      "devopsDeployment": "DevOps 与部署",
+      "testingStrategy": "测试策略",
+      "monitoringAnalytics": "监控与分析",
+      "developmentWorkflow": "开发工作流",
+      "databaseDesign": "数据库设计",
+      "technologyStack": "技术栈",
+      "systemArchitecture": "系统架构",
+      "appendices": "附录"
+    }
+  },
+  "breadcrumbs": {
+    "home": "首页",
+    "documentation": "文档",
+    "gdd": "游戏设计文档",
+    "tdd": "技术设计文档"
+  },
+  "toc": {
+    "title": "目录",
+    "jumpTo": "跳转到章节",
+    "backToTop": "返回顶部"
+  }
+}

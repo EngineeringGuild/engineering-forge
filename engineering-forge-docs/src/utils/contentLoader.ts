@@ -2,6 +2,8 @@
 // Engineering Forge Documentation App - Content Loader Utility
 
 import type { Section, DocumentStructure } from '../types';
+import { translateContent, isContentAvailableInLanguage } from './translationService';
+import { type SupportedLanguage } from '../i18n';
 
 // GDD Content Structure
 export const gddSections: Section[] = [
@@ -317,8 +319,12 @@ export const getDocumentSections = (documentType: 'GDD' | 'TDD'): Section[] => {
   return documentType === 'GDD' ? gddSections : tddSections;
 };
 
-// REAL CONTENT LOADER - This will load actual markdown files
-export const loadRealContent = async (documentType: 'GDD' | 'TDD', sectionId: string): Promise<string> => {
+// REAL CONTENT LOADER - This will load actual markdown files with language support
+export const loadRealContent = async (
+  documentType: 'GDD' | 'TDD', 
+  sectionId: string, 
+  language: SupportedLanguage = 'en'
+): Promise<string> => {
   try {
     // Map section IDs to actual file paths (relative to the docs folder)
     const fileMap: Record<string, string> = {
@@ -380,13 +386,26 @@ export const loadRealContent = async (documentType: 'GDD' | 'TDD', sectionId: st
     
     // If we got content, process it
     if (content) {
+      let processedContent = content;
+      
       // For GDD sections, we need to extract specific sections from the large file
       if (documentType === 'GDD' && sectionId !== 'gdd-project-plan') {
-        return extractGDDSection(content, sectionId);
+        processedContent = extractGDDSection(content, sectionId);
       }
       
-      // For TDD sections and project plan, return the full content
-      return content;
+      // Translate content if not in English and translation is available
+      if (language !== 'en') {
+        if (isContentAvailableInLanguage(language)) {
+          // In production, load translated content from separate files
+          processedContent = await translateContent(processedContent, language);
+        } else {
+          // Add translation note for unsupported languages
+          const languageInfo = require('../i18n').SUPPORTED_LANGUAGES[language];
+          processedContent = `${processedContent}\n\n---\n\n*This content is being translated to ${languageInfo.nativeName}. Please check back soon.*`;
+        }
+      }
+      
+      return processedContent;
     }
     
     // If all paths failed, return fallback content

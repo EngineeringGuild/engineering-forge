@@ -17,5 +17,20 @@ export default defineConfig({
     alias: {
       '@docs': '../docs'
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate chunk for i18n
+          'i18n': ['i18next', 'react-i18next'],
+          // Separate chunk for syntax highlighter
+          'syntax-highlighter': ['react-syntax-highlighter'],
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['i18next', 'react-i18next', 'i18next-browser-languagedetector']
   }
 })

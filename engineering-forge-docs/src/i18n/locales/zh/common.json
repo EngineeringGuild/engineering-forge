@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "Engineering Forge",
+    "subtitle": "文档",
+    "description": "Engineering Forge 项目的完整文档"
+  },
+  "navigation": {
+    "home": "首页",
+    "gdd": "游戏设计文档",
+    "tdd": "技术设计文档",
+    "search": "搜索文档...",
+    "menu": "菜单",
+    "close": "关闭"
+  },
+  "actions": {
+    "search": "搜索",
+    "toggleTheme": "切换主题",
+    "changeLanguage": "更改语言",
+    "reload": "重新加载",
+    "loading": "加载中...",
+    "error": "错误",
+    "retry": "重试"
+  },
+  "content": {
+    "loading": "正在加载内容...",
+    "error": "内容加载错误",
+    "reload": "重新加载页面",
+    "notFound": "未找到内容",
+    "lastUpdated": "最后更新",
+    "readingTime": "阅读时间",
+    "wordCount": "字数统计"
+  },
+  "language": {
+    "select": "选择语言",
+    "current": "当前语言",
+    "change": "更改语言"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "toggle": "切换主题"
+  },
+  "search": {
+    "placeholder": "搜索文档...",
+    "noResults": "未找到结果",
+    "results": "找到结果",
+    "clear": "清除搜索",
+    "history": "搜索历史"
+  },
+  "errors": {
+    "generic": "出现错误",
+    "network": "网络错误",
+    "notFound": "页面未找到",
+    "unauthorized": "未授权访问",
+    "serverError": "服务器错误"
+  }
+}

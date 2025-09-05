@@ -2,6 +2,7 @@
 // Engineering Forge Documentation App - Main Application Component
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from './hooks/useTranslation';
 import { useTheme } from './store/navigationStore';
 import { useContent } from './hooks/useContent';
 import Header from './components/Layout/Header';
@@ -10,8 +11,10 @@ import MarkdownRenderer from './components/Content/MarkdownRenderer';
 import TableOfContents from './components/Content/TableOfContents';
 import ErrorBoundary from './components/UI/ErrorBoundary';
 import LoadingSpinner from './components/UI/LoadingSpinner';
+import './i18n'; // Initialize i18n
 
 function App() {
+  const { t } = useTranslation('common');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const theme = useTheme();
   const { content, isLoading, error } = useContent();
@@ -48,17 +51,17 @@ function App() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {isLoading ? (
               <div className="py-12">
-                <LoadingSpinner size="lg" text="Loading content..." />
+                <LoadingSpinner size="lg" text={t('content.loading')} />
               </div>
             ) : error ? (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Error Loading Content</h2>
+                <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">{t('content.error')}</h2>
                 <p className="text-red-700 dark:text-red-300">{error}</p>
                 <button 
                   onClick={() => window.location.reload()}
                   className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
-                  Reload Page
+                  {t('content.reload')}
                 </button>
               </div>
             ) : (

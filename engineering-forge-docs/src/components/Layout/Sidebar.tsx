@@ -2,6 +2,7 @@
 // Engineering Forge Documentation App - Sidebar Component
 
 import React, { useState } from 'react';
+// import { useTranslation } from 'react-i18next'; // TODO: Implement navigation translations
 import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen } from 'lucide-react';
 import { useCurrentDocument, useCurrentSection, useSidebarCollapsed, useNavigationActions } from '../../store/navigationStore';
 import { documentStructures } from '../../utils/contentLoader';
@@ -24,6 +25,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isActive = false, 
   onSectionClick 
 }) => {
+  // const { t } = useTranslation('navigation'); // TODO: Implement navigation translations
   const [isExpanded, setIsExpanded] = useState(level === 0);
   const hasSubsections = section.subsections && section.subsections.length > 0;
 

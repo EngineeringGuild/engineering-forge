@@ -1,0 +1,40 @@
+{
+  "sections": {
+    "gdd": {
+      "overview": "Visão Geral e Conceito do Jogo",
+      "coreMechanics": "Mecânicas Principais",
+      "gameSystems": "Sistemas do Jogo",
+      "contentAssets": "Conteúdo e Recursos",
+      "businessModel": "Modelo de Negócio",
+      "projectPlan": "Plano do Projeto"
+    },
+    "tdd": {
+      "apiDesign": "Design da API",
+      "frontendArchitecture": "Arquitetura Frontend",
+      "backendArchitecture": "Arquitetura Backend",
+      "backendArchitecturePart2": "Arquitetura Backend Parte 2",
+      "blockchainIntegration": "Integração Blockchain",
+      "securityArchitecture": "Arquitetura de Segurança",
+      "performanceScalability": "Performance e Escalabilidade",
+      "devopsDeployment": "DevOps e Deploy",
+      "testingStrategy": "Estratégia de Testes",
+      "monitoringAnalytics": "Monitoramento e Analytics",
+      "developmentWorkflow": "Fluxo de Desenvolvimento",
+      "databaseDesign": "Design do Banco de Dados",
+      "technologyStack": "Stack Tecnológico",
+      "systemArchitecture": "Arquitetura do Sistema",
+      "appendices": "Apêndices"
+    }
+  },
+  "breadcrumbs": {
+    "home": "Início",
+    "documentation": "Documentação",
+    "gdd": "Documento de Design do Jogo",
+    "tdd": "Documento de Design Técnico"
+  },
+  "toc": {
+    "title": "Índice",
+    "jumpTo": "Ir para seção",
+    "backToTop": "Voltar ao topo"
+  }
+}

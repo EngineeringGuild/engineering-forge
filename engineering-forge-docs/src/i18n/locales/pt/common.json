@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "Engineering Forge",
+    "subtitle": "Documentação",
+    "description": "Documentação abrangente para o projeto Engineering Forge"
+  },
+  "navigation": {
+    "home": "Início",
+    "gdd": "Documento de Design do Jogo",
+    "tdd": "Documento de Design Técnico",
+    "search": "Pesquisar documentação...",
+    "menu": "Menu",
+    "close": "Fechar"
+  },
+  "actions": {
+    "search": "Pesquisar",
+    "toggleTheme": "Alternar tema",
+    "changeLanguage": "Alterar idioma",
+    "reload": "Recarregar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "retry": "Tentar novamente"
+  },
+  "content": {
+    "loading": "Carregando conteúdo...",
+    "error": "Erro ao Carregar Conteúdo",
+    "reload": "Recarregar Página",
+    "notFound": "Conteúdo não encontrado",
+    "lastUpdated": "Última atualização",
+    "readingTime": "Tempo de leitura",
+    "wordCount": "Contagem de palavras"
+  },
+  "language": {
+    "select": "Selecionar Idioma",
+    "current": "Idioma Atual",
+    "change": "Alterar Idioma"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "toggle": "Alternar Tema"
+  },
+  "search": {
+    "placeholder": "Pesquisar documentação...",
+    "noResults": "Nenhum resultado encontrado",
+    "results": "resultados encontrados",
+    "clear": "Limpar pesquisa",
+    "history": "Histórico de Pesquisa"
+  },
+  "errors": {
+    "generic": "Algo deu errado",
+    "network": "Erro de rede",
+    "notFound": "Página não encontrada",
+    "unauthorized": "Acesso não autorizado",
+    "serverError": "Erro do servidor"
+  }
+}

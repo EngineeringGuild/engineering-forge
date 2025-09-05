@@ -2,10 +2,12 @@
 // Engineering Forge Documentation App - Header Component
 
 import React, { useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 import { Search, Sun, Moon, Menu, X } from 'lucide-react';
 import { useCurrentDocument, useTheme, useNavigationActions } from '../../store/navigationStore';
 import { useSearchActions } from '../../store/searchStore';
 import SearchModal from '../UI/SearchModal';
+import LanguageSelector from '../UI/LanguageSelector';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -13,6 +15,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
+  const { t } = useTranslation('common');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const currentDocument = useCurrentDocument();
   const theme = useTheme();
@@ -48,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                 <span className="text-white font-bold text-sm">EF</span>
               </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Engineering Forge
+                {t('app.title')}
               </h1>
             </div>
           </div>
@@ -63,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              Game Design Document
+              {t('navigation.gdd')}
             </button>
             <button
               onClick={() => handleDocumentSwitch('TDD')}
@@ -73,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              Technical Design Document
+              {t('navigation.tdd')}
             </button>
           </div>
 
@@ -88,15 +91,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search size={16} className="text-gray-400" />
                 </div>
-                <span>Search documentation...</span>
+                <span>{t('navigation.search')}</span>
               </button>
             </div>
+
+            {/* Language Selector */}
+            <LanguageSelector variant="header" />
 
             {/* Theme Toggle */}
             <button
               onClick={handleThemeToggle}
               className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Toggle theme"
+              aria-label={t('actions.toggleTheme')}
             >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
