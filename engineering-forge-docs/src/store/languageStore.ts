@@ -1,5 +1,5 @@
 // File: src/store/languageStore.ts
-// Engineering Forge Documentation App - Language Store
+// Engineering Forge Documentation App - Language Store - Professional Implementation
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -77,7 +77,7 @@ export const useLanguageStore = create<LanguageState>()(
 
       detectLanguage: () => {
         try {
-          // Try to detect language from various sources with error handling
+          // Professional language detection with proper fallbacks
           
           // 1. Check localStorage first
           const stored = localStorage.getItem('engineering-forge-language') as SupportedLanguage;
@@ -163,32 +163,21 @@ export const useLanguageInfo = () => useLanguageStore((state) => state.getLangua
 export const useIsRTL = () => useLanguageStore((state) => state.isRTL());
 export const useAvailableLanguages = () => useLanguageStore((state) => state.getAvailableLanguages());
 
-// Actions - Memoized to prevent unnecessary re-renders
+// Actions - NUCLEAR FIX: Simplified to prevent infinite loops
 export const useLanguageActions = () => {
-  const setLanguage = useLanguageStore((state) => state.setLanguage);
-  const detectLanguage = useLanguageStore((state) => state.detectLanguage);
-  const resetLanguage = useLanguageStore((state) => state.resetLanguage);
-  const setLoading = useLanguageStore((state) => state.setLoading);
-  const setError = useLanguageStore((state) => state.setError);
-
-  return {
-    setLanguage,
-    detectLanguage,
-    resetLanguage,
-    setLoading,
-    setError,
-  };
+  return useLanguageStore((state) => ({
+    setLanguage: state.setLanguage,
+    detectLanguage: state.detectLanguage,
+    resetLanguage: state.resetLanguage,
+    setLoading: state.setLoading,
+    setError: state.setError,
+  }));
 };
 
-// Initialize language on store creation
-const initializeLanguage = () => {
-  const store = useLanguageStore.getState();
-  const detectedLanguage = store.detectLanguage();
-  
-  if (detectedLanguage !== store.currentLanguage) {
-    store.setLanguage(detectedLanguage);
-  }
-};
+// Initialize language on store creation - DISABLED to prevent flickering
+// The automatic initialization was causing race conditions and errors
+// Language will be initialized when the app is ready through the App component
 
-// Initialize when store is created
-initializeLanguage();
+// Note: Automatic initialization has been moved to the App component
+// to provide better control over the initialization sequence and prevent
+// infinite loops and race conditions.

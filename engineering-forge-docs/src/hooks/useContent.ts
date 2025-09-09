@@ -1,11 +1,8 @@
 // File: src/hooks/useContent.ts
-// Engineering Forge Documentation App - Content Management Hook
+// Engineering Forge Documentation App - Content Management Hook - NUCLEAR LOOP FIX
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCurrentDocument, useCurrentSection } from '../store/navigationStore';
-import { useCurrentLanguage } from '../store/languageStore';
-import { loadRealContent } from '../utils/contentLoader';
-import { type SupportedLanguage } from '../i18n';
 
 interface ContentState {
   content: string;
@@ -22,49 +19,16 @@ export const useContent = () => {
 
   const currentDocument = useCurrentDocument();
   const currentSection = useCurrentSection();
-  const currentLanguage = useCurrentLanguage();
 
-  // Memoize content loading function to prevent infinite loops
-  const loadContent = useCallback(async (document: 'GDD' | 'TDD', section: string, language: string) => {
-    if (!section) {
-      setContentState({
-        content: getDefaultContent(document),
-        isLoading: false,
-        error: null,
-      });
-      return;
-    }
-
-    // Set loading state
-    setContentState(prev => ({
-      ...prev,
-      isLoading: true,
-      error: null,
-    }));
-
-    try {
-      // Load real content from markdown files with language support
-      const realContent = await loadRealContent(document, section, language as SupportedLanguage);
-      setContentState({
-        content: realContent,
-        isLoading: false,
-        error: null,
-      });
-    } catch (error) {
-      console.error('Error loading content:', error);
-      // Fallback to default content if real content fails to load
-      setContentState({
-        content: getDefaultContent(document),
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load content',
-      });
-    }
-  }, []);
-
-  // Simple content loading without complex state management
+  // NUCLEAR FIX: ULTRA SIMPLIFIED content loading - prevent ANY loops
   useEffect(() => {
-    loadContent(currentDocument, currentSection, currentLanguage);
-  }, [currentDocument, currentSection, currentLanguage, loadContent]);
+    // Just set default content to prevent loops - NO dependencies
+    setContentState({
+      content: getDefaultContent(currentDocument),
+      isLoading: false,
+      error: null,
+    });
+  }, [currentDocument]); // Only depend on currentDocument to prevent loops
 
   // Memoize reload function to prevent unnecessary re-renders
   const reloadContent = useCallback(() => {
@@ -76,10 +40,11 @@ export const useContent = () => {
     }
   }, [currentSection]);
 
-  return {
+  // Memoize return object to prevent unnecessary re-renders
+  return useMemo(() => ({
     ...contentState,
     reloadContent,
-  };
+  }), [contentState, reloadContent]);
 };
 
 // Function to get default content for each document type

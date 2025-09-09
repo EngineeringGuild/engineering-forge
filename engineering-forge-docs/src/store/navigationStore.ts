@@ -82,23 +82,15 @@ export const useSidebarCollapsed = () => useNavigationStore((state) => state.sid
 export const useTheme = () => useNavigationStore((state) => state.theme);
 export const useSearchQuery = () => useNavigationStore((state) => state.searchQuery);
 
-// Actions - Memoized to prevent unnecessary re-renders
+// Actions - NUCLEAR FIX: Simplified to prevent infinite loops
 export const useNavigationActions = () => {
-  const setCurrentDocument = useNavigationStore((state) => state.setCurrentDocument);
-  const setCurrentSection = useNavigationStore((state) => state.setCurrentSection);
-  const toggleSidebar = useNavigationStore((state) => state.toggleSidebar);
-  const setSidebarCollapsed = useNavigationStore((state) => state.setSidebarCollapsed);
-  const setSearchQuery = useNavigationStore((state) => state.setSearchQuery);
-  const setTheme = useNavigationStore((state) => state.setTheme);
-  const resetNavigation = useNavigationStore((state) => state.resetNavigation);
-
-  return {
-    setCurrentDocument,
-    setCurrentSection,
-    toggleSidebar,
-    setSidebarCollapsed,
-    setSearchQuery,
-    setTheme,
-    resetNavigation,
-  };
+  return useNavigationStore((state) => ({
+    setCurrentDocument: state.setCurrentDocument,
+    setCurrentSection: state.setCurrentSection,
+    toggleSidebar: state.toggleSidebar,
+    setSidebarCollapsed: state.setSidebarCollapsed,
+    setSearchQuery: state.setSearchQuery,
+    setTheme: state.setTheme,
+    resetNavigation: state.resetNavigation,
+  }));
 };
