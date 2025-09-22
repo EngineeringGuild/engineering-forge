@@ -16,7 +16,6 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  private maxRetries = 3;
   private retryTimeout?: NodeJS.Timeout;
 
   constructor(props: Props) {
@@ -40,21 +39,9 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidUpdate() {
-    // Prevent infinite error loops
-    if (this.state.hasError && this.state.errorCount < this.maxRetries) {
-      if (this.retryTimeout) {
-        clearTimeout(this.retryTimeout);
-      }
-      
-      this.retryTimeout = setTimeout(() => {
-        this.setState(prevState => ({
-          hasError: false,
-          error: undefined,
-          errorInfo: undefined,
-          errorCount: prevState.errorCount + 1
-        }));
-      }, 1000);
-    }
+    // DISABLED: Auto-retry mechanism to prevent flickering
+    // The auto-retry was causing infinite loops between error and normal states
+    // Users can manually retry using the "Try Again" button
   }
 
   componentWillUnmount() {
@@ -112,7 +99,20 @@ class ErrorBoundary extends Component<Props, State> {
               </button>
               
               <button
-                onClick={() => this.setState({ hasError: false, error: undefined, errorInfo: undefined, errorCount: 0 })}
+                onClick={() => {
+                  // Clear error state and reset error count
+                  this.setState({ 
+                    hasError: false, 
+                    error: undefined, 
+                    errorInfo: undefined, 
+                    errorCount: 0 
+                  });
+                  // Clear any pending retry timeout
+                  if (this.retryTimeout) {
+                    clearTimeout(this.retryTimeout);
+                    this.retryTimeout = undefined;
+                  }
+                }}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
                 Try Again

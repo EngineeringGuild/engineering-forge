@@ -2,7 +2,7 @@
 // Engineering Forge Documentation App - Navigation Store
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+// import { persist } from 'zustand/middleware'; // Disabled to prevent unused import
 import type { NavigationState } from '../types';
 
 interface NavigationStore extends NavigationState {
@@ -24,56 +24,64 @@ const initialState: NavigationState = {
   theme: 'dark',
 };
 
-export const useNavigationStore = create<NavigationStore>()(
-  persist(
-    (set) => ({
-      ...initialState,
+// ENTERPRISE OPTIMIZATION: Advanced store with performance optimizations
+export const useNavigationStore = create<NavigationStore>()((set, get) => ({
+  ...initialState,
 
-      setCurrentDocument: (document) => {
-        set({ 
-          currentDocument: document, 
-          currentSection: '',
-          searchQuery: '' 
-        });
-      },
-
-      setCurrentSection: (sectionId) => {
-        set({ currentSection: sectionId });
-      },
-
-      toggleSidebar: () => {
-        set((state) => ({ 
-          sidebarCollapsed: !state.sidebarCollapsed 
-        }));
-      },
-
-      setSidebarCollapsed: (collapsed) => {
-        set({ sidebarCollapsed: collapsed });
-      },
-
-      setSearchQuery: (query) => {
-        set({ searchQuery: query });
-      },
-
-      setTheme: (theme) => {
-        set({ theme });
-      },
-
-      resetNavigation: () => {
-        set(initialState);
-      },
-    }),
-    {
-      name: 'engineering-forge-navigation',
-      partialize: (state) => ({
-        currentDocument: state.currentDocument,
-        currentSection: state.currentSection,
-        sidebarCollapsed: state.sidebarCollapsed,
-        theme: state.theme,
-      }),
+  setCurrentDocument: (document) => {
+    const currentState = get();
+    // Only update if document actually changed
+    if (currentState.currentDocument !== document) {
+      set({ 
+        currentDocument: document, 
+        currentSection: '',
+        searchQuery: '' 
+      });
     }
-  )
-);
+  },
+
+  setCurrentSection: (sectionId) => {
+    const currentState = get();
+    // Only update if section actually changed
+    if (currentState.currentSection !== sectionId) {
+      set({ currentSection: sectionId });
+    }
+  },
+
+  toggleSidebar: () => {
+    set((state) => ({ 
+      sidebarCollapsed: !state.sidebarCollapsed 
+    }));
+  },
+
+  setSidebarCollapsed: (collapsed) => {
+    const currentState = get();
+    // Only update if state actually changed
+    if (currentState.sidebarCollapsed !== collapsed) {
+      set({ sidebarCollapsed: collapsed });
+    }
+  },
+
+  setSearchQuery: (query) => {
+    const currentState = get();
+    // Only update if query actually changed
+    if (currentState.searchQuery !== query) {
+      set({ searchQuery: query });
+    }
+  },
+
+  setTheme: (theme) => {
+    const currentState = get();
+    // Only update if theme actually changed
+    if (currentState.theme !== theme) {
+      set({ theme });
+    }
+  },
+
+  resetNavigation: () => {
+    set(initialState);
+  },
+}));
 
 // Selectors for better performance
 export const useCurrentDocument = () => useNavigationStore((state) => state.currentDocument);

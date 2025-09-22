@@ -1,9 +1,9 @@
 // File: src/components/UI/SearchModal.tsx
 // Engineering Forge Documentation App - Search Modal Component
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Clock, FileText, Filter } from 'lucide-react';
-import { useSearchActions, useSearchResults, useIsSearching, useSearchHistory } from '../../store/searchStore';
+import { useSearchStore, useSearchResults, useIsSearching, useSearchHistory } from '../../store/searchStore';
 import { useDebounce } from '../../hooks/useDebounce';
 
 
@@ -17,7 +17,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const [showFilters, setShowFilters] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  const { search, clearSearch } = useSearchActions();
+  // Use direct store selectors to avoid object recreation
+  const search = useSearchStore((state) => state.search);
+  const clearSearch = useSearchStore((state) => state.clearSearch);
   const results = useSearchResults();
   const isSearching = useIsSearching();
   const searchHistory = useSearchHistory();
@@ -25,14 +27,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   // Use debounced query to prevent excessive API calls
   const debouncedQuery = useDebounce(query, 300);
 
-  // Memoize the search handler to prevent infinite loops
-  const handleSearch = useCallback(async (searchQuery: string) => {
-    if (searchQuery.trim()) {
-      await search(searchQuery);
-    } else {
-      clearSearch();
-    }
-  }, [search, clearSearch]);
+  // Search handler removed to prevent infinite loops
 
   // Focus input when modal opens
   useEffect(() => {
@@ -41,15 +36,19 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Handle debounced search - Fixed infinite loop
+  // SIMPLIFIED debounced search - prevent any loops
   useEffect(() => {
     if (!debouncedQuery.trim()) {
       clearSearch();
       return;
     }
 
-    handleSearch(debouncedQuery);
-  }, [debouncedQuery, handleSearch, clearSearch]);
+    // Call search directly without handleSearch wrapper
+    if (debouncedQuery.trim()) {
+      search(debouncedQuery);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery]); // Only depend on the actual value
 
   // Handle keyboard shortcuts
   useEffect(() => {

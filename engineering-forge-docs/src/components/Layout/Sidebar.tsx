@@ -2,9 +2,9 @@
 // Engineering Forge Documentation App - Sidebar Component
 
 import React, { useState } from 'react';
-// import { useTranslation } from 'react-i18next'; // TODO: Implement navigation translations
+import { useTranslation } from '../../hooks/useTranslation'; // FIXED: Importação corrigida
 import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen } from 'lucide-react';
-import { useCurrentDocument, useCurrentSection, useSidebarCollapsed, useNavigationActions } from '../../store/navigationStore';
+import { useNavigationStore } from '../../store/navigationStore';
 import { documentStructures } from '../../utils/contentLoader';
 
 interface SidebarProps {
@@ -31,7 +31,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isActive = false, 
   onSectionClick 
 }) => {
-  // const { t } = useTranslation('navigation'); // TODO: Implement navigation translations
+  const { t } = useTranslation('navigation'); // FIXED: Ativada tradução
   const [isExpanded, setIsExpanded] = useState(level === 0);
   const hasSubsections = section.subsections && section.subsections.length > 0;
 
@@ -82,7 +82,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           </div>
         )}
         
-        <span className="truncate">{section.title}</span>
+        <span className="truncate">
+          {t(`sections.${section.id}`) || section.title}
+        </span>
       </button>
 
       {hasSubsections && isExpanded && (
@@ -103,10 +105,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onMobileClose }) => {
-  const currentDocument = useCurrentDocument();
-  const currentSection = useCurrentSection();
-  const sidebarCollapsed = useSidebarCollapsed();
-  const { setCurrentSection, setSidebarCollapsed } = useNavigationActions();
+  // NUCLEAR FIX: Use individual selectors to prevent object recreation
+  const currentDocument = useNavigationStore((state) => state.currentDocument);
+  const currentSection = useNavigationStore((state) => state.currentSection);
+  const sidebarCollapsed = useNavigationStore((state) => state.sidebarCollapsed);
+  const setCurrentSection = useNavigationStore((state) => state.setCurrentSection);
+  const setSidebarCollapsed = useNavigationStore((state) => state.setSidebarCollapsed);
 
   const currentStructure = documentStructures[currentDocument];
 

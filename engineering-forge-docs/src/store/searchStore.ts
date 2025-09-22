@@ -138,25 +138,16 @@ export const useSearchHistory = () => useSearchStore((state) => state.searchHist
 export const useRecentSearches = () => useSearchStore((state) => state.recentSearches);
 export const useSearchFilters = () => useSearchStore((state) => state.searchFilters);
 
-// Actions - Memoized to prevent unnecessary re-renders
+// Actions - NUCLEAR FIX: Simplified to prevent infinite loops
 export const useSearchActions = () => {
-  const search = useSearchStore((state) => state.search);
-  const clearSearch = useSearchStore((state) => state.clearSearch);
-  const addToHistory = useSearchStore((state) => state.addToHistory);
-  const clearHistory = useSearchStore((state) => state.clearHistory);
-  const addToRecentSearches = useSearchStore((state) => state.addToRecentSearches);
-  const clearRecentSearches = useSearchStore((state) => state.clearRecentSearches);
-  const setSearchFilters = useSearchStore((state) => state.setSearchFilters);
-  const resetSearch = useSearchStore((state) => state.resetSearch);
-
-  return {
-    search,
-    clearSearch,
-    addToHistory,
-    clearHistory,
-    addToRecentSearches,
-    clearRecentSearches,
-    setSearchFilters,
-    resetSearch,
-  };
+  return useSearchStore((state) => ({
+    search: state.search,
+    clearSearch: state.clearSearch,
+    addToHistory: state.addToHistory,
+    clearHistory: state.clearHistory,
+    addToRecentSearches: state.addToRecentSearches,
+    clearRecentSearches: state.clearRecentSearches,
+    setSearchFilters: state.setSearchFilters,
+    resetSearch: state.resetSearch,
+  }));
 };

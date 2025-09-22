@@ -2,7 +2,7 @@
   "app": {
     "title": "Engineering Forge",
     "subtitle": "文档",
-    "description": "Engineering Forge 项目的完整文档"
+    "description": "Engineering Forge 项目的综合文档"
   },
   "navigation": {
     "home": "首页",
@@ -43,7 +43,7 @@
   "search": {
     "placeholder": "搜索文档...",
     "noResults": "未找到结果",
-    "results": "找到结果",
+    "results": "个结果",
     "clear": "清除搜索",
     "history": "搜索历史"
   },
@@ -55,4 +55,3 @@
     "serverError": "服务器错误"
   }
 }
-

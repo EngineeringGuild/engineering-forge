@@ -5,8 +5,6 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import rehypeHighlight from 'rehype-highlight';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 
 interface MarkdownRendererProps {
@@ -21,41 +19,28 @@ interface CodeBlockProps {
 }
 
 const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) => {
-  const match = /language-(\w+)/.exec(className || '');
-  const language = match ? match[1] : 'text';
-
+  // Extract language from className (e.g., "language-javascript" -> "javascript")
+  const language = className?.replace('language-', '') || '';
+  
   if (inline) {
     return (
       <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-2 py-1 rounded text-sm font-mono">
-        {children || ''}
+        {children}
       </code>
     );
   }
 
   return (
-    <div className="relative group">
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700">
+      {language && (
+        <div className="text-xs text-gray-400 mb-2 font-mono uppercase tracking-wide">
           {language}
-        </span>
-      </div>
-      <SyntaxHighlighter
-        language={language}
-        customStyle={{
-          margin: 0,
-          borderRadius: '0.5rem',
-          fontSize: '0.875rem',
-          lineHeight: '1.5',
-          backgroundColor: '#1f2937',
-          color: '#f9fafb',
-          padding: '1rem',
-        }}
-        showLineNumbers
-        wrapLines
-      >
-        {String(children || '').replace(/\n$/, '')}
-      </SyntaxHighlighter>
-    </div>
+        </div>
+      )}
+      <code className={`text-sm leading-relaxed ${className || ''}`}>
+        {String(children || '')}
+      </code>
+    </pre>
   );
 };
 
@@ -64,7 +49,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
     <div className={`prose-custom ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           // Custom heading components with IDs for TOC
           h1: ({ children, ...props }) => (

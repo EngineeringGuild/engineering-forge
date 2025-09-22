@@ -1,40 +1,63 @@
 // File: src/App.tsx
-// Engineering Forge Documentation App - Main Application Component - Professional Implementation
+// Engineering Forge Documentation App - CORRECTED VERSION
+// All infinite loops fixed with proper patterns
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from './hooks/useTranslation';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigationStore } from './store/navigationStore';
-import { useContent } from './hooks/useContent';
+import { useLanguageStore } from './store/languageStore';
+
+// Layout Components
 import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
 import MarkdownRenderer from './components/Content/MarkdownRenderer';
-import TableOfContents from './components/Content/TableOfContents';
 import ErrorBoundary from './components/UI/ErrorBoundary';
 import LoadingSpinner from './components/UI/LoadingSpinner';
-import './i18n'; // Initialize i18n
 
-function App() {
+// Hooks
+import { useContent } from './hooks/useContent';
+import { useTranslation } from './hooks/useTranslation';
+
+// Import i18n configuration
+import './i18n';
+
+const App: React.FC = () => {
   const { t } = useTranslation('common');
+  
+  // FIXED: Local state management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  // NUCLEAR FIX: Use direct store access to prevent infinite loops
-  const theme = useNavigationStore((state) => state.theme);
-  const { content, isLoading, error } = useContent();
-  
-  // Initialize app safely
-  useEffect(() => {
-    setIsInitialized(true);
-  }, []);
 
-  // Apply theme to document body on mount and theme change
+  // FIXED: Granular selectors to prevent unnecessary re-renders
+  const currentDocument = useNavigationStore((state) => state.currentDocument);
+  const currentSection = useNavigationStore((state) => state.currentSection);
+  const sidebarCollapsed = useNavigationStore((state) => state.sidebarCollapsed);
+  const theme = useNavigationStore((state) => state.theme);
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
+
+  // FIXED: Content management
+  const { content, isLoading, error, reloadContent } = useContent();
+
+  // FIXED: Separate useEffects to prevent cascading updates
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('dark', theme === 'dark');
+    // Theme effect - only depends on theme
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   }, [theme]);
 
-  // Memoize handlers to prevent unnecessary re-renders
+  useEffect(() => {
+    // Language effect - only depends on language
+    document.documentElement.lang = currentLanguage;
+  }, [currentLanguage]);
+
+  useEffect(() => {
+    // Initialization effect - runs only once
+    setIsInitialized(true);
+  }, []);
+
+  // FIXED: Stable event handlers
   const handleMenuToggle = useCallback(() => {
     setIsMobileMenuOpen(prev => !prev);
   }, []);
@@ -43,66 +66,141 @@ function App() {
     setIsMobileMenuOpen(false);
   }, []);
 
-  // Show loading screen during initialization to prevent flickering
+  // FIXED: Memoized computed values with stable dependencies
+  const showContent = useMemo(() => {
+    return currentDocument && isInitialized;
+  }, [currentDocument, isInitialized]);
+
+  const contentTitle = useMemo(() => {
+    if (currentSection) {
+      return t(`navigation.sections.${currentSection}`) || currentSection;
+    }
+    return currentDocument === 'GDD' 
+      ? (t('navigation.documents.gdd') || 'Game Design Document')
+      : (t('navigation.documents.tdd') || 'Technical Design Document');
+  }, [currentDocument, currentSection, t]);
+
+  // FIXED: Simple loading check
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Initializing application..." />
+        <div className="text-center">
+          <LoadingSpinner size="large" />
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        {/* Header */}
         <Header 
           onMenuToggle={handleMenuToggle}
           isMobileMenuOpen={isMobileMenuOpen}
         />
-        
-        <Sidebar 
-          isMobileOpen={isMobileMenuOpen}
-          onMobileClose={handleMobileMenuClose}
-        />
-        
-        <main className="lg:ml-80 pt-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {isLoading ? (
-              <div className="py-12">
-                <LoadingSpinner size="lg" text={t('content.loading')} />
-              </div>
-            ) : error ? (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Content Loading Notice</h2>
-                <p className="text-yellow-700 dark:text-yellow-300">
-                  The content is currently using fallback mode. This is normal in development.
-                </p>
-                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
-                  Build and deploy the application to access the full documentation content.
-                </p>
-              </div>
-            ) : null}
-            
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-              {/* Main Content */}
-              <div className="xl:col-span-3">
-                <div className="prose-custom max-w-none">
-                  <MarkdownRenderer content={content} />
+
+        <div className="flex h-[calc(100vh-4rem)]">
+          {/* Sidebar */}
+          <Sidebar 
+            isCollapsed={sidebarCollapsed}
+            isMobileMenuOpen={isMobileMenuOpen}
+            onMobileMenuClose={handleMobileMenuClose}
+          />
+
+          {/* Main Content */}
+          <main className={`
+            flex-1 flex flex-col overflow-hidden transition-all duration-300
+            ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'}
+          `}>
+            {/* Content Header */}
+            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {contentTitle}
+                  </h1>
+                  {currentSection && (
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                      {t(`navigation.documents.${currentDocument.toLowerCase()}`, currentDocument)}
+                    </p>
+                  )}
                 </div>
-              </div>
-              
-              {/* Table of Contents */}
-              <div className="xl:col-span-1">
-                <div className="sticky top-24">
-                  <TableOfContents content={content} />
+                
+                {/* Action Buttons */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={reloadContent}
+                    className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? t('common.loading', 'Loading...') : t('common.reload', 'Reload')}
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-        </main>
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-auto bg-white dark:bg-gray-800">
+              {showContent ? (
+                <div className="max-w-none">
+                  {error ? (
+                    <div className="p-6">
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                          {t('common.error', 'Error')}
+                        </h3>
+                        <p className="text-red-700 dark:text-red-300">{error}</p>
+                        <button
+                          onClick={reloadContent}
+                          className="mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                        >
+                          {t('common.tryAgain', 'Try Again')}
+                        </button>
+                      </div>
+                    </div>
+                  ) : isLoading ? (
+                    <div className="flex items-center justify-center h-64">
+                      <div className="text-center">
+                        <LoadingSpinner size="large" />
+                        <p className="mt-4 text-gray-600 dark:text-gray-300">
+                          {t('common.loadingContent', 'Loading content...')}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <MarkdownRenderer content={content} />
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      {t('welcome.title', 'Welcome to Engineering Forge')}
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {t('welcome.subtitle', 'Select a document and section to get started')}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={handleMobileMenuClose}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );
-}
+};
 
 export default App;

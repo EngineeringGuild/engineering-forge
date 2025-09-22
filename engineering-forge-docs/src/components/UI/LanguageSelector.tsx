@@ -1,12 +1,11 @@
 // File: src/components/UI/LanguageSelector.tsx
-// Engineering Forge Documentation App - Language Selector Component
+// Engineering Forge Documentation App - Language Selector Component - Professional Implementation
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ChevronDown, Globe, Check } from 'lucide-react';
-import { useCurrentLanguage, useLanguageActions, useAvailableLanguages } from '../../store/languageStore';
+import { useLanguageStore, useAvailableLanguages } from '../../store/languageStore';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../../i18n';
-
 interface LanguageSelectorProps {
   variant?: 'header' | 'dropdown' | 'mobile';
   className?: string;
@@ -16,12 +15,17 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   variant = 'header', 
   className = '' 
 }) => {
+  
   const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const currentLanguage = useCurrentLanguage();
-  const { setLanguage } = useLanguageActions();
-  const availableLanguages = useAvailableLanguages();
+  
+  // FIXED: Use memoized selectors to prevent infinite loops
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
+  const setLanguage = useLanguageStore((state) => state.setLanguage);
+  const availableLanguages = useAvailableLanguages(); // FIXED: Use memoized selector
+
+  const currentLanguageInfo = SUPPORTED_LANGUAGES[currentLanguage];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -47,26 +51,35 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const handleLanguageChange = async (languageCode: SupportedLanguage) => {
+  // Language change handler
+  const handleLanguageChange = useCallback(async (languageCode: SupportedLanguage) => {
     if (languageCode === currentLanguage) {
       setIsOpen(false);
       return;
     }
 
-    const success = await setLanguage(languageCode);
-    if (success) {
+    try {
+      const success = await setLanguage(languageCode);
+      if (success) {
+        setIsOpen(false);
+      }
+    } catch (error) {
+      console.error('Language change error:', error);
       setIsOpen(false);
     }
-  };
+  }, [currentLanguage, setLanguage]);
 
-  const currentLanguageInfo = SUPPORTED_LANGUAGES[currentLanguage];
+  // Toggle handler
+  const handleToggle = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
 
   // Header variant - compact button
   if (variant === 'header') {
     return (
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleToggle}
           className="flex items-center space-x-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 border-0 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
           aria-label={t('language.select')}
         >
@@ -111,7 +124,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     return (
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleToggle}
           className="w-full flex items-center justify-between px-4 py-3 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
         >
           <div className="flex items-center space-x-3">
@@ -165,7 +178,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     return (
       <div className={`relative ${className}`} ref={dropdownRef}>
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleToggle}
           className="flex items-center space-x-2 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           aria-label={t('language.select')}
         >

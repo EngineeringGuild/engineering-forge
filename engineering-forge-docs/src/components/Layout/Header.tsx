@@ -4,23 +4,26 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Search, Sun, Moon, Menu, X } from 'lucide-react';
-import { useCurrentDocument, useTheme, useNavigationActions } from '../../store/navigationStore';
-import { useSearchActions } from '../../store/searchStore';
+import { useNavigationStore } from '../../store/navigationStore';
+import { useSearchStore } from '../../store/searchStore';
 import SearchModal from '../UI/SearchModal';
 import LanguageSelector from '../UI/LanguageSelector';
-
 interface HeaderProps {
   onMenuToggle: () => void;
   isMobileMenuOpen: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
+  
   const { t } = useTranslation('common');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const currentDocument = useCurrentDocument();
-  const theme = useTheme();
-  const { setCurrentDocument, setTheme } = useNavigationActions();
-  const { clearSearch } = useSearchActions();
+  
+  // NUCLEAR FIX: Use individual selectors to prevent object recreation
+  const currentDocument = useNavigationStore((state) => state.currentDocument);
+  const theme = useNavigationStore((state) => state.theme);
+  const setCurrentDocument = useNavigationStore((state) => state.setCurrentDocument);
+  const setTheme = useNavigationStore((state) => state.setTheme);
+  const clearSearch = useSearchStore((state) => state.clearSearch);
 
   const handleDocumentSwitch = (document: 'GDD' | 'TDD') => {
     setCurrentDocument(document);

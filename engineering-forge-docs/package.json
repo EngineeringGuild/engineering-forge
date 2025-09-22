@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "npm run sync:docs && vite",
+    "build": "npm run sync:docs && tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:docs": "node sync-docs.js",
+    "sync:validate": "node sync-docs.js --validate-only",
+    "clean": "rm -rf dist && rm -rf public/docs && rm -rf deploy-package-*",
+    "build:clean": "npm run clean && npm run build"
   },
   "dependencies": {
     "@types/node": "^24.3.0",
@@ -22,7 +26,7 @@
     "react-i18next": "^15.7.3",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.8.2",
-    "react-syntax-highlighter": "^5.8.0",
+    "react-syntax-highlighter": "^15.6.6",
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
