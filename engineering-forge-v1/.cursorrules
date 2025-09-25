@@ -1,0 +1,324 @@
+# Engineering Forge V1.0 - Development Rules
+
+## 🎯 VERSION OVERVIEW
+You are working on "Engineering Forge V1.0" - the prototype 2D version of the educational gamified platform. This is a React + TypeScript + Vite project focused on core mechanics validation and basic functionality.
+
+## 🚨 CRITICAL V1.0 RULES
+
+### RULE 1: ALWAYS READ V1.0 SPECIFICATIONS
+- ALWAYS read `docs/VERSIONS/v1.0-prototype/README.md` for V1.0 specifications
+- ALWAYS read `docs/DOMAINS/[domain]/README.md` for domain requirements
+- ALWAYS read `docs/PROGRESS-DASHBOARD.md` for current status
+- ALWAYS check `docs/CURSOR-SYSTEM.md` for methodology
+
+### RULE 2: ALWAYS FOLLOW V1.0 SCOPE
+- V1.0 is a PROTOTYPE for core mechanics validation
+- Keep features SIMPLE and FOCUSED
+- Prioritize FUNCTIONALITY over POLISH
+- Focus on CORE MECHANICS only
+- Avoid advanced features that belong to V2.0+
+
+### RULE 3: ALWAYS USE V1.0 TECH STACK
+- React 18 + TypeScript
+- Vite for build and dev server
+- Tailwind CSS for styling
+- Zustand for state management
+- Lucide React for icons
+- NO complex libraries or frameworks
+
+### RULE 4: ALWAYS CREATE TESTS
+- Create unit tests for all components
+- Create integration tests for all services
+- Maintain minimum 80% test coverage
+- Use Jest and React Testing Library
+- Test core mechanics thoroughly
+
+### RULE 5: ALWAYS UPDATE DOCUMENTATION
+- ALWAYS update `docs/PROGRESS-DASHBOARD.md` after changes
+- ALWAYS update `docs/VERSIONS/v1.0-prototype/README.md`
+- ALWAYS update relevant domain documentation
+- ALWAYS maintain consistency across documents
+
+## 🏗️ V1.0 ARCHITECTURE
+
+### Frontend Stack
+- React 18 + TypeScript
+- Vite for build and dev server
+- Tailwind CSS for styling
+- Zustand for state management
+- Lucide React for icons
+- React Router for routing
+
+### Game Engine
+- 2D Canvas API for rendering
+- Basic physics simulation
+- Component-based architecture
+- Event-driven system
+- State management with Zustand
+
+### Development Tools
+- Vite for fast development
+- ESLint + Prettier for code quality
+- Jest + React Testing Library for testing
+- TypeScript for type safety
+- Hot reload for development
+
+## 🎮 V1.0 CORE FEATURES
+
+### Game Mechanics
+- 2D construction interface
+- Basic component placement
+- Simple physics simulation
+- Component selection and manipulation
+- Basic validation system
+
+### Educational Content
+- Simple tutorial system
+- Basic lesson structure
+- Progress tracking
+- Achievement system
+- Certificate generation (basic)
+
+### User Interface
+- Clean and simple design
+- Responsive layout
+- Intuitive navigation
+- Component library
+- Basic customization
+
+## 📋 V1.0 DEVELOPMENT PHASES
+
+### Phase 1: Foundation (Sprint 1)
+- Project setup and configuration
+- Basic React components
+- Routing and navigation
+- State management setup
+- Basic UI components
+
+### Phase 2: Core Mechanics (Sprint 2)
+- 2D canvas implementation
+- Component placement system
+- Basic physics engine
+- Interaction system
+- Validation framework
+
+### Phase 3: Educational Content (Sprint 3)
+- Lesson system
+- Tutorial implementation
+- Progress tracking
+- Achievement system
+- Basic certification
+
+### Phase 4: Polish and Testing (Sprint 4)
+- UI/UX improvements
+- Performance optimization
+- Comprehensive testing
+- Bug fixes and refinements
+- Documentation completion
+
+## 🧪 V1.0 TESTING STRATEGY
+
+### Unit Testing
+- Test all React components
+- Test utility functions
+- Test game mechanics
+- Test state management
+- Maintain 80%+ coverage
+
+### Integration Testing
+- Test component interactions
+- Test game systems integration
+- Test user workflows
+- Test data flow
+- Test error handling
+
+### E2E Testing
+- Test complete user journeys
+- Test game mechanics end-to-end
+- Test educational workflows
+- Test responsive design
+- Test performance
+
+## 📊 V1.0 PERFORMANCE TARGETS
+
+### Loading Performance
+- Initial load: <2 seconds
+- Component load: <500ms
+- Navigation: <200ms
+- Asset loading: <1 second
+
+### Runtime Performance
+- 60 FPS during gameplay
+- <100ms input response
+- <50MB memory usage
+- Smooth animations
+
+### Browser Compatibility
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## 🔧 V1.0 DEVELOPMENT WORKFLOW
+
+### Setup Process
+1. Clone repository
+2. Install dependencies (`npm install`)
+3. Configure environment variables
+4. Start development server (`npm run dev`)
+5. Run tests (`npm test`)
+
+### Development Process
+1. Create feature branch
+2. Implement feature with tests
+3. Run tests and linting
+4. Create pull request
+5. Code review and merge
+
+### Deployment Process
+1. Run full test suite
+2. Build production bundle
+3. Deploy to staging
+4. Run E2E tests
+5. Deploy to production
+
+## 📝 V1.0 CODE STANDARDS
+
+### TypeScript Standards
+- Strict type checking enabled
+- No `any` types allowed
+- Proper interface definitions
+- Consistent naming conventions
+- Comprehensive type coverage
+
+### React Standards
+- Functional components only
+- Hooks for state management
+- Proper prop typing
+- Error boundaries
+- Performance optimization
+
+### CSS Standards
+- Tailwind CSS utility classes
+- Consistent spacing and colors
+- Responsive design principles
+- Accessibility compliance
+- Clean and maintainable styles
+
+## 🎯 V1.0 SUCCESS CRITERIA
+
+### Functional Criteria
+- All core mechanics working
+- Educational content functional
+- User interface intuitive
+- Performance targets met
+- Cross-browser compatibility
+
+### Quality Criteria
+- 80%+ test coverage
+- Zero critical bugs
+- Code quality standards met
+- Documentation complete
+- Performance benchmarks met
+
+### Business Criteria
+- User feedback positive
+- Core mechanics validated
+- Educational value demonstrated
+- Technical foundation solid
+- Ready for V2.0 development
+
+## 🚀 V1.0 DEPLOYMENT
+
+### Environment Setup
+- Development: Local development
+- Staging: Preview environment
+- Production: Live environment
+- CI/CD: Automated deployment
+
+### Monitoring
+- Error tracking with Sentry
+- Performance monitoring
+- User analytics
+- Crash reporting
+- Usage statistics
+
+### Maintenance
+- Regular updates and patches
+- Security updates
+- Performance optimizations
+- Bug fixes and improvements
+- Documentation updates
+
+## 📚 V1.0 RESOURCES
+
+### Documentation
+- V1.0 Specs: `docs/VERSIONS/v1.0-prototype/README.md`
+- Domain Docs: `docs/DOMAINS/[domain]/README.md`
+- Progress: `docs/PROGRESS-DASHBOARD.md`
+- System: `docs/CURSOR-SYSTEM.md`
+
+### Development Tools
+- VS Code with extensions
+- React Developer Tools
+- Redux DevTools
+- Jest testing framework
+- ESLint and Prettier
+
+### External Resources
+- React documentation
+- TypeScript handbook
+- Tailwind CSS docs
+- Vite documentation
+- Testing library docs
+
+## ⚠️ V1.0 LIMITATIONS
+
+### Known Limitations
+- 2D interface only
+- Basic physics simulation
+- Limited customization
+- Simple educational content
+- Basic user management
+
+### Future Improvements (V2.0+)
+- 3D interface
+- Advanced physics
+- Rich customization
+- Complex educational content
+- Advanced user features
+
+## 🔗 RELATED DOCUMENTS
+
+- [V1.0 Specifications](../../docs/VERSIONS/v1.0-prototype/README.md)
+- [Domain Documentation](../../docs/DOMAINS/README.md)
+- [Progress Dashboard](../../docs/PROGRESS-DASHBOARD.md)
+- [Cursor System](../../docs/CURSOR-SYSTEM.md)
+- [Implementation Guide](../../docs/DEVELOPMENT/implementation/README.md)
+
+## ⚠️ IMPORTANT REMINDERS
+
+### ALWAYS REMEMBER
+- V1.0 is a PROTOTYPE - keep it simple
+- Focus on CORE MECHANICS validation
+- Maintain high code quality
+- Test everything thoroughly
+- Document all changes
+
+### NEVER FORGET
+- Update progress dashboard after changes
+- Follow V1.0 scope strictly
+- Use only approved tech stack
+- Maintain test coverage
+- Keep documentation updated
+
+### SUCCESS DEPENDS ON
+- Following V1.0 scope and limitations
+- Maintaining high code quality
+- Thorough testing and validation
+- Clear documentation
+- Ready foundation for V2.0
+
+---
+
+**Remember: V1.0 is the foundation for the entire Engineering Forge platform. Make it solid, simple, and extensible.**
