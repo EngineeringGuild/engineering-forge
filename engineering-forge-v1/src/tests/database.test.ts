@@ -134,7 +134,14 @@ describe('Database Layer Tests', () => {
       const user = await databaseService.createUser(userData);
       const updatedUser = await databaseService.updateUser(user._id, {
         firstName: 'Updated',
-        statistics: { totalXP: 100 }
+        statistics: {
+          totalXP: 100,
+          level: 2,
+          projectsCompleted: 0,
+          lessonsCompleted: 0,
+          achievementsUnlocked: 0,
+          timeSpent: 0
+        }
       });
 
       expect(updatedUser).toBeDefined();
@@ -330,7 +337,7 @@ describe('Database Layer Tests', () => {
       expect(course).toBeDefined();
       expect(course.title).toBe('Introduction to Automotive Engineering');
       expect(course.instructorId).toBe(testInstructor._id);
-      expect(course.lessonCount).toBe(0);
+      expect(course.lessons.length).toBe(0);
     });
 
     it('should create a new lesson successfully', async () => {
@@ -400,7 +407,14 @@ describe('Database Layer Tests', () => {
         username: 'userstats',
         firstName: 'User',
         lastName: 'Stats',
-        statistics: { totalXP: 250, level: 3 }
+        statistics: {
+          totalXP: 250,
+          level: 3,
+          projectsCompleted: 0,
+          lessonsCompleted: 0,
+          achievementsUnlocked: 0,
+          timeSpent: 0
+        }
       });
 
       await databaseService.createProject({
