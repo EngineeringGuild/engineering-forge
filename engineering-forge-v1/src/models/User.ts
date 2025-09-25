@@ -193,7 +193,7 @@ userSchema.virtual('displayName').get(function () {
 
 // Transform output to remove sensitive data
 userSchema.set('toJSON', {
-  transform: function (doc: any, ret: any) {
+  transform: function (_doc: any, ret: any) {
     delete ret.password;
     delete ret.__v;
     return ret;

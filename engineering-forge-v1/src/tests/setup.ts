@@ -4,11 +4,9 @@
  * Global test setup and configuration
  */
 
-import mongoose from 'mongoose';
-
-// Test database connection string
-const TEST_MONGODB_URI =
-  'mongodb+srv://caioasc_db_user:CFABOqryHJjtNln1@engineeringforge.hmqats3.mongodb.net/engineering_forge_test?retryWrites=true&w=majority&appName=engineeringforge';
+// Test database connection string (commented out for now)
+// const TEST_MONGODB_URI =
+//   'mongodb+srv://caioasc_db_user:CFABOqryHJjtNln1@engineeringforge.hmqats3.mongodb.net/engineering_forge_test?retryWrites=true&w=majority&appName=engineeringforge';
 
 // Setup before all tests
 /*

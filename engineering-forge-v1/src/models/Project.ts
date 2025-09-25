@@ -230,7 +230,7 @@ projectSchema.virtual('performanceScore').get(function () {
 projectSchema.pre('save', function (next) {
   if (this.isModified('components') || this.isModified('performance')) {
     this.metadata.lastModified = new Date();
-    this.metadata.version = this.incrementVersion(this.metadata.version || '1.0.0');
+    this.metadata.version = (this as any).incrementVersion(this.metadata.version || '1.0.0');
   }
   next();
 });
