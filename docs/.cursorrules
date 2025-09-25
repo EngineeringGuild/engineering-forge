@@ -1,0 +1,252 @@
+# Engineering Forge - Documentation Rules
+
+## 🎯 DOCUMENTATION OVERVIEW
+You are working on the documentation system for "Engineering Forge". This directory contains all project documentation organized using Domain-Driven Design (DDD) principles.
+
+## 🚨 CRITICAL DOCUMENTATION RULES
+
+### RULE 1: ALWAYS MAINTAIN CONSISTENCY
+- ALWAYS follow the established documentation structure
+- ALWAYS use consistent formatting and styling
+- ALWAYS maintain cross-references between documents
+- ALWAYS keep the PROGRESS-DASHBOARD.md updated
+
+### RULE 2: ALWAYS UPDATE RELATED DOCUMENTS
+- When updating a domain document, ALWAYS update the main domain README
+- When updating a version document, ALWAYS update the main version README
+- When updating specifications, ALWAYS update related technical docs
+- When updating business docs, ALWAYS update related business docs
+
+### RULE 3: ALWAYS USE TEMPLATES
+- ALWAYS use the templates in `TEMPLATES/document-templates/`
+- ALWAYS follow the established document structure
+- ALWAYS include all required sections
+- ALWAYS maintain template consistency
+
+### RULE 4: ALWAYS VERIFY LINKS
+- ALWAYS check that all internal links work
+- ALWAYS verify external links are accessible
+- ALWAYS maintain proper link formatting
+- ALWAYS update broken links immediately
+
+### RULE 5: ALWAYS FOLLOW DDD STRUCTURE
+- ALWAYS work within the defined domain boundaries
+- ALWAYS update domain-specific documentation
+- ALWAYS maintain domain separation
+- ALWAYS respect domain responsibilities
+
+## 📁 DOCUMENTATION STRUCTURE
+
+```
+docs/
+├── README.md                           # Main entry point
+├── PROGRESS-DASHBOARD.md               # Central progress tracking
+├── PROJECT-OVERVIEW.md                 # Project overview
+├── CURSOR-SYSTEM.md                    # Cursor methodology
+├── CURSOR-RULES.md                     # Cursor rules
+├── CURSOR-METHODOLOGY.md               # Work methodology
+├── CURSOR-COMMANDS.md                  # Standardized commands
+├── CURSOR-CHAT-TEMPLATE.md             # Chat template
+├── DOMAINS/                            # DDD domains
+│   ├── education/                      # Education domain
+│   ├── gaming/                         # Gaming domain
+│   ├── blockchain/                     # Blockchain domain
+│   ├── user-management/                # User management domain
+│   ├── marketplace/                    # Marketplace domain
+│   ├── analytics/                      # Analytics domain
+│   └── README.md                       # Domain overview
+├── VERSIONS/                           # Product versions
+│   ├── v1.0-prototype/                 # V1.0 prototype
+│   ├── v2.0-mvp-web/                   # V2.0 MVP web
+│   ├── v3.0-3d-web/                    # V3.0 3D web
+│   ├── v4.0-vr/                        # V4.0 VR
+│   └── README.md                       # Version overview
+├── DEVELOPMENT/                        # Development process
+│   ├── architecture/                   # System architecture
+│   ├── implementation/                 # Implementation guides
+│   ├── tasks/                          # Task management
+│   └── testing/                        # Testing strategies
+├── SPECIFICATIONS/                     # Technical specifications
+│   ├── game-design/                    # Game design specs
+│   ├── technical-design/               # Technical design specs
+│   ├── ui-ux/                          # UI/UX specifications
+│   └── api-design.md                   # API specifications
+├── BUSINESS/                           # Business aspects
+│   ├── monetization/                   # Monetization strategies
+│   ├── market-analysis/                # Market analysis
+│   ├── go-to-market/                   # Go-to-market strategy
+│   └── business-plans/                 # Business plans
+├── GUIDES/                             # User and developer guides
+│   ├── getting-started/                # Getting started guides
+│   ├── developer-guides/               # Developer documentation
+│   ├── user-guides/                    # User documentation
+│   └── maintenance/                    # Maintenance guides
+├── TEMPLATES/                          # Document templates
+│   ├── document-templates/             # Documentation templates
+│   ├── code-templates/                 # Code templates
+│   └── report-templates/               # Report templates
+├── ASSETS/                             # Visual resources
+│   ├── diagrams/                       # System diagrams
+│   ├── mockups/                        # UI mockups
+│   ├── prototypes/                     # Prototypes
+│   └── media/                          # Media files
+└── archive/                            # Archived documents
+    ├── deprecated/                     # Deprecated documents
+    ├── old-versions/                   # Old versions
+    ├── reports/                        # Historical reports
+    └── temp/                           # Temporary files
+```
+
+## 📝 DOCUMENTATION STANDARDS
+
+### Formatting Standards
+- Use Markdown (.md) for all documentation
+- Follow consistent heading hierarchy (H1 > H2 > H3)
+- Use proper markdown syntax and formatting
+- Include table of contents for long documents
+- Use consistent emoji and icon usage
+
+### Content Standards
+- Write clear, concise, and professional content
+- Use active voice and present tense
+- Include examples and code snippets where appropriate
+- Maintain consistent terminology across all documents
+- Include relevant links and cross-references
+
+### Structure Standards
+- Always include a title and overview section
+- Use consistent section naming and organization
+- Include status indicators and metadata
+- Add proper navigation and breadcrumbs
+- Include relevant links and references
+
+## 🔄 DOCUMENTATION WORKFLOW
+
+### Creating New Documents
+1. Choose appropriate template from `TEMPLATES/document-templates/`
+2. Follow template structure and requirements
+3. Include all required sections and metadata
+4. Add proper cross-references and links
+5. Update related documents and indexes
+
+### Updating Existing Documents
+1. Read current document thoroughly
+2. Make changes while maintaining consistency
+3. Update related documents and cross-references
+4. Update PROGRESS-DASHBOARD.md if needed
+5. Verify all links still work
+
+### Archiving Documents
+1. Move outdated documents to `archive/`
+2. Update any references to archived documents
+3. Maintain archive organization and structure
+4. Update navigation and indexes
+
+## 🎯 DOMAIN-SPECIFIC RULES
+
+### Education Domain
+- Focus on learning objectives and outcomes
+- Include assessment and evaluation criteria
+- Maintain educational best practices
+- Update curriculum and course materials
+
+### Gaming Domain
+- Focus on game mechanics and player experience
+- Include gameplay loops and progression systems
+- Maintain game design principles
+- Update game balance and mechanics
+
+### Blockchain Domain
+- Focus on security and decentralization
+- Include smart contract specifications
+- Maintain blockchain best practices
+- Update integration and wallet features
+
+### User Management Domain
+- Focus on security and user experience
+- Include authentication and authorization
+- Maintain privacy and data protection
+- Update user profiles and preferences
+
+### Marketplace Domain
+- Focus on commerce and trading
+- Include pricing and payment systems
+- Maintain marketplace best practices
+- Update product catalogs and transactions
+
+### Analytics Domain
+- Focus on data collection and insights
+- Include metrics and reporting systems
+- Maintain analytics best practices
+- Update dashboards and reports
+
+## 🚀 QUALITY ASSURANCE
+
+### Review Process
+- All documents must be reviewed before publication
+- Check for accuracy, completeness, and consistency
+- Verify all links and references work
+- Ensure proper formatting and structure
+
+### Maintenance Process
+- Regularly review and update documentation
+- Check for outdated information and links
+- Maintain consistency across all documents
+- Archive obsolete documents appropriately
+
+### Standards Compliance
+- Follow established documentation standards
+- Maintain consistent formatting and style
+- Use proper templates and structures
+- Include all required metadata and information
+
+## 📚 RESOURCES AND REFERENCES
+
+### Documentation Tools
+- Markdown editors and viewers
+- Link checkers and validators
+- Template generators and validators
+- Version control and collaboration tools
+
+### Best Practices
+- Technical writing standards
+- Documentation design principles
+- User experience guidelines
+- Accessibility requirements
+
+### Training and Support
+- Documentation training materials
+- Writing guidelines and style guides
+- Review and approval processes
+- Support and troubleshooting guides
+
+## 🔗 RELATED DOCUMENTS
+
+- [CURSOR-SYSTEM.md](CURSOR-SYSTEM.md) - Main cursor system documentation
+- [CURSOR-COMMANDS.md](CURSOR-COMMANDS.md) - Standardized commands
+- [CURSOR-METHODOLOGY.md](CURSOR-METHODOLOGY.md) - Work methodology
+- [PROGRESS-DASHBOARD.md](PROGRESS-DASHBOARD.md) - Progress tracking
+
+## ⚠️ IMPORTANT REMINDERS
+
+### ALWAYS REMEMBER
+- Documentation is a living system that requires constant maintenance
+- Consistency across all documents is crucial for user experience
+- Cross-references and links must be kept up-to-date
+- Templates ensure consistency and completeness
+
+### NEVER FORGET
+- Update PROGRESS-DASHBOARD.md after any significant changes
+- Verify all links work before publishing
+- Use established templates and structures
+- Maintain domain boundaries and responsibilities
+
+### SUCCESS DEPENDS ON
+- Following these documentation rules exactly
+- Maintaining consistency across all documents
+- Keeping cross-references and links updated
+- Using templates and established structures
+
+---
+
+**Remember: Good documentation is essential for project success and team collaboration.**

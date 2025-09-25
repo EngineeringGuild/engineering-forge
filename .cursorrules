@@ -1,0 +1,392 @@
+# Engineering Forge - Development Rules
+
+## 🎯 PROJECT OVERVIEW
+You are working on "Engineering Forge" - an educational gamified platform for engineering learning with blockchain integration. This is a React + TypeScript + Node.js project with MongoDB Atlas and Solana blockchain integration.
+
+## 🚨 CRITICAL DEVELOPMENT RULES
+
+### RULE 1: ALWAYS READ PROJECT STRUCTURE FIRST
+- ALWAYS read `docs/PROGRESS-DASHBOARD.md` to understand current status
+- ALWAYS read the relevant domain in `docs/DOMAINS/[domain]/README.md`
+- ALWAYS read the relevant version in `docs/VERSIONS/[version]/README.md`
+- ALWAYS check `docs/CURSOR-SYSTEM.md` for methodology
+
+### RULE 2: ALWAYS USE STANDARDIZED COMMANDS
+- Use ONLY the commands defined in `docs/CURSOR-COMMANDS.md`
+- Follow the exact command syntax provided
+- Never create custom commands without documentation
+
+### RULE 3: ALWAYS UPDATE DOCUMENTATION
+- ALWAYS update `docs/PROGRESS-DASHBOARD.md` after any change
+- ALWAYS update relevant domain documentation
+- ALWAYS update relevant version documentation
+- ALWAYS maintain consistency across all documents
+
+### RULE 4: ALWAYS FOLLOW DDD STRUCTURE
+- Work within the defined domains: education, gaming, blockchain, user-management, marketplace, analytics, development
+- Maintain domain boundaries and responsibilities
+- Update domain-specific documentation when making changes
+
+### RULE 5: ALWAYS CREATE TESTS
+- Create unit tests for all new components
+- Create integration tests for all new services
+- Maintain minimum 80% test coverage
+- Use Jest and React Testing Library
+
+## 🏗️ PROJECT ARCHITECTURE
+
+### Frontend Stack
+- React 18 + TypeScript
+- Vite for build
+- Tailwind CSS for styling
+- Zustand for state management
+- React Router for routing
+
+### Backend Stack
+- Node.js 20 + Express + TypeScript
+- MongoDB Atlas for database
+- JWT for authentication
+- bcrypt for password hashing
+
+### Blockchain Stack
+- Solana blockchain
+- Rust + Anchor Framework
+- @solana/web3.js for client
+- Metaplex for NFTs
+
+## 📁 PROJECT STRUCTURE
+
+```
+engineering-forge/
+├── docs/                                # Documentation (DDD structure)
+│   ├── README.md                        # Main entry point
+│   ├── PROGRESS-DASHBOARD.md            # Central progress tracking
+│   ├── CURSOR-SYSTEM.md                 # Cursor methodology
+│   ├── DOMAINS/                         # DDD domains
+│   ├── VERSIONS/                        # Product versions
+│   ├── DEVELOPMENT/                     # Development process
+│   ├── SPECIFICATIONS/                  # Technical specs
+│   ├── BUSINESS/                        # Business aspects
+│   ├── ASSETS/                          # Visual resources
+│   ├── GUIDES/                          # Guides and tutorials
+│   └── TEMPLATES/                       # Templates and patterns
+├── engineering-forge-v1/                # V1.0 Prototype (Current)
+│   ├── src/                             # Source code
+│   ├── public/                          # Public assets
+│   ├── package.json                     # Dependencies
+│   └── README.md                        # Project README
+├── engineering-forge-v2/                # V2.0 MVP (Future)
+├── engineering-forge-v3/                # V3.0 3D Web (Future)
+├── engineering-forge-v4/                # V4.0 VR (Future)
+└── .cursorrules                         # This file
+```
+
+## 🎯 CURRENT PROJECT STATUS
+
+### Version: V1.0 - Prototype 2D
+- Status: In Development (15% complete)
+- Current Sprint: Sprint 1 - Foundation
+- Next Milestone: Complete Sprint 1 by January 29, 2025
+
+### Active Domains
+- Education: 20% complete
+- Gaming: 10% complete
+- Blockchain: 5% complete
+- User Management: 15% complete
+- Marketplace: 0% complete
+- Analytics: 0% complete
+
+### Current Tasks
+- TASK-001: Setup project V1.0 (COMPLETED)
+- TASK-002: Configure MongoDB Atlas (IN PROGRESS)
+- TASK-003: Interface components 2D (PLANNED)
+- TASK-004: Authentication system (PLANNED)
+- TASK-005: Basic 2D interface (PLANNED)
+
+## 🤖 STANDARDIZED COMMANDS
+
+### Initialization Commands
+```
+@ai read-methodology
+@ai check-status
+@ai read-domain [domain]
+@ai read-version [version]
+```
+
+### Implementation Commands
+```
+@ai implement [domain] [feature]
+@ai create-component [domain] [component]
+@ai create-service [domain] [service]
+@ai create-tests [component]
+```
+
+### Synchronization Commands
+```
+@ai update-dashboard [task-id] [status]
+@ai sync-domain [domain]
+@ai check-consistency [scope]
+@ai update-docs [section]
+```
+
+### Task Commands
+```
+@ai create-task [domain] [title] [description]
+@ai update-task [task-id] [field] [value]
+@ai complete-task [task-id] [notes]
+@ai list-tasks [filter]
+```
+
+## 📋 CHAT TEMPLATE (MANDATORY)
+
+When starting any new chat, ALWAYS use this template:
+
+```markdown
+# [TASK-XXX] Task Title
+
+## 📋 Task Information
+- **ID**: TASK-XXX
+- **Domain**: [education | gaming | blockchain | user-management | marketplace | analytics | development]
+- **Version**: [V1.0 | V2.0 | V3.0 | V4.0]
+- **Priority**: [High | Medium | Low]
+- **Responsible**: Cursor AI
+- **Start Date**: [DD/MM/YYYY]
+- **Deadline**: [DD/MM/YYYY]
+
+## 🎯 Objective
+[Clear and specific description of the task objective]
+
+## 📚 Mandatory References
+- **Methodology**: [CURSOR-METHODOLOGY.md](CURSOR-METHODOLOGY.md)
+- **Commands**: [CURSOR-COMMANDS.md](CURSOR-COMMANDS.md)
+- **Dashboard**: [PROGRESS-DASHBOARD.md](PROGRESS-DASHBOARD.md)
+- **Domain**: [DOMAINS/[domain]/README.md](DOMAINS/[domain]/README.md)
+- **Version**: [VERSIONS/[version]/README.md](VERSIONS/[version]/README.md)
+
+## ✅ Initialization Checklist
+- [ ] Read Cursor methodology
+- [ ] Consulted progress dashboard
+- [ ] Checked relevant domain
+- [ ] Confirmed product version
+- [ ] Understood task objective
+- [ ] Executed mandatory commands
+
+## 🔍 Task Analysis
+[Detailed analysis of the task]
+
+## 🛠️ Implementation
+[Implementation details]
+
+## ✅ Completion
+[Completion and synchronization]
+```
+
+## 🚨 MANDATORY WORKFLOW
+
+### Step 1: Initialization (ALWAYS REQUIRED)
+1. Read `docs/CURSOR-SYSTEM.md`
+2. Read `docs/PROGRESS-DASHBOARD.md`
+3. Read relevant domain documentation
+4. Read relevant version documentation
+5. Use the chat template above
+
+### Step 2: Implementation
+1. Follow DDD principles
+2. Use standardized commands
+3. Create tests for all code
+4. Update documentation
+5. Maintain consistency
+
+### Step 3: Synchronization (ALWAYS REQUIRED)
+1. Update `docs/PROGRESS-DASHBOARD.md`
+2. Update domain documentation
+3. Update version documentation
+4. Check consistency across domains
+5. Verify all changes are documented
+
+## 🎯 DOMAIN RESPONSIBILITIES
+
+### Education Domain
+- Course management
+- Lesson system
+- Progress tracking
+- Certificates
+- Assessment system
+
+### Gaming Domain
+- Game mechanics
+- Physics simulation
+- Component system
+- Achievement system
+- Game sessions
+
+### Blockchain Domain
+- Solana integration
+- NFT system
+- Wallet management
+- Smart contracts
+- Transaction handling
+
+### User Management Domain
+- Authentication
+- User profiles
+- Session management
+- Permissions
+- Preferences
+
+### Marketplace Domain
+- Component trading
+- NFT marketplace
+- Payment processing
+- Order management
+- Reviews system
+
+### Analytics Domain
+- User behavior tracking
+- Performance metrics
+- Business analytics
+- Reporting system
+- Dashboard creation
+
+## 🚀 VERSION STRATEGY
+
+### V1.0 - Prototype 2D (Current)
+- Simple 2D interface
+- Basic construction system
+- Simplified physics
+- Core mechanics validation
+
+### V2.0 - MVP Web
+- Polished 2D interface
+- Complete educational system
+- Basic blockchain integration
+- Market launch
+
+### V3.0 - 3D Web
+- Full 3D experience
+- Realistic physics
+- Advanced features
+- Mainstream market
+
+### V4.0 - VR Experience
+- VR interface
+- Hand tracking
+- Immersive experience
+- Early adopters
+
+## 📊 SUCCESS METRICS
+
+### Technical Metrics
+- Performance: <2s loading time
+- Uptime: >99% availability
+- Test Coverage: >80%
+- Security: 0 critical vulnerabilities
+
+### Product Metrics
+- User Retention: >70% after 7 days
+- Course Completion: >60% complete first course
+- Certificate Minting: >50% mint certificates
+- User Satisfaction: >4.2/5 rating
+
+### Business Metrics
+- User Acquisition: 10,000+ users (V2.0)
+- Revenue: $10k+ MRR (V2.0)
+- Market Share: Leader in blockchain education
+- Community: 1,000+ Discord members
+
+## 🚨 QUALITY STANDARDS
+
+### Code Quality
+- TypeScript with explicit types
+- React functional components with hooks
+- Tailwind CSS for styling
+- Jest + React Testing Library for tests
+- ESLint + Prettier for formatting
+
+### Documentation Quality
+- Markdown with proper formatting
+- Working links and references
+- Consistent structure
+- Regular updates
+- Clear examples
+
+### Consistency Standards
+- Follow naming conventions
+- Maintain architectural patterns
+- Use established conventions
+- Keep synchronization across domains
+- Regular consistency checks
+
+## 🔄 UPDATE PROCEDURES
+
+### After Any Code Change
+1. Update relevant domain documentation
+2. Update `docs/PROGRESS-DASHBOARD.md`
+3. Update relevant version documentation
+4. Check consistency across domains
+5. Verify all tests pass
+
+### After Any Documentation Change
+1. Verify all links work
+2. Check formatting consistency
+3. Update related documents
+4. Maintain cross-references
+5. Validate completeness
+
+## 🚨 EMERGENCY PROCEDURES
+
+### Critical Issues
+- Use `@ai fix-critical [issue]` command
+- Document the issue and solution
+- Update all affected documentation
+- Notify relevant stakeholders
+- Create follow-up tasks
+
+### System Failures
+- Use `@ai emergency-sync` command
+- Force complete synchronization
+- Fix all inconsistencies
+- Update all documents
+- Verify system integrity
+
+## 📞 SUPPORT RESOURCES
+
+### Documentation
+- Main: `docs/README.md`
+- System: `docs/CURSOR-SYSTEM.md`
+- Commands: `docs/CURSOR-COMMANDS.md`
+- Methodology: `docs/CURSOR-METHODOLOGY.md`
+
+### Help Commands
+```
+@ai help methodology
+@ai help commands
+@ai help [specific-command]
+```
+
+## ⚠️ FINAL REMINDERS
+
+### ALWAYS REMEMBER
+- These rules are NON-NEGOTIABLE
+- Follow the exact workflow specified
+- Use only standardized commands
+- Maintain documentation consistency
+- Keep all domains synchronized
+
+### NEVER FORGET
+- Read project structure first
+- Update dashboard after changes
+- Create tests for all code
+- Follow DDD principles
+- Maintain quality standards
+
+### SUCCESS DEPENDS ON
+- Following these rules exactly
+- Maintaining consistency
+- Keeping documentation updated
+- Using standardized processes
+- Quality over speed
+
+---
+
+**Remember: This is a complex educational platform with blockchain integration. Every change affects multiple domains and must be handled with care and precision.**

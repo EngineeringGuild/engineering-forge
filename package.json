@@ -1,0 +1,69 @@
+{
+  "name": "engineering-forge",
+  "version": "1.0.0",
+  "description": "Educational gamified platform for engineering learning with blockchain integration",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    "docs:dev": "cd engineering-forge-docs && npm run dev",
+    "docs:build": "cd engineering-forge-docs && npm run build",
+    "game:dev": "cd engineering-forge-v1 && npm run dev",
+    "game:build": "cd engineering-forge-v1 && npm run build",
+    "setup": "npm install && cd engineering-forge-docs && npm install && cd ../engineering-forge-v1 && npm install",
+    "clean": "rm -rf node_modules dist build .vite",
+    "clean:all": "npm run clean && cd engineering-forge-docs && npm run clean && cd ../engineering-forge-v1 && npm run clean"
+  },
+  "keywords": [
+    "education",
+    "gaming",
+    "blockchain",
+    "engineering",
+    "3d",
+    "vr",
+    "web3",
+    "solana",
+    "nft"
+  ],
+  "author": "Engineering Forge Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint": "^8.54.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "prettier": "^3.1.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/engineering-forge/engineering-forge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/engineering-forge/engineering-forge/issues"
+  },
+  "homepage": "https://engineering-forge.com"
+}
