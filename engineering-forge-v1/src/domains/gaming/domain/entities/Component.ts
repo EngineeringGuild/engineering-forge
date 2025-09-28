@@ -26,6 +26,7 @@ export interface ComponentProps {
   rarity: ComponentRarity;
   icon: string;
   description: string;
+  level: number;
 }
 
 export class Component extends BaseEntity<string> {
@@ -40,6 +41,7 @@ export class Component extends BaseEntity<string> {
   private _rarity: ComponentRarity;
   private _icon: string;
   private _description: string;
+  private _level: number;
 
   constructor(id: string, props: ComponentProps) {
     super(id);
@@ -54,6 +56,7 @@ export class Component extends BaseEntity<string> {
     this._rarity = props.rarity;
     this._icon = props.icon;
     this._description = props.description;
+    this._level = props.level;
   }
 
   get name(): string {
@@ -98,6 +101,10 @@ export class Component extends BaseEntity<string> {
 
   get description(): string {
     return this._description;
+  }
+
+  get level(): number {
+    return this._level;
   }
 
   public moveTo(position: Position): void {

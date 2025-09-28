@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 interface AnimatedContainerProps {
   children: ReactNode;
@@ -15,29 +15,70 @@ export const AnimatedContainer: React.FC<AnimatedContainerProps> = ({
   animation = 'fadeIn',
   delay = 0,
   duration = 300,
-  trigger: _trigger = 'onMount'
+  trigger = 'onMount'
 }) => {
+  const [isVisible, setIsVisible] = useState(trigger === 'onMount');
+  const [isHovered, setIsHovered] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
+
+  useEffect(() => {
+    if (trigger === 'onMount') {
+      const timer = setTimeout(() => setIsVisible(true), delay);
+      return () => clearTimeout(timer);
+    }
+  }, [trigger, delay]);
+
+  const handleMouseEnter = () => {
+    if (trigger === 'onHover') {
+      setIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (trigger === 'onHover') {
+      setIsHovered(false);
+    }
+  };
+
+  const handleClick = () => {
+    if (trigger === 'onClick') {
+      setIsClicked(!isClicked);
+    }
+  };
+
+  const shouldAnimate =
+    trigger === 'onMount'
+      ? isVisible
+      : trigger === 'onHover'
+        ? isHovered
+        : trigger === 'onClick'
+          ? isClicked
+          : false;
   const getAnimationClasses = () => {
     const baseClasses = 'transition-all ease-out';
     const durationClass = `duration-${duration}`;
 
+    if (!shouldAnimate) {
+      return `${baseClasses} ${durationClass} opacity-0`;
+    }
+
     switch (animation) {
       case 'fadeIn':
-        return `${baseClasses} ${durationClass} opacity-0 animate-fade-in`;
+        return `${baseClasses} ${durationClass} opacity-100 animate-fade-in`;
       case 'slideUp':
-        return `${baseClasses} ${durationClass} transform translate-y-4 opacity-0 animate-slide-up`;
+        return `${baseClasses} ${durationClass} transform translate-y-0 opacity-100 animate-slide-up`;
       case 'slideDown':
-        return `${baseClasses} ${durationClass} transform -translate-y-4 opacity-0 animate-slide-down`;
+        return `${baseClasses} ${durationClass} transform translate-y-0 opacity-100 animate-slide-down`;
       case 'slideLeft':
-        return `${baseClasses} ${durationClass} transform translate-x-4 opacity-0 animate-slide-left`;
+        return `${baseClasses} ${durationClass} transform translate-x-0 opacity-100 animate-slide-left`;
       case 'slideRight':
-        return `${baseClasses} ${durationClass} transform -translate-x-4 opacity-0 animate-slide-right`;
+        return `${baseClasses} ${durationClass} transform translate-x-0 opacity-100 animate-slide-right`;
       case 'scale':
-        return `${baseClasses} ${durationClass} transform scale-95 opacity-0 animate-scale-in`;
+        return `${baseClasses} ${durationClass} transform scale-100 opacity-100 animate-scale-in`;
       case 'bounce':
-        return `${baseClasses} ${durationClass} transform scale-95 opacity-0 animate-bounce-in`;
+        return `${baseClasses} ${durationClass} transform scale-100 opacity-100 animate-bounce-in`;
       default:
-        return `${baseClasses} ${durationClass}`;
+        return `${baseClasses} ${durationClass} opacity-100`;
     }
   };
 
@@ -47,7 +88,13 @@ export const AnimatedContainer: React.FC<AnimatedContainerProps> = ({
   };
 
   return (
-    <div className={`${getAnimationClasses()} ${className}`} style={style}>
+    <div
+      className={`${getAnimationClasses()} ${className}`}
+      style={style}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+    >
       {children}
     </div>
   );

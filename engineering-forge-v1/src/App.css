@@ -2,6 +2,24 @@
 .app-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Enhanced debug styles */
+.debug-app {
+  border: 3px solid #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+}
+
+.debug-border {
+  border: 2px solid #ef4444 !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+}
+
+.debug-bg {
+  background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 /* Navigation styles */
@@ -106,7 +124,7 @@
   .mobile-stack {
     @apply flex-col space-y-4 space-x-0;
   }
-  
+
   .mobile-full {
     @apply w-full;
   }

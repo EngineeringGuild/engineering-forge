@@ -10,6 +10,8 @@ You are working on "Engineering Forge" - an educational gamified platform for en
 - ALWAYS read the relevant domain in `docs/DOMAINS/[domain]/README.md`
 - ALWAYS read the relevant version in `docs/VERSIONS/[version]/README.md`
 - ALWAYS check `docs/CURSOR-SYSTEM.md` for methodology
+- ALWAYS consult `docs/DEVELOPMENT/tasks/GAME-TASK-MASTER.md` for game task management
+- ALWAYS consult `docs/DEVELOPMENT/tasks/EDUCATIONAL-TASK-MASTER.md` for educational task management
 
 ### RULE 2: ALWAYS USE STANDARDIZED COMMANDS
 - Use ONLY the commands defined in `docs/CURSOR-COMMANDS.md`
@@ -135,6 +137,14 @@ engineering-forge/
 @ai update-task [task-id] [field] [value]
 @ai complete-task [task-id] [notes]
 @ai list-tasks [filter]
+@ai sync-all-versions
+@ai sync-version [version]
+@ai validate-dependencies
+@ai update-metrics [metric] [value]
+@ai sync-educational-version [version]
+@ai sync-educational-gaming [version]
+@ai validate-educational-dependencies
+@ai update-educational-metrics
 ```
 
 ## 📋 CHAT TEMPLATE (MANDATORY)

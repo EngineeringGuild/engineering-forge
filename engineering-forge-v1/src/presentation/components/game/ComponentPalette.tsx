@@ -181,9 +181,7 @@ export const ComponentPalette: React.FC<ComponentPaletteProps> = ({
                 <div className="mt-3 pt-2 border-t border-white/10">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-400">Level Required:</span>
-                    <span className="text-orange-400 font-medium">
-                      {(component as any).unlockRequirements?.[0]?.level || 1}
-                    </span>
+                    <span className="text-orange-400 font-medium">{component.level}</span>
                   </div>
                 </div>
               </GlassCard>

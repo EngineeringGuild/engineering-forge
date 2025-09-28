@@ -64,7 +64,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
         saveSizeFormatted: formatBytes(slot.saveData?.metadata.saveSize || 0)
       }));
       setSaveSlots(displaySlots);
-    } catch (error) {
+    } catch {
       showMessage('error', 'Failed to load save slots');
     }
   };
@@ -147,7 +147,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
       } else {
         showMessage('error', result.message);
       }
-    } catch (error) {
+    } catch {
       showMessage('error', 'Failed to save game');
     } finally {
       setIsLoading(false);
@@ -166,7 +166,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
       } else {
         showMessage('error', result.message);
       }
-    } catch (error) {
+    } catch {
       showMessage('error', 'Failed to load game');
     } finally {
       setIsLoading(false);
@@ -188,7 +188,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
       } else {
         showMessage('error', result.message);
       }
-    } catch (error) {
+    } catch {
       showMessage('error', 'Failed to delete save');
     } finally {
       setIsLoading(false);
@@ -199,7 +199,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
     try {
       saveService.exportSave(userId, slotNumber);
       showMessage('success', 'Save exported successfully');
-    } catch (error) {
+    } catch {
       showMessage('error', 'Failed to export save');
     }
   };
@@ -219,7 +219,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
       } else {
         showMessage('error', result.message);
       }
-    } catch (error) {
+    } catch {
       showMessage('error', 'Failed to import save');
     } finally {
       setIsLoading(false);
@@ -310,7 +310,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'save' | 'load' | 'manage')}
                 className={`px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'bg-green-600 text-white border-b-2 border-green-400'

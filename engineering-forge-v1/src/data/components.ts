@@ -23,6 +23,7 @@ export const COMPONENT_DATA: Array<{
   rarity: ComponentRarity;
   icon: string;
   description: string;
+  level: number;
 }> = [
   // Engines
   {
@@ -39,7 +40,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '🔧',
-    description: 'A basic internal combustion engine. Good for beginners.'
+    description: 'A basic internal combustion engine. Good for beginners.',
+    level: 1
   },
   {
     name: 'Turbo Engine',
@@ -55,7 +57,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'rare',
     icon: '⚡',
-    description: 'High-performance turbocharged engine with increased power.'
+    description: 'High-performance turbocharged engine with increased power.',
+    level: 1
   },
   {
     name: 'Electric Motor',
@@ -71,7 +74,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'epic',
     icon: '🔋',
-    description: 'Clean and efficient electric motor with instant torque.'
+    description: 'Clean and efficient electric motor with instant torque.',
+    level: 1
   },
   {
     name: 'Hybrid Engine',
@@ -87,7 +91,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'legendary',
     icon: '🌱',
-    description: 'Advanced hybrid system combining combustion and electric power.'
+    description: 'Advanced hybrid system combining combustion and electric power.',
+    level: 1
   },
 
   // Chassis
@@ -105,7 +110,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '🏗️',
-    description: 'Strong and reliable steel chassis frame.'
+    description: 'Strong and reliable steel chassis frame.',
+    level: 1
   },
   {
     name: 'Aluminum Chassis',
@@ -121,7 +127,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'rare',
     icon: '🪶',
-    description: 'Lightweight aluminum chassis for better performance.'
+    description: 'Lightweight aluminum chassis for better performance.',
+    level: 1
   },
   {
     name: 'Carbon Fiber Chassis',
@@ -137,7 +144,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'epic',
     icon: '💎',
-    description: 'Ultra-lightweight carbon fiber chassis with exceptional strength.'
+    description: 'Ultra-lightweight carbon fiber chassis with exceptional strength.',
+    level: 1
   },
 
   // Wheels
@@ -155,7 +163,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '⚫',
-    description: 'Standard rubber wheels for everyday use.'
+    description: 'Standard rubber wheels for everyday use.',
+    level: 1
   },
   {
     name: 'Sport Wheels',
@@ -171,7 +180,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'rare',
     icon: '🏎️',
-    description: 'High-performance sport wheels with better grip.'
+    description: 'High-performance sport wheels with better grip.',
+    level: 1
   },
   {
     name: 'Racing Wheels',
@@ -187,7 +197,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'epic',
     icon: '🏁',
-    description: 'Professional racing wheels for maximum performance.'
+    description: 'Professional racing wheels for maximum performance.',
+    level: 1
   },
 
   // Suspension
@@ -205,7 +216,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '🔩',
-    description: 'Basic suspension system for smooth rides.'
+    description: 'Basic suspension system for smooth rides.',
+    level: 1
   },
   {
     name: 'Sport Suspension',
@@ -221,7 +233,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'rare',
     icon: '🎯',
-    description: 'Sport-tuned suspension for better handling.'
+    description: 'Sport-tuned suspension for better handling.',
+    level: 1
   },
   {
     name: 'Adaptive Suspension',
@@ -237,7 +250,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'epic',
     icon: '🧠',
-    description: 'Smart adaptive suspension that adjusts automatically.'
+    description: 'Smart adaptive suspension that adjusts automatically.',
+    level: 1
   },
 
   // Brakes
@@ -255,7 +269,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '🛑',
-    description: 'Standard disc brakes for reliable stopping power.'
+    description: 'Standard disc brakes for reliable stopping power.',
+    level: 1
   },
   {
     name: 'Performance Brakes',
@@ -271,7 +286,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'rare',
     icon: '⚡',
-    description: 'High-performance brakes for better stopping power.'
+    description: 'High-performance brakes for better stopping power.',
+    level: 1
   },
   {
     name: 'Carbon Ceramic Brakes',
@@ -287,7 +303,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'epic',
     icon: '💎',
-    description: 'Lightweight carbon ceramic brakes for racing applications.'
+    description: 'Lightweight carbon ceramic brakes for racing applications.',
+    level: 1
   },
 
   // Transmission
@@ -305,7 +322,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '⚙️',
-    description: 'Traditional manual transmission for driver control.'
+    description: 'Traditional manual transmission for driver control.',
+    level: 1
   },
   {
     name: 'Automatic Transmission',
@@ -321,7 +339,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'common',
     icon: '🤖',
-    description: 'Automatic transmission for ease of use.'
+    description: 'Automatic transmission for ease of use.',
+    level: 1
   },
   {
     name: 'CVT Transmission',
@@ -337,7 +356,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'rare',
     icon: '🔄',
-    description: 'Continuously variable transmission for optimal efficiency.'
+    description: 'Continuously variable transmission for optimal efficiency.',
+    level: 1
   },
   {
     name: 'Dual Clutch Transmission',
@@ -353,7 +373,8 @@ export const COMPONENT_DATA: Array<{
     },
     rarity: 'epic',
     icon: '⚡',
-    description: 'High-performance dual clutch transmission for racing.'
+    description: 'High-performance dual clutch transmission for racing.',
+    level: 1
   }
 ];
 
@@ -399,6 +420,7 @@ export function createComponent(
     rarity: ComponentRarity;
     icon: string;
     description: string;
+    level: number;
   },
   id?: string
 ): Component {
@@ -413,7 +435,8 @@ export function createComponent(
     isUnlocked: baseComponent.properties.unlockLevel <= 1,
     rarity: baseComponent.rarity,
     icon: baseComponent.icon,
-    description: baseComponent.description
+    description: baseComponent.description,
+    level: baseComponent.level
   });
 }
 

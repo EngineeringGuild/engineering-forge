@@ -28,7 +28,7 @@ export const PerformanceTestPanel = memo<PerformanceTestPanelProps>(({ onTestCom
   const { metrics } = usePerformanceMonitor({
     enabled: isRunning,
     sampleRate: 100,
-    onPerformanceUpdate: (metrics: any) => {
+    onPerformanceUpdate: (metrics: { fps: number; memoryUsage: number; renderTime: number }) => {
       console.log('Performance update:', metrics);
     }
   });

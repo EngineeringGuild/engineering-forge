@@ -157,7 +157,7 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'overview' | 'achievements' | 'leaderboard')}
                 className={`px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'bg-blue-600 text-white border-b-2 border-blue-400'
