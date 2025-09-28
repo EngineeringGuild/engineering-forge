@@ -32,10 +32,10 @@ import { GlassCard } from '../presentation/components/ui/GlassCard';
 import { MemoryOptimizationService } from '../services/MemoryOptimizationService';
 import { PerformanceOptimizationService } from '../services/PerformanceOptimizationService';
 
-const GamePage: React.FC = () => {
+const CorrectedGamePage: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [score, setScore] = useState(0);
-  const [level, setLevel] = useState(1);
+  const [score, setScore] = useState(100);
+  const [level, setLevel] = useState(2);
   const [selectedCategory, setSelectedCategory] = useState<ComponentCategory>('mechanical');
   const [workspaceComponents, setWorkspaceComponents] = useState<Component[]>([]);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
@@ -122,33 +122,50 @@ const GamePage: React.FC = () => {
 
   // Initialize performance optimizations
   useEffect(() => {
-    performanceService.enableOptimizations();
-    memoryService.startMonitoring();
+    console.log('Initializing performance optimizations...');
+    try {
+      performanceService.enableOptimizations();
+      memoryService.startMonitoring();
 
-    // Register cleanup tasks
-    const cleanupTask = () => {
-      // Clear unused state
-      setTestResults([]);
-      setNewlyUnlockedAchievements([]);
-    };
-    memoryService.registerCleanupTask(cleanupTask);
+      // Register cleanup tasks
+      const cleanupTask = () => {
+        // Clear unused state
+        setTestResults([]);
+        setNewlyUnlockedAchievements([]);
+      };
+      memoryService.registerCleanupTask(cleanupTask);
 
-    return () => {
-      performanceService.disableOptimizations();
-      memoryService.stopMonitoring();
-      memoryService.unregisterCleanupTask(cleanupTask);
-    };
+      return () => {
+        performanceService.disableOptimizations();
+        memoryService.stopMonitoring();
+        memoryService.unregisterCleanupTask(cleanupTask);
+      };
+    } catch (error) {
+      console.error('Error initializing performance optimizations:', error);
+    }
   }, [performanceService, memoryService]);
 
   // Get available components for current user level (memoized)
-  const availableComponents = useMemo(() => getUnlockedComponents(level), [level]);
+  const availableComponents = useMemo(() => {
+    console.log('Getting available components for level:', level);
+    try {
+      return getUnlockedComponents(level);
+    } catch (error) {
+      console.error('Error getting available components:', error);
+      return [];
+    }
+  }, [level]);
 
   // Load achievements on component mount
   useEffect(() => {
-    setAchievements(achievementService.getAllAchievements());
-
-    // Start background music
-    playBackgroundMusic('bg-music-main');
+    console.log('Loading achievements...');
+    try {
+      setAchievements(achievementService.getAllAchievements());
+      // Start background music
+      playBackgroundMusic('bg-music-main');
+    } catch (error) {
+      console.error('Error loading achievements:', error);
+    }
   }, [achievementService, playBackgroundMusic]);
 
   const handlePlayPause = useCallback(() => {
@@ -167,6 +184,7 @@ const GamePage: React.FC = () => {
   }, []);
 
   const handleComponentMove = useCallback((componentId: string, position: Position) => {
+    console.log('Component moved:', componentId, position);
     setWorkspaceComponents(prev =>
       prev.map(comp => {
         if (comp.id === componentId) {
@@ -179,6 +197,7 @@ const GamePage: React.FC = () => {
   }, []);
 
   const handleComponentSelectInWorkspace = useCallback((componentId: string | null) => {
+    console.log('Component selected in workspace:', componentId);
     setSelectedComponentId(componentId);
   }, []);
 
@@ -188,17 +207,24 @@ const GamePage: React.FC = () => {
     return (components: Component[]) => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
+        console.log('Calculating performance for components:', components.length);
         if (components.length > 0) {
-          const performance = physicsService.simulateProject({
-            components,
-            environment: {
-              gravity: 9.81,
-              airDensity: 1.225,
-              temperature: 20,
-              windSpeed: 0
-            }
-          });
-          setCurrentPerformance(performance.performance);
+          try {
+            const performance = physicsService.simulateProject({
+              components,
+              environment: {
+                gravity: 9.81,
+                airDensity: 1.225,
+                temperature: 20,
+                windSpeed: 0
+              }
+            });
+            setCurrentPerformance(performance.performance);
+            console.log('Performance calculated:', performance.performance);
+          } catch (error) {
+            console.error('Error calculating performance:', error);
+            setCurrentPerformance(null);
+          }
         } else {
           setCurrentPerformance(null);
         }
@@ -220,86 +246,100 @@ const GamePage: React.FC = () => {
       grade: string;
       recommendations: string[];
     }) => {
-      // Convert PerformanceTestResults to TestResult format
-      const performance = new PerformanceMetrics({
-        acceleration: 0,
-        topSpeed: 0,
-        handling: 0,
-        fuelEfficiency: 0,
-        weight: 0,
-        power: 0,
-        torque: 0,
-        overall: results.score
-      });
+      console.log('Test completed with results:', results);
 
-      const result = new TestResult(`test_${Date.now()}`, {
-        testType: 'comprehensive',
-        status: results.score >= 70 ? 'completed' : 'failed',
-        startTime: new Date(),
-        endTime: new Date(),
-        duration: results.loadTime,
-        performance,
-        score: results.score,
-        passed: results.score >= 70,
-        environment: {
-          temperature: 20,
-          humidity: 50,
-          windSpeed: 0,
-          trackCondition: 'dry'
+      try {
+        // Convert PerformanceTestResults to TestResult format
+        const performance = new PerformanceMetrics({
+          acceleration: 0,
+          topSpeed: 0,
+          handling: 0,
+          fuelEfficiency: 0,
+          weight: 0,
+          power: 0,
+          torque: 0,
+          overall: results.score
+        });
+
+        const result = new TestResult(`test_${Date.now()}`, {
+          testType: 'comprehensive',
+          status: results.score >= 70 ? 'completed' : 'failed',
+          startTime: new Date(),
+          endTime: new Date(),
+          duration: results.loadTime,
+          performance,
+          score: results.score,
+          passed: results.score >= 70,
+          environment: {
+            temperature: 20,
+            humidity: 50,
+            windSpeed: 0,
+            trackCondition: 'dry'
+          }
+        });
+        setTestResults(prev => [...prev, result]);
+
+        // Award XP and credits based on test result
+        if (result.passed) {
+          setScore(prev => prev + 25);
+          playTestComplete();
+          // Check for level up
+          if (score > 0 && score % 50 === 0) {
+            setLevel(prev => prev + 1);
+          }
         }
-      });
-      setTestResults(prev => [...prev, result]);
 
-      // Award XP and credits based on test result
-      if (result.passed) {
-        setScore(prev => prev + 25);
-        playTestComplete();
-        // Check for level up
-        if (score > 0 && score % 50 === 0) {
-          setLevel(prev => prev + 1);
-          // Note: Achievement objects will be handled by the achievement service
+        // Track test completion in progress system
+        try {
+          const progressUpdate = progressService.processEvent({
+            type: 'test_completed',
+            data: {
+              userId,
+              score: result.score,
+              playTime: 1 // TODO: Track actual test time
+            },
+            timestamp: new Date()
+          });
+
+          // Show level up notification if leveled up
+          if (progressUpdate?.leveledUp) {
+            setLevelUpNotification(progressUpdate);
+          }
+        } catch (error) {
+          console.error('Error processing progress event:', error);
         }
-      }
 
-      // Track test completion in progress system
-      const progressUpdate = progressService.processEvent({
-        type: 'test_completed',
-        data: {
-          userId,
-          score: result.score,
-          playTime: 1 // TODO: Track actual test time
-        },
-        timestamp: new Date()
-      });
+        // Process achievement events
+        try {
+          const gameEvent: GameEvent = {
+            type: 'test_completed',
+            data: {
+              passed: result.passed,
+              score: result.score,
+              performance: result.performance
+            },
+            timestamp: new Date()
+          };
 
-      // Show level up notification if leveled up
-      if (progressUpdate?.leveledUp) {
-        setLevelUpNotification(progressUpdate);
-      }
-
-      // Process achievement events
-      const gameEvent: GameEvent = {
-        type: 'test_completed',
-        data: {
-          passed: result.passed,
-          score: result.score,
-          performance: result.performance
-        },
-        timestamp: new Date()
-      };
-
-      const newlyUnlocked = achievementService.processGameEvent(gameEvent);
-      if (newlyUnlocked.length > 0) {
-        setNewlyUnlockedAchievements(prev => [...prev, ...newlyUnlocked]);
-        setShowAchievementNotification(true);
-        setAchievements(achievementService.getAllAchievements());
-        playAchievement();
+          const newlyUnlocked = achievementService.processGameEvent(gameEvent);
+          if (newlyUnlocked.length > 0) {
+            setNewlyUnlockedAchievements(prev => [...prev, ...newlyUnlocked]);
+            setShowAchievementNotification(true);
+            setAchievements(achievementService.getAllAchievements());
+            playAchievement();
+          }
+        } catch (error) {
+          console.error('Error processing achievement event:', error);
+        }
+      } catch (error) {
+        console.error('Error handling test completion:', error);
       }
     },
     [score, achievementService, userId, progressService, playTestComplete, playAchievement]
   );
 
   const handleAchievementNotificationClose = useCallback(() => {
+    console.log('Achievement notification closed');
     setShowAchievementNotification(false);
     if (newlyUnlockedAchievements.length > 0) {
       setNewlyUnlockedAchievements(prev => prev.slice(1));
@@ -312,6 +352,7 @@ const GamePage: React.FC = () => {
   // Memoized tab switch handlers
   const handleTabSwitch = useCallback(
     (tab: 'build' | 'test' | 'performance' | 'achievements') => {
+      console.log('Tab switched to:', tab);
       setActiveTab(tab);
       playTabSwitch();
     },
@@ -321,40 +362,56 @@ const GamePage: React.FC = () => {
   // Save/Load functions
   const handleSave = useCallback(
     async (saveData: GameSaveData) => {
-      setLastSaved(new Date());
-      playSave();
-      console.log('Game saved:', saveData.saveName);
+      console.log('Saving game:', saveData.saveName);
+      try {
+        const result = await saveService.saveGame(userId, saveData);
+        if (result.success) {
+          setLastSaved(new Date());
+          playSave();
+          console.log('Game saved successfully');
+        } else {
+          console.error('Failed to save game:', result.error);
+        }
+      } catch (error) {
+        console.error('Error saving game:', error);
+      }
     },
-    [playSave]
+    [saveService, userId, playSave]
   );
 
   const handleLoad = useCallback(
     async (saveData: GameSaveData) => {
-      // Restore game state from save data
-      setLevel(saveData.currentLevel);
-      setScore(saveData.score);
-      setWorkspaceComponents(saveData.workspaceComponents);
-      setTestResults(saveData.testResults);
-      setAchievements([]); // TODO: Restore achievements from save data
-
-      // Restore settings
-      setGridSize(saveData.settings.gridSize);
-      setSnapToGrid(saveData.settings.snapToGrid);
-
-      // Restore progress
+      console.log('Loading game:', saveData.saveName);
       try {
-        const progressData = await saveService.loadProgress(userId);
-        if (progressData) {
-          console.log('Progress restored:', progressData);
-        }
-      } catch (error) {
-        console.error('Error restoring progress:', error);
-      }
+        // Restore game state from save data
+        setLevel(saveData.currentLevel);
+        setScore(saveData.score);
+        setWorkspaceComponents(saveData.workspaceComponents);
+        setTestResults(saveData.testResults);
+        setAchievements([]); // TODO: Restore achievements from save data
 
-      setLastSaved(new Date());
-      console.log('Game loaded:', saveData.saveName);
+        // Restore settings
+        setGridSize(saveData.settings.gridSize);
+        setSnapToGrid(saveData.settings.snapToGrid);
+
+        // Restore progress
+        try {
+          const progressData = await saveService.loadProgress(userId);
+          if (progressData) {
+            // Restore progress data if available
+            console.log('Progress restored:', progressData);
+          }
+        } catch (error) {
+          console.error('Error restoring progress:', error);
+        }
+
+        setLastSaved(new Date());
+        console.log('Game loaded successfully');
+      } catch (error) {
+        console.error('Error loading game:', error);
+      }
     },
-    [userId, saveService]
+    [userId, progressService]
   );
 
   return (
@@ -690,4 +747,4 @@ const GamePage: React.FC = () => {
   );
 };
 
-export default GamePage;
+export default CorrectedGamePage;
