@@ -1,8 +1,8 @@
 import { Pause, Play, Zap } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { getUnlockedComponents } from '../../../../data/components';
 import { GameActions } from '../../../../domains/gaming/application/services/GameActions';
-import { GameState } from '../../../../domains/gaming/domain/entities/GameState';
+import { GameState } from '../../../../domains/gaming/domain/value-objects/GameState';
 import { ComponentPalette } from '../ComponentPalette';
 import { ConstructionWorkspace } from '../ConstructionWorkspace';
 
@@ -13,6 +13,15 @@ interface BuildTabProps {
 
 export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) => {
   const availableComponents = getUnlockedComponents(gameState.level);
+  const [selectedCategory, setSelectedCategory] = useState<
+    'mechanical' | 'electrical' | 'structural' | 'aerodynamic'
+  >('mechanical');
+
+  // Check if car is complete (has chassis, engine, and wheels)
+  const hasChassis = gameState.workspaceComponents.some(c => c.type === 'chassis');
+  const hasEngine = gameState.workspaceComponents.some(c => c.type === 'engine');
+  const hasWheels = gameState.workspaceComponents.some(c => c.type === 'wheels');
+  const isCarComplete = hasChassis && hasEngine && hasWheels;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
@@ -22,10 +31,22 @@ export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) =>
           components={availableComponents}
           onComponentSelect={component => {
             console.log('Component selected:', component.name);
+
+            // Check if component type already exists
+            const existingComponent = gameState.workspaceComponents.find(
+              c => c.type === component.type
+            );
+            if (existingComponent) {
+              alert(
+                `You already have a ${component.type} component! Remove it first to add a different one.`
+              );
+              return;
+            }
+
             gameActions.addComponent(component);
           }}
-          selectedCategory="mechanical"
-          onCategoryChange={() => {}}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
           userLevel={gameState.level}
         />
       </div>
@@ -42,6 +63,25 @@ export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) =>
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-400">
                   {gameState.workspaceComponents.length} components
+                </div>
+
+                {/* Car completion indicator */}
+                <div className="flex items-center space-x-2">
+                  <div
+                    className={`w-3 h-3 rounded-full ${hasChassis ? 'bg-green-500' : 'bg-gray-500'}`}
+                    title="Chassis"
+                  />
+                  <div
+                    className={`w-3 h-3 rounded-full ${hasEngine ? 'bg-green-500' : 'bg-gray-500'}`}
+                    title="Engine"
+                  />
+                  <div
+                    className={`w-3 h-3 rounded-full ${hasWheels ? 'bg-green-500' : 'bg-gray-500'}`}
+                    title="Wheels"
+                  />
+                  {isCarComplete && (
+                    <span className="text-green-400 text-sm font-medium">🚗 Complete!</span>
+                  )}
                 </div>
                 <button
                   onClick={() => gameActions.togglePlayPause()}
@@ -70,6 +110,7 @@ export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) =>
                 gameActions.moveComponent(componentId, position)
               }
               onComponentSelect={componentId => gameActions.selectComponent(componentId)}
+              onComponentRemove={componentId => gameActions.removeComponent(componentId)}
               selectedComponentId={gameState.selectedComponentId || undefined}
               gridSize={gameState.gridSize}
               snapToGrid={gameState.snapToGrid}

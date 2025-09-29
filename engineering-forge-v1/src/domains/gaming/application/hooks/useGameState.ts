@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { usePerformanceMonitor } from '../../../../hooks/usePerformanceMonitor';
-import { GameState, GameStateEntity } from '../../domain/entities/GameState';
+import { GameState } from '../../domain/value-objects/GameState';
 
 export function useGameState(): GameState {
-  const [gameState, setGameState] = useState<GameState>(() => new GameStateEntity());
+  const [gameState, setGameState] = useState<GameState>(() => GameState.createDefault('user-001'));
 
   // Performance monitoring
   const { isLowPerformance } = usePerformanceMonitor({
@@ -18,10 +18,10 @@ export function useGameState(): GameState {
 
   // Update performance state
   useEffect(() => {
-    setGameState(prev => ({
-      ...prev,
-      isLowPerformance
-    }));
+    setGameState(prev => {
+      const newState = prev.setLowPerformance(isLowPerformance);
+      return newState;
+    });
   }, [isLowPerformance]);
 
   return gameState;

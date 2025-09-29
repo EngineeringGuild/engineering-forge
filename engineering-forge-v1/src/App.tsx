@@ -1,12 +1,12 @@
 import './App.css';
-import SimpleGamePage from './pages/SimpleGamePage';
+import GamePage from './pages/GamePage';
 
 function App() {
   console.log('🎮 App component loaded - Engineering Forge V1.0');
 
   return (
     <div className="app-container">
-      <SimpleGamePage />
+      <GamePage />
     </div>
   );
 }

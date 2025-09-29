@@ -19,7 +19,14 @@ export const COMPONENT_DATA: Array<{
   name: string;
   type: ComponentType;
   category: ComponentCategory;
-  properties: any; // TODO: Use proper ComponentProperties type
+  properties: {
+    power: number;
+    weight: number;
+    efficiency: number;
+    durability: number;
+    cost: number;
+    unlockLevel: number;
+  };
   rarity: ComponentRarity;
   icon: string;
   description: string;
@@ -416,7 +423,14 @@ export function createComponent(
     name: string;
     type: ComponentType;
     category: ComponentCategory;
-    properties: any;
+    properties: {
+      power: number;
+      weight: number;
+      efficiency: number;
+      durability: number;
+      cost: number;
+      unlockLevel: number;
+    };
     rarity: ComponentRarity;
     icon: string;
     description: string;
@@ -424,11 +438,13 @@ export function createComponent(
   },
   id?: string
 ): Component {
+  const componentProperties = ComponentProperties.create(baseComponent.properties);
+
   return new Component(id || `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, {
     name: baseComponent.name,
     type: baseComponent.type,
     category: baseComponent.category,
-    properties: baseComponent.properties as ComponentProperties,
+    properties: componentProperties,
     position: new PositionVO(0, 0),
     size: DEFAULT_COMPONENT_SIZES[baseComponent.type],
     rotation: 0,

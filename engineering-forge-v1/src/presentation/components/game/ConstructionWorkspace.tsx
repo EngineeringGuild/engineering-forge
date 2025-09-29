@@ -10,6 +10,7 @@ interface ConstructionWorkspaceProps {
   components: Component[];
   onComponentMove: (componentId: string, position: Position) => void;
   onComponentSelect: (componentId: string | null) => void;
+  onComponentRemove?: (componentId: string) => void;
   selectedComponentId?: string;
   gridSize?: number;
   snapToGrid?: boolean;
@@ -19,6 +20,7 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
   components,
   onComponentMove,
   onComponentSelect,
+  onComponentRemove,
   selectedComponentId,
   gridSize = 20,
   snapToGrid = true
@@ -162,6 +164,20 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
 
               {/* Component stats overlay */}
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white/20 animate-pulse" />
+
+              {/* Delete button - only show when component is selected */}
+              {selectedComponentId === component.id && onComponentRemove && (
+                <button
+                  className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full border border-white/20 flex items-center justify-center text-white text-xs font-bold transition-colors z-20"
+                  onClick={e => {
+                    e.stopPropagation();
+                    onComponentRemove(component.id);
+                  }}
+                  title="Remove component"
+                >
+                  ×
+                </button>
+              )}
             </div>
           </GlassCard>
         </div>

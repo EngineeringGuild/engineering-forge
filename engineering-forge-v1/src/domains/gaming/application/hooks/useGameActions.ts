@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useGameSounds, useUISounds } from '../../../../hooks/useAudio';
-import { GameState } from '../../domain/entities/GameState';
+import { GameState } from '../../domain/value-objects/GameState';
 import { GameActions, GameActionsService } from '../services/GameActions';
 
 export function useGameActions(gameState: GameState): GameActions {

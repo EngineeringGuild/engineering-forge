@@ -1,7 +1,7 @@
 import { TrendingUp } from 'lucide-react';
 import React from 'react';
 import { GameActions } from '../../../../domains/gaming/application/services/GameActions';
-import { GameState } from '../../../../domains/gaming/domain/entities/GameState';
+import { GameState } from '../../../../domains/gaming/domain/value-objects/GameState';
 import { PerformanceDisplay } from '../PerformanceDisplay';
 
 interface PerformanceTabProps {
