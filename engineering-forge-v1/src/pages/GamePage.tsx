@@ -10,7 +10,7 @@ import {
 } from '../domains/gaming/domain/services/AchievementService';
 import { PhysicsSimulationService } from '../domains/gaming/domain/services/PhysicsSimulationService';
 import { PerformanceMetrics } from '../domains/gaming/domain/value-objects/PerformanceMetrics';
-import { Position } from '../domains/gaming/domain/value-objects/Position';
+import { Position, PositionVO } from '../domains/gaming/domain/value-objects/Position';
 import { GameSaveData } from '../domains/gaming/entities/GameSave';
 import { ProgressService, ProgressUpdate } from '../domains/gaming/services/ProgressService';
 import { SaveService } from '../domains/gaming/services/SaveService';
@@ -180,6 +180,11 @@ const GamePage: React.FC = () => {
 
   const handleComponentSelectInWorkspace = useCallback((componentId: string | null) => {
     setSelectedComponentId(componentId);
+  }, []);
+
+  const handleComponentRemove = useCallback((componentId: string) => {
+    setWorkspaceComponents(prev => prev.filter(comp => comp.id !== componentId));
+    setSelectedComponentId(null);
   }, []);
 
   // Calculate performance when components change (debounced for performance)
@@ -451,6 +456,37 @@ const GamePage: React.FC = () => {
                   components={availableComponents}
                   onComponentSelect={(component: Component) => {
                     console.log('Component selected:', component.name);
+                    
+                    // Check if component type already exists
+                    const existingComponent = workspaceComponents.find(c => c.type === component.type);
+                    if (existingComponent) {
+                      alert(`You already have a ${component.type} component! Remove it first to add a different one.`);
+                      return;
+                    }
+                    
+                    // Add component to workspace
+                    const newComponent = new Component(
+                      `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                      {
+                        name: component.name,
+                        type: component.type,
+                        category: component.category,
+                        properties: component.properties,
+                        position: new PositionVO(
+                          Math.random() * 200 + 50, // Random position between 50-250
+                          Math.random() * 200 + 50
+                        ),
+                        size: component.size,
+                        rotation: component.rotation,
+                        isUnlocked: component.isUnlocked,
+                        rarity: component.rarity,
+                        icon: component.icon,
+                        description: component.description,
+                        level: component.level
+                      }
+                    );
+                    
+                    setWorkspaceComponents(prev => [...prev, newComponent]);
                   }}
                   selectedCategory={selectedCategory}
                   onCategoryChange={setSelectedCategory}
@@ -470,6 +506,18 @@ const GamePage: React.FC = () => {
                       <div className="flex items-center space-x-4">
                         <div className="text-sm text-gray-400">
                           {workspaceComponents.length} components
+                        </div>
+                        
+                        {/* Car completion indicator */}
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'chassis') ? 'bg-green-500' : 'bg-gray-500'}`} title="Chassis" />
+                          <div className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'engine') ? 'bg-green-500' : 'bg-gray-500'}`} title="Engine" />
+                          <div className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'wheels') ? 'bg-green-500' : 'bg-gray-500'}`} title="Wheels" />
+                          {workspaceComponents.some(c => c.type === 'chassis') && 
+                           workspaceComponents.some(c => c.type === 'engine') && 
+                           workspaceComponents.some(c => c.type === 'wheels') && (
+                            <span className="text-green-400 text-sm font-medium">🚗 Complete!</span>
+                          )}
                         </div>
                         <button
                           onClick={handlePlayPause}
@@ -496,6 +544,7 @@ const GamePage: React.FC = () => {
                       components={workspaceComponents}
                       onComponentMove={handleComponentMove}
                       onComponentSelect={handleComponentSelectInWorkspace}
+                      onComponentRemove={handleComponentRemove}
                       selectedComponentId={selectedComponentId || undefined}
                       gridSize={gridSize}
                       snapToGrid={snapToGrid}
