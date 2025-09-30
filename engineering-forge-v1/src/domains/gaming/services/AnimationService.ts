@@ -104,6 +104,8 @@ export class AnimationService {
       throw new Error('Animation is already running');
     }
 
+    console.log('🎬 AnimationService: Starting animation with', simulationSteps.length, 'steps');
+
     const animationConfig = { ...this.defaultConfig, ...config };
     this.validateConfig(animationConfig);
 
@@ -111,6 +113,8 @@ export class AnimationService {
     this.totalFrames = Math.ceil((animationConfig.duration / 1000) * animationConfig.frameRate);
     this.currentFrame = 0;
     this.isAnimating = true;
+
+    console.log('🎬 AnimationService: Total frames:', this.totalFrames, 'Duration:', animationConfig.duration);
 
     // Emit start event
     this.emitEvent({

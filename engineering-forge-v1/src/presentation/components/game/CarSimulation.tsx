@@ -105,6 +105,7 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
    */
   const startSimulation = useCallback(async () => {
     try {
+      console.log('🚀 Starting simulation with components:', components);
       setError(null);
       setIsSimulating(true);
       onSimulationStart?.();
@@ -116,12 +117,14 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
         enablePhysics
       });
 
+      console.log('✅ Simulation completed:', result);
       simulationRef.current = result;
       setSimulationResult(result);
 
       // Start animation
       await startAnimation(result.simulationSteps);
     } catch (err) {
+      console.error('❌ Simulation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Simulation failed';
       setError(errorMessage);
       setIsSimulating(false);
@@ -143,6 +146,7 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
   const startAnimation = useCallback(
     async (simulationSteps: any[]) => {
       try {
+        console.log('🎬 Starting animation with steps:', simulationSteps.length);
         setAnimationState(prev => ({ ...prev, isAnimating: true }));
 
         // Add animation event listeners
