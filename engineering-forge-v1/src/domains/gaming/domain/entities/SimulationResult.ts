@@ -1,6 +1,6 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/entities/SimulationResult.ts
 
-import { BaseEntity } from '../../../shared/domain/BaseEntity';
+import { BaseEntity } from '../../../../shared/domain/BaseEntity';
 import { PerformanceMetrics } from '../value-objects/PerformanceMetrics';
 import { Position } from '../value-objects/Position';
 

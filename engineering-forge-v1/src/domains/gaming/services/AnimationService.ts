@@ -1,7 +1,7 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/services/AnimationService.ts
 
 import { SimulationStep } from '../domain/entities/SimulationResult';
-import { Position } from '../domain/value-objects/Position';
+import { Position, PositionVO } from '../domain/value-objects/Position';
 
 /**
  * Animation Configuration Interface
@@ -298,20 +298,25 @@ export class AnimationService {
     let beforeStep: SimulationStep | null = null;
     let afterStep: SimulationStep | null = null;
 
-    for (let i = 0; i < simulationSteps.length - 1; i++) {
-      if (
-        simulationSteps[i].timestamp <= targetTime &&
-        simulationSteps[i + 1].timestamp >= targetTime
-      ) {
-        beforeStep = simulationSteps[i];
-        afterStep = simulationSteps[i + 1];
-        break;
+      for (let i = 0; i < simulationSteps.length - 1; i++) {
+        const currentStep = simulationSteps[i];
+        const nextStep = simulationSteps[i + 1];
+        
+        if (currentStep && nextStep && 
+            currentStep.timestamp <= targetTime &&
+            nextStep.timestamp >= targetTime) {
+          beforeStep = currentStep;
+          afterStep = nextStep;
+          break;
+        }
       }
-    }
 
     if (!beforeStep || !afterStep) {
       // Use last step if we're past the end
       const lastStep = simulationSteps[simulationSteps.length - 1];
+      if (!lastStep) {
+        throw new Error('No simulation steps available');
+      }
       return {
         position: lastStep.position,
         speed: lastStep.speed,
@@ -324,7 +329,7 @@ export class AnimationService {
     const factor = timeDiff > 0 ? (targetTime - beforeStep.timestamp) / timeDiff : 0;
 
     // Interpolate values
-    const position = new Position(
+    const position = new PositionVO(
       beforeStep.position.x + (afterStep.position.x - beforeStep.position.x) * factor,
       beforeStep.position.y + (afterStep.position.y - beforeStep.position.y) * factor
     );
@@ -417,7 +422,7 @@ export class AnimationService {
       for (let i = 0; i < particleCount; i++) {
         effects.push({
           type: 'particle',
-          position: new Position(
+          position: new PositionVO(
             interpolatedStep.position.x + (Math.random() - 0.5) * 20,
             interpolatedStep.position.y + (Math.random() - 0.5) * 20
           ),
@@ -434,7 +439,7 @@ export class AnimationService {
         const trailProgress = i / config.trailLength;
         effects.push({
           type: 'trail',
-          position: new Position(
+          position: new PositionVO(
             interpolatedStep.position.x - interpolatedStep.speed * trailProgress * 0.1,
             interpolatedStep.position.y
           ),
@@ -452,7 +457,7 @@ export class AnimationService {
       for (let i = 0; i < lineCount; i++) {
         effects.push({
           type: 'speedLine',
-          position: new Position(
+          position: new PositionVO(
             interpolatedStep.position.x + (Math.random() - 0.5) * 100,
             interpolatedStep.position.y + (Math.random() - 0.5) * 100
           ),
@@ -467,7 +472,7 @@ export class AnimationService {
     if (interpolatedStep.speed > 5 && interpolatedStep.speed < 30) {
       effects.push({
         type: 'dust',
-        position: new Position(
+        position: new PositionVO(
           interpolatedStep.position.x + (Math.random() - 0.5) * 30,
           interpolatedStep.position.y + (Math.random() - 0.5) * 30
         ),

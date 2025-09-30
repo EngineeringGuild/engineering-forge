@@ -300,7 +300,7 @@ export class CarSimulationService {
   ): PerformanceMetrics {
     // Adjust performance based on current state
     const speedFactor = Math.min(1, currentSpeed / 100); // Normalize speed factor
-    const distanceFactor = Math.min(1, currentDistance / 1000); // Normalize distance factor
+    // const distanceFactor = Math.min(1, currentDistance / 1000); // Normalize distance factor
 
     return new PerformanceMetrics({
       acceleration: initialPerformance.acceleration * (1 + speedFactor * 0.1),
@@ -337,6 +337,10 @@ export class CarSimulationService {
     }
 
     const lastStep = steps[steps.length - 1];
+    if (!lastStep) {
+      throw new Error('Invalid simulation steps');
+    }
+    
     const maxSpeed = Math.max(...steps.map(s => s.speed));
     const averageSpeed = steps.reduce((sum, s) => sum + s.speed, 0) / steps.length;
 
