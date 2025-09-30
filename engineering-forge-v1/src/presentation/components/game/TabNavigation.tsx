@@ -1,13 +1,14 @@
 import React from 'react';
 
 interface TabNavigationProps {
-  activeTab: 'build' | 'test' | 'performance' | 'achievements';
-  onTabSwitch: (tab: 'build' | 'test' | 'performance' | 'achievements') => void;
+  activeTab: 'build' | 'test' | 'performance' | 'achievements' | 'simulation';
+  onTabSwitch: (tab: 'build' | 'test' | 'performance' | 'achievements' | 'simulation') => void;
 }
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabSwitch }) => {
   const tabs = [
     { id: 'build', label: 'Build', icon: '🔨' },
+    { id: 'simulation', label: 'Simulation', icon: '🎮' },
     { id: 'test', label: 'Test', icon: '🧪' },
     { id: 'performance', label: 'Performance', icon: '📊' },
     { id: 'achievements', label: 'Achievements', icon: '🏆' }

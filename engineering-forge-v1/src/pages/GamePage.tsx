@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getUnlockedComponents } from '../data/components';
 import { Achievement } from '../domains/gaming/domain/entities/Achievement';
 import { Component, ComponentCategory } from '../domains/gaming/domain/entities/Component';
+import { SimulationResult } from '../domains/gaming/domain/entities/SimulationResult';
 import { TestResult } from '../domains/gaming/domain/entities/TestResult';
 import {
   AchievementService,
@@ -19,6 +20,7 @@ import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 import { AchievementNotification } from '../presentation/components/game/AchievementNotification';
 import { AchievementPanel } from '../presentation/components/game/AchievementPanel';
 import { AudioControls } from '../presentation/components/game/AudioControls';
+import { CarSimulation } from '../presentation/components/game/CarSimulation';
 import { ComponentPalette } from '../presentation/components/game/ComponentPalette';
 import { ConstructionWorkspace } from '../presentation/components/game/ConstructionWorkspace';
 import { GameHeader } from '../presentation/components/game/GameHeader';
@@ -65,12 +67,16 @@ const GamePage: React.FC = () => {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isAutoSaving] = useState(false);
   const [autoSaveError] = useState(false);
-  const [activeTab, setActiveTab] = useState<'build' | 'test' | 'performance' | 'achievements'>(
-    'build'
-  );
+  const [activeTab, setActiveTab] = useState<
+    'build' | 'test' | 'performance' | 'achievements' | 'simulation'
+  >('build');
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<Achievement[]>([]);
   const [showAchievementNotification, setShowAchievementNotification] = useState(false);
+
+  // Simulation state
+  const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([]);
+  const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 
   // Initialize services
   const physicsService = useMemo(() => new PhysicsSimulationService(), []);
@@ -151,10 +157,28 @@ const GamePage: React.FC = () => {
     playBackgroundMusic('bg-music-main');
   }, [achievementService, playBackgroundMusic]);
 
+  // Validation function for complete car
+  const isCarComplete = useCallback(() => {
+    const hasChassis = workspaceComponents.some(c => c.type === 'chassis');
+    const hasEngine = workspaceComponents.some(c => c.type === 'engine');
+    const hasWheels = workspaceComponents.some(c => c.type === 'wheels');
+
+    return hasChassis && hasEngine && hasWheels;
+  }, [workspaceComponents]);
+
   const handlePlayPause = useCallback(() => {
     console.log('Play/Pause clicked! Current state:', isPlaying);
+
+    // Validate car is complete before allowing play
+    if (!isCarComplete()) {
+      alert('Complete your car first! You need a chassis, engine, and wheels.');
+      return;
+    }
+
+    // Switch to simulation tab and start simulation
+    setActiveTab('simulation');
     setIsPlaying(prev => !prev);
-  }, [isPlaying]);
+  }, [isPlaying, isCarComplete]);
 
   const handleReset = useCallback(() => {
     console.log('Reset clicked!');
@@ -316,12 +340,67 @@ const GamePage: React.FC = () => {
 
   // Memoized tab switch handlers
   const handleTabSwitch = useCallback(
-    (tab: 'build' | 'test' | 'performance' | 'achievements') => {
+    (tab: 'build' | 'test' | 'performance' | 'achievements' | 'simulation') => {
       setActiveTab(tab);
       playTabSwitch();
     },
     [playTabSwitch]
   );
+
+  // Simulation handlers
+  const handleSimulationComplete = useCallback(
+    (result: SimulationResult) => {
+      console.log('Simulation completed:', result);
+
+      // Add to simulation results
+      setSimulationResults(prev => [...prev, result]);
+
+      // Award XP and credits based on simulation result
+      if (result.passed) {
+        const xpGained = Math.floor(result.score / 10); // 1-10 XP based on score
+        setScore(prev => prev + xpGained);
+
+        // Check for level up
+        if (score > 0 && score % 50 === 0) {
+          setLevel(prev => prev + 1);
+        }
+
+        // Process achievement events
+        const gameEvent: GameEvent = {
+          type: 'simulation_completed',
+          data: {
+            passed: result.passed,
+            score: result.score,
+            performance: result.finalPerformance,
+            distance: result.distance,
+            maxSpeed: result.maxSpeed
+          },
+          timestamp: new Date()
+        };
+
+        const newlyUnlocked = achievementService.processGameEvent(gameEvent);
+        if (newlyUnlocked.length > 0) {
+          setNewlyUnlockedAchievements(prev => [...prev, ...newlyUnlocked]);
+          setShowAchievementNotification(true);
+          setAchievements(achievementService.getAllAchievements());
+          playAchievement();
+        }
+      }
+
+      setIsSimulationRunning(false);
+    },
+    [score, achievementService, playAchievement]
+  );
+
+  const handleSimulationStart = useCallback(() => {
+    setIsSimulationRunning(true);
+    console.log('Simulation started');
+  }, []);
+
+  const handleSimulationStop = useCallback(() => {
+    setIsSimulationRunning(false);
+    console.log('Simulation stopped');
+  }, []);
 
   // Save/Load functions
   const handleSave = useCallback(
@@ -456,14 +535,18 @@ const GamePage: React.FC = () => {
                   components={availableComponents}
                   onComponentSelect={(component: Component) => {
                     console.log('Component selected:', component.name);
-                    
+
                     // Check if component type already exists
-                    const existingComponent = workspaceComponents.find(c => c.type === component.type);
+                    const existingComponent = workspaceComponents.find(
+                      c => c.type === component.type
+                    );
                     if (existingComponent) {
-                      alert(`You already have a ${component.type} component! Remove it first to add a different one.`);
+                      alert(
+                        `You already have a ${component.type} component! Remove it first to add a different one.`
+                      );
                       return;
                     }
-                    
+
                     // Add component to workspace
                     const newComponent = new Component(
                       `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -485,7 +568,7 @@ const GamePage: React.FC = () => {
                         level: component.level
                       }
                     );
-                    
+
                     setWorkspaceComponents(prev => [...prev, newComponent]);
                   }}
                   selectedCategory={selectedCategory}
@@ -507,17 +590,28 @@ const GamePage: React.FC = () => {
                         <div className="text-sm text-gray-400">
                           {workspaceComponents.length} components
                         </div>
-                        
+
                         {/* Car completion indicator */}
                         <div className="flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'chassis') ? 'bg-green-500' : 'bg-gray-500'}`} title="Chassis" />
-                          <div className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'engine') ? 'bg-green-500' : 'bg-gray-500'}`} title="Engine" />
-                          <div className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'wheels') ? 'bg-green-500' : 'bg-gray-500'}`} title="Wheels" />
-                          {workspaceComponents.some(c => c.type === 'chassis') && 
-                           workspaceComponents.some(c => c.type === 'engine') && 
-                           workspaceComponents.some(c => c.type === 'wheels') && (
-                            <span className="text-green-400 text-sm font-medium">🚗 Complete!</span>
-                          )}
+                          <div
+                            className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'chassis') ? 'bg-green-500' : 'bg-gray-500'}`}
+                            title="Chassis"
+                          />
+                          <div
+                            className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'engine') ? 'bg-green-500' : 'bg-gray-500'}`}
+                            title="Engine"
+                          />
+                          <div
+                            className={`w-3 h-3 rounded-full ${workspaceComponents.some(c => c.type === 'wheels') ? 'bg-green-500' : 'bg-gray-500'}`}
+                            title="Wheels"
+                          />
+                          {workspaceComponents.some(c => c.type === 'chassis') &&
+                            workspaceComponents.some(c => c.type === 'engine') &&
+                            workspaceComponents.some(c => c.type === 'wheels') && (
+                              <span className="text-green-400 text-sm font-medium">
+                                🚗 Complete!
+                              </span>
+                            )}
                         </div>
                         <button
                           onClick={handlePlayPause}
@@ -670,6 +764,21 @@ const GamePage: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'simulation' && (
+            <div className="h-full">
+              <CarSimulation
+                components={workspaceComponents}
+                onSimulationComplete={handleSimulationComplete}
+                onSimulationStart={handleSimulationStart}
+                onSimulationStop={handleSimulationStop}
+                trackLength={1000}
+                maxSimulationTime={60}
+                enablePhysics={true}
+                showControls={true}
+              />
             </div>
           )}
 
