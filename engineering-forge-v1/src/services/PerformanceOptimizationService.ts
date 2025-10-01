@@ -18,7 +18,9 @@ export class PerformanceOptimizationService {
    * Enable performance optimizations
    */
   enableOptimizations(): void {
-    if (this.isOptimized) return;
+    if (this.isOptimized) {
+return;
+}
 
     // Reduce motion for users who prefer it
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -129,7 +131,7 @@ export class PerformanceOptimizationService {
   /**
    * Debounce function calls
    */
-  debounce<T extends (...args: any[]) => any>(
+  debounce<T extends(...args: any[]) => any>(
     func: T,
     wait: number
   ): (...args: Parameters<T>) => void {
@@ -143,7 +145,7 @@ export class PerformanceOptimizationService {
   /**
    * Throttle function calls
    */
-  throttle<T extends (...args: any[]) => any>(
+  throttle<T extends(...args: any[]) => any>(
     func: T,
     limit: number
   ): (...args: Parameters<T>) => void {

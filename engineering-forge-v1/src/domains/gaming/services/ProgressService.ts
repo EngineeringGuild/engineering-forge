@@ -85,7 +85,9 @@ export class ProgressService {
   // Update progress from game events
   processEvent(event: ProgressEvent): ProgressUpdate | null {
     const userProgress = this.getUserProgress(event.data.userId);
-    if (!userProgress) return null;
+    if (!userProgress) {
+return null;
+}
 
     let update: ProgressUpdate | null = null;
 
@@ -130,7 +132,9 @@ export class ProgressService {
   // Add experience directly
   addExperience(userId: string, amount: number): ProgressUpdate | null {
     const userProgress = this.getUserProgress(userId);
-    if (!userProgress) return null;
+    if (!userProgress) {
+return null;
+}
 
     const result = userProgress.addExperience(amount);
     const update = this.createProgressUpdate(userProgress, result.leveledUp, result.newLevel);
@@ -142,7 +146,9 @@ export class ProgressService {
   // Spend credits
   spendCredits(userId: string, amount: number): boolean {
     const userProgress = this.getUserProgress(userId);
-    if (!userProgress) return false;
+    if (!userProgress) {
+return false;
+}
 
     const success = userProgress.spendCredits(amount);
     if (success) {
@@ -156,7 +162,9 @@ export class ProgressService {
   // Add credits
   addCredits(userId: string, amount: number): ProgressUpdate | null {
     const userProgress = this.getUserProgress(userId);
-    if (!userProgress) return null;
+    if (!userProgress) {
+return null;
+}
 
     userProgress.addCredits(amount);
     const update = this.createProgressUpdate(userProgress);
@@ -174,7 +182,9 @@ export class ProgressService {
   // Get level information
   getLevelInfo(userId: string, _level?: number): LevelRequirements | null {
     const userProgress = this.getUserProgress(userId);
-    if (!userProgress) return null;
+    if (!userProgress) {
+return null;
+}
 
     // const _targetLevel = level || userProgress.level; // TODO: Use in future implementation
     return userProgress.getCurrentLevelInfo();
@@ -296,7 +306,9 @@ export class ProgressService {
     rank: number;
   } | null {
     const userProgress = this.getUserProgress(userId);
-    if (!userProgress) return null;
+    if (!userProgress) {
+return null;
+}
 
     const statistics = userProgress.toStatistics();
     const leaderboard = this.getLeaderboardData();

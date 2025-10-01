@@ -21,7 +21,7 @@ const initialState: NavigationState = {
   currentSection: '',
   sidebarCollapsed: false,
   searchQuery: '',
-  theme: 'dark',
+  theme: 'dark'
 };
 
 // ENTERPRISE OPTIMIZATION: Advanced store with performance optimizations
@@ -32,10 +32,10 @@ export const useNavigationStore = create<NavigationStore>()((set, get) => ({
     const currentState = get();
     // Only update if document actually changed
     if (currentState.currentDocument !== document) {
-      set({ 
-        currentDocument: document, 
+      set({
+        currentDocument: document,
         currentSection: '',
-        searchQuery: '' 
+        searchQuery: ''
       });
     }
   },
@@ -49,8 +49,8 @@ export const useNavigationStore = create<NavigationStore>()((set, get) => ({
   },
 
   toggleSidebar: () => {
-    set((state) => ({ 
-      sidebarCollapsed: !state.sidebarCollapsed 
+    set((state) => ({
+      sidebarCollapsed: !state.sidebarCollapsed
     }));
   },
 
@@ -80,7 +80,7 @@ export const useNavigationStore = create<NavigationStore>()((set, get) => ({
 
   resetNavigation: () => {
     set(initialState);
-  },
+  }
 }));
 
 // Selectors for better performance
@@ -99,6 +99,6 @@ export const useNavigationActions = () => {
     setSidebarCollapsed: state.setSidebarCollapsed,
     setSearchQuery: state.setSearchQuery,
     setTheme: state.setTheme,
-    resetNavigation: state.resetNavigation,
+    resetNavigation: state.resetNavigation
   }));
 };

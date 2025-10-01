@@ -16,7 +16,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   // Use direct store selectors to avoid object recreation
   const search = useSearchStore((state) => state.search);
   const clearSearch = useSearchStore((state) => state.clearSearch);
@@ -64,7 +64,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-20">
@@ -126,7 +128,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                       <span>Filters</span>
                     </button>
                   </div>
-                  
+
                   {results.map((result) => (
                     <div
                       key={result.id}
@@ -188,7 +190,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               )}
-              
+
               <div>
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Search Tips

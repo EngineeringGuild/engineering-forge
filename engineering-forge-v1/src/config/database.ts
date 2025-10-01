@@ -65,7 +65,7 @@ export class DatabaseConnection {
       this.isConnected = true;
       console.log('✅ MongoDB Atlas connected successfully');
       console.log(`📊 Database: ${databaseConfig.dbName}`);
-      console.log(`🌐 Cluster: engineeringforge`);
+      console.log('🌐 Cluster: engineeringforge');
 
       // Handle connection events
       mongoose.connection.on('error', error => {
@@ -137,7 +137,7 @@ export class DatabaseConnection {
 export const databaseConnection = DatabaseConnection.getInstance();
 
 // Helper function to initialize database
-export const initializeDatabase = async (): Promise<void> => {
+export const initializeDatabase = async(): Promise<void> => {
   try {
     await databaseConnection.connect();
   } catch (error) {
@@ -147,7 +147,7 @@ export const initializeDatabase = async (): Promise<void> => {
 };
 
 // Helper function to close database
-export const closeDatabase = async (): Promise<void> => {
+export const closeDatabase = async(): Promise<void> => {
   try {
     await databaseConnection.disconnect();
   } catch (error) {

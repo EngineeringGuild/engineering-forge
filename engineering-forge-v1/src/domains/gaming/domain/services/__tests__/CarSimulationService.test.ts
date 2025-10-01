@@ -73,7 +73,7 @@ describe('CarSimulationService', () => {
   });
 
   describe('runSimulation', () => {
-    it('should run simulation successfully with complete car', async () => {
+    it('should run simulation successfully with complete car', async() => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result).toBeDefined();
@@ -90,7 +90,7 @@ describe('CarSimulationService', () => {
       expect(result.simulationSteps.length).toBeGreaterThan(0);
     });
 
-    it('should throw error when car is incomplete', async () => {
+    it('should throw error when car is incomplete', async() => {
       const incompleteComponents = mockComponents.slice(0, 2); // Missing wheels
 
       await expect(simulationService.runSimulation(incompleteComponents)).rejects.toThrow(
@@ -98,13 +98,13 @@ describe('CarSimulationService', () => {
       );
     });
 
-    it('should throw error when no components provided', async () => {
+    it('should throw error when no components provided', async() => {
       await expect(simulationService.runSimulation([])).rejects.toThrow(
         'Car must have chassis, engine, and wheels to run simulation'
       );
     });
 
-    it('should accept custom simulation configuration', async () => {
+    it('should accept custom simulation configuration', async() => {
       const customConfig = {
         trackLength: 500,
         maxSimulationTime: 30,
@@ -128,7 +128,7 @@ describe('CarSimulationService', () => {
       }).not.toThrow();
     });
 
-    it('should throw error for incomplete car', async () => {
+    it('should throw error for incomplete car', async() => {
       const incompleteComponents = [mockComponents[0]]; // Only chassis
 
       await expect(simulationService.runSimulation(incompleteComponents)).rejects.toThrow(
@@ -138,7 +138,7 @@ describe('CarSimulationService', () => {
   });
 
   describe('calculateInitialPerformance', () => {
-    it('should calculate performance metrics correctly', async () => {
+    it('should calculate performance metrics correctly', async() => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result.finalPerformance).toBeDefined();
@@ -155,7 +155,7 @@ describe('CarSimulationService', () => {
   });
 
   describe('simulation physics', () => {
-    it('should generate simulation steps with realistic physics', async () => {
+    it('should generate simulation steps with realistic physics', async() => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result.simulationSteps.length).toBeGreaterThan(0);
@@ -175,7 +175,7 @@ describe('CarSimulationService', () => {
       expect(typeof firstStep.acceleration).toBe('number');
     });
 
-    it('should respect track length limit', async () => {
+    it('should respect track length limit', async() => {
       const shortTrackConfig = {
         trackLength: 100,
         maxSimulationTime: 10
@@ -188,7 +188,7 @@ describe('CarSimulationService', () => {
   });
 
   describe('scoring system', () => {
-    it('should generate score between 0 and 100', async () => {
+    it('should generate score between 0 and 100', async() => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result.score).toBeGreaterThanOrEqual(0);
@@ -196,7 +196,7 @@ describe('CarSimulationService', () => {
       expect(Number.isInteger(result.score)).toBe(true);
     });
 
-    it('should set passed status based on score', async () => {
+    it('should set passed status based on score', async() => {
       const result = await simulationService.runSimulation(mockComponents);
 
       if (result.score >= 60) {
@@ -275,7 +275,7 @@ describe('CarSimulationService', () => {
   });
 
   describe('performance with different car configurations', () => {
-    it('should handle high-performance car', async () => {
+    it('should handle high-performance car', async() => {
       // Create high-performance components by cloning and modifying
       const highPerformanceComponents = mockComponents.map(comp => {
         if (comp.type === 'engine') {
@@ -307,7 +307,7 @@ describe('CarSimulationService', () => {
       expect(result.distance).toBeGreaterThan(0);
     });
 
-    it('should handle heavy car', async () => {
+    it('should handle heavy car', async() => {
       const heavyComponents = mockComponents.map(comp => {
         return new Component(comp.id, {
           name: comp.name,

@@ -98,7 +98,9 @@ export class PhysicsSimulationService {
   // }
 
   private calculateAcceleration(power: number, weight: number, environment: any): number {
-    if (weight === 0) return 0;
+    if (weight === 0) {
+return 0;
+}
 
     // Basic physics: F = ma, P = Fv
     // Acceleration = Power / (Weight * Velocity)
@@ -114,7 +116,9 @@ export class PhysicsSimulationService {
   }
 
   private calculateTopSpeed(power: number, _weight: number, environment: any): number {
-    if (power === 0) return 0;
+    if (power === 0) {
+return 0;
+}
 
     // Top speed is limited by air resistance
     // Simplified formula: v = sqrt(P / (0.5 * rho * Cd * A))
@@ -132,7 +136,9 @@ export class PhysicsSimulationService {
   }
 
   private calculateHandling(components: Component[], totalWeight: number): number {
-    if (components.length === 0) return 0;
+    if (components.length === 0) {
+return 0;
+}
 
     // Handling is affected by suspension, wheels, and weight distribution
     const suspensionComponents = components.filter(c => c.type === 'suspension');
@@ -164,7 +170,9 @@ export class PhysicsSimulationService {
   }
 
   private calculateFuelEfficiency(components: Component[], totalWeight: number): number {
-    if (components.length === 0) return 0;
+    if (components.length === 0) {
+return 0;
+}
 
     // Fuel efficiency is affected by engine type and weight
     const engineComponents = components.filter(c => c.type === 'engine');

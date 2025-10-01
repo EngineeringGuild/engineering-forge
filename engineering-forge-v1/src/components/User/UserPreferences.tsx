@@ -98,7 +98,7 @@ export const UserPreferences: React.FC<UserPreferencesProps> = ({
   /**
    * Handle form submission
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {

@@ -13,7 +13,7 @@ interface SearchStore extends SearchContextType {
     section: string;
     status: 'all' | 'complete' | 'in-progress' | 'draft';
   };
-  
+
   // Actions
   addToHistory: (query: string) => void;
   clearHistory: () => void;
@@ -32,25 +32,25 @@ const initialState = {
   searchFilters: {
     document: 'all' as 'all' | 'GDD' | 'TDD',
     section: '',
-    status: 'all' as 'all' | 'complete' | 'in-progress' | 'draft',
-  },
+    status: 'all' as 'all' | 'complete' | 'in-progress' | 'draft'
+  }
 };
 
 export const useSearchStore = create<SearchStore>((set, get) => ({
   ...initialState,
 
-  search: async (query: string) => {
+  search: async(query: string) => {
     if (!query.trim()) {
       set({ query: '', results: [], isSearching: false });
       return;
     }
 
     set({ query, isSearching: true });
-    
+
     try {
       // Simulate search delay
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Mock search results - in real app, this would call an API
       const mockResults: SearchResult[] = [
         {
@@ -59,7 +59,7 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
           path: '/gdd/core-mechanics',
           excerpt: `This is a mock search result for "${query}". It demonstrates how search results will appear in the documentation.`,
           document: 'GDD',
-          relevance: 0.95,
+          relevance: 0.95
         },
         {
           id: 'mock-2',
@@ -67,24 +67,24 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
           path: '/tdd/api-design',
           excerpt: `Another mock result showing search functionality for "${query}". This helps visualize the search experience.`,
           document: 'TDD',
-          relevance: 0.87,
-        },
+          relevance: 0.87
+        }
       ];
 
-      set({ 
-        results: mockResults, 
-        isSearching: false 
+      set({
+        results: mockResults,
+        isSearching: false
       });
 
       // Add to history and recent searches
       get().addToHistory(query);
       get().addToRecentSearches(query);
-      
+
     } catch (error) {
       console.error('Search error:', error);
-      set({ 
-        results: [], 
-        isSearching: false 
+      set({
+        results: [],
+        isSearching: false
       });
     }
   },
@@ -98,7 +98,7 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
       searchHistory: [
         query,
         ...state.searchHistory.filter(q => q !== query)
-      ].slice(0, 10), // Keep only last 10 searches
+      ].slice(0, 10) // Keep only last 10 searches
     }));
   },
 
@@ -111,7 +111,7 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
       recentSearches: [
         query,
         ...state.recentSearches.filter(q => q !== query)
-      ].slice(0, 5), // Keep only last 5 recent searches
+      ].slice(0, 5) // Keep only last 5 recent searches
     }));
   },
 
@@ -127,7 +127,7 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
 
   resetSearch: () => {
     set(initialState);
-  },
+  }
 }));
 
 // Selectors
@@ -148,6 +148,6 @@ export const useSearchActions = () => {
     addToRecentSearches: state.addToRecentSearches,
     clearRecentSearches: state.clearRecentSearches,
     setSearchFilters: state.setSearchFilters,
-    resetSearch: state.resetSearch,
+    resetSearch: state.resetSearch
   }));
 };

@@ -1,18 +1,31 @@
-# 🎮 Engineering Forge - Game Development Project
+# 🎮 Engineering Forge - Educational Gamified Platform
 
 ## 📋 Project Overview
-Engineering Forge is a comprehensive game development project that combines technical documentation with an interactive gaming experience. The project is structured to support both documentation and game development in a scalable, professional architecture.
+Engineering Forge is an educational gamified platform for engineering learning with blockchain integration. This repository serves as the central hub for documentation, specifications, and multiple product versions.
 
-## 🏗️ Project Architecture
+## 🏗️ Repository Structure
 
-### **Repository Structure**
+### **Clean Architecture**
 ```
 Engineering Forge/
 ├── README.md                      # This file - Project overview
-├── docs/                          # General project documentation
-├── engineering-forge-docs/        # Documentation website (React)
-└── engineering-forge-v1/          # Game v1.0 (React + TypeScript)
+├── .gitignore                     # Git ignore rules
+├── scripts/                       # Setup and utility scripts
+├── docs/                          # 📚 Complete project documentation
+│   ├── DOMAINS/                   # Domain-specific documentation
+│   ├── VERSIONS/                  # Product version specifications
+│   ├── DEVELOPMENT/               # Development process docs
+│   ├── SPECIFICATIONS/            # Technical specifications
+│   ├── BUSINESS/                  # Business documentation
+│   └── TEMPLATES/                 # Document templates
+├── engineering-forge-docs/        # 🌐 Documentation website (React)
+└── engineering-forge-v1/          # 🎮 Game V1.0 Prototype (React + TypeScript)
 ```
+
+### **Purpose of Each Component**
+- **`docs/`** - Centralized documentation hub following DDD principles
+- **`engineering-forge-docs/`** - Interactive documentation website
+- **`engineering-forge-v1/`** - Working prototype of the educational game
 
 ### **Deployment URLs**
 - **Documentation**: `https://engineeringforge.guildeng.com/docs`

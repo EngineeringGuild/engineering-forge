@@ -33,7 +33,9 @@ export class TranslationService {
   // Check if cache entry is still valid
   private isCacheValid(cacheKey: string): boolean {
     const timestamp = this.cacheTimestamps.get(cacheKey);
-    if (!timestamp) return false;
+    if (!timestamp) {
+return false;
+}
     return Date.now() - timestamp < this.CACHE_EXPIRY;
   }
 
@@ -44,7 +46,7 @@ export class TranslationService {
     }
 
     const cacheKey = `${text}_${targetLanguage}`;
-    
+
     // Check cache first with expiry validation
     if (this.cache.has(cacheKey) && this.isCacheValid(cacheKey)) {
       return this.cache.get(cacheKey)!;
@@ -54,11 +56,11 @@ export class TranslationService {
       // For now, return the original text with a note
       // In production, integrate with translation API
       const translatedText = await this.mockTranslation(text, targetLanguage);
-      
+
       // Cache the result with timestamp
       this.cache.set(cacheKey, translatedText);
       this.cacheTimestamps.set(cacheKey, Date.now());
-      
+
       return translatedText;
     } catch (error) {
       console.error('Translation error:', error);
@@ -73,7 +75,7 @@ export class TranslationService {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     const languageInfo = SUPPORTED_LANGUAGES[targetLanguage];
-    
+
     // For demo purposes, add a translation note
     if (targetLanguage === 'en') {
       return text;
@@ -90,7 +92,7 @@ export class TranslationService {
     }
 
     const cacheKey = `md_${content}_${targetLanguage}`;
-    
+
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey)!;
     }
@@ -98,7 +100,7 @@ export class TranslationService {
     // For now, return content with translation note
     const languageInfo = SUPPORTED_LANGUAGES[targetLanguage];
     const translatedContent = `${content}\n\n---\n\n*This content is available in ${languageInfo.nativeName}. Translation service integration is in progress.*`;
-    
+
     this.cache.set(cacheKey, translatedContent);
     return translatedContent;
   }
@@ -124,13 +126,13 @@ export class TranslationService {
   getCacheStats(): { size: number; expired: number } {
     const now = Date.now();
     let expired = 0;
-    
+
     for (const timestamp of this.cacheTimestamps.values()) {
       if (now - timestamp >= this.CACHE_EXPIRY) {
         expired++;
       }
     }
-    
+
     return {
       size: this.cache.size,
       expired
@@ -142,11 +144,11 @@ export class TranslationService {
 export const translationService = TranslationService.getInstance();
 
 // Utility functions
-export const translateContent = async (content: string, language: SupportedLanguage): Promise<string> => {
+export const translateContent = async(content: string, language: SupportedLanguage): Promise<string> => {
   return translationService.translateMarkdown(content, language);
 };
 
-export const translateText = async (text: string, language: SupportedLanguage): Promise<string> => {
+export const translateText = async(text: string, language: SupportedLanguage): Promise<string> => {
   return translationService.translateText(text, language);
 };
 
@@ -155,7 +157,7 @@ export const getLocalizedContentPath = (basePath: string, language: SupportedLan
   if (language === 'en') {
     return basePath;
   }
-  
+
   // For other languages, we would have separate files
   // For now, return the base path
   return basePath;

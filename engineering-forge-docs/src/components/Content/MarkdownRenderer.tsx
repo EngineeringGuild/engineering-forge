@@ -21,7 +21,7 @@ interface CodeBlockProps {
 const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) => {
   // Extract language from className (e.g., "language-javascript" -> "javascript")
   const language = className?.replace('language-', '') || '';
-  
+
   if (inline) {
     return (
       <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-2 py-1 rounded text-sm font-mono">
@@ -82,14 +82,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
               {children}
             </h6>
           ),
-          
+
           // Custom code components
           code: ({ children, className, ...props }: CodeBlockProps) => (
             <CodeBlock className={className} inline={false} {...props}>
               {children}
             </CodeBlock>
           ),
-          
+
           // Custom link components
           a: ({ href, children, ...props }) => (
             <a
@@ -102,7 +102,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
               {children}
             </a>
           ),
-          
+
           // Custom table components
           table: ({ children, ...props }) => (
             <div className="overflow-x-auto">
@@ -111,7 +111,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
               </table>
             </div>
           ),
-          
+
           // Custom blockquote components
           blockquote: ({ children, ...props }) => (
             <blockquote
@@ -121,20 +121,20 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
               {children}
             </blockquote>
           ),
-          
+
           // Custom list components
           ul: ({ children, ...props }) => (
             <ul className="space-y-2 list-disc list-inside text-gray-700 dark:text-gray-300" {...props}>
               {children}
             </ul>
           ),
-          
+
           ol: ({ children, ...props }) => (
             <ol className="space-y-2 list-decimal list-inside text-gray-700 dark:text-gray-300" {...props}>
               {children}
             </ol>
           ),
-          
+
           // Custom image components
           img: ({ src, alt, ...props }) => (
             <div className="my-6">
@@ -152,25 +152,25 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
               )}
             </div>
           ),
-          
+
           // Custom horizontal rule
           hr: ({ ...props }) => (
             <hr className="my-8 border-gray-300 dark:border-gray-600" {...props} />
           ),
-          
+
           // Custom strong components
           strong: ({ children, ...props }) => (
             <strong className="font-semibold text-gray-900 dark:text-white" {...props}>
               {children}
             </strong>
           ),
-          
+
           // Custom emphasis components
           em: ({ children, ...props }) => (
             <em className="italic text-gray-800 dark:text-gray-200" {...props}>
               {children}
             </em>
-          ),
+          )
         }}
       >
         {content}

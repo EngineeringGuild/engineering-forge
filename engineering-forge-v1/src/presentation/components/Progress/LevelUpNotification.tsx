@@ -40,7 +40,9 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
     }
   }, [update, duration, onClose]);
 
-  if (!update || !isVisible) return null;
+  if (!update || !isVisible) {
+return null;
+}
 
   return (
     <div className="fixed top-4 right-4 z-50">

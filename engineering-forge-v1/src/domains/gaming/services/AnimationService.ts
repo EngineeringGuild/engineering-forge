@@ -305,8 +305,8 @@ export class AnimationService {
       for (let i = 0; i < simulationSteps.length - 1; i++) {
         const currentStep = simulationSteps[i];
         const nextStep = simulationSteps[i + 1];
-        
-        if (currentStep && nextStep && 
+
+        if (currentStep && nextStep &&
             currentStep.timestamp <= targetTime &&
             nextStep.timestamp >= targetTime) {
           beforeStep = currentStep;

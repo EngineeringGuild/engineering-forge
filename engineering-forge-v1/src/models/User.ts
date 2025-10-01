@@ -182,18 +182,18 @@ userSchema.index({ 'statistics.level': -1 });
 userSchema.index({ createdAt: -1 });
 
 // Virtual for full name
-userSchema.virtual('fullName').get(function () {
+userSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`;
 });
 
 // Virtual for display name
-userSchema.virtual('displayName').get(function () {
+userSchema.virtual('displayName').get(function() {
   return this.username || `${this.firstName} ${this.lastName}`;
 });
 
 // Transform output to remove sensitive data
 userSchema.set('toJSON', {
-  transform: function (_doc: any, ret: any) {
+  transform: function(_doc: any, ret: any) {
     delete ret.password;
     delete ret.__v;
     return ret;
@@ -201,7 +201,7 @@ userSchema.set('toJSON', {
 });
 
 // Transform output for public display
-userSchema.methods.toPublicJSON = function () {
+userSchema.methods.toPublicJSON = function() {
   const user = this.toObject();
   delete user.password;
   delete user.email;
@@ -210,7 +210,7 @@ userSchema.methods.toPublicJSON = function () {
 };
 
 // Pre-save middleware to update level based on XP
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function(next) {
   if (this.isModified('statistics.totalXP')) {
     // Simple level calculation: 100 XP per level
     this.statistics.level = Math.floor(this.statistics.totalXP / 100) + 1;

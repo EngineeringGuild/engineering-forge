@@ -146,18 +146,36 @@ export class ComponentService {
     }
 
     // Update fields
-    if (updateData.name !== undefined) component.name = updateData.name;
-    if (updateData.type !== undefined) component.type = updateData.type;
-    if (updateData.category !== undefined) component.category = updateData.category;
+    if (updateData.name !== undefined) {
+component.name = updateData.name;
+}
+    if (updateData.type !== undefined) {
+component.type = updateData.type;
+}
+    if (updateData.category !== undefined) {
+component.category = updateData.category;
+}
     if (updateData.properties !== undefined) {
       component.properties = { ...component.properties, ...updateData.properties };
     }
-    if (updateData.rarity !== undefined) component.rarity = updateData.rarity;
-    if (updateData.cost !== undefined) component.cost = updateData.cost;
-    if (updateData.unlockLevel !== undefined) component.unlockLevel = updateData.unlockLevel;
-    if (updateData.imageUrl !== undefined) component.imageUrl = updateData.imageUrl;
-    if (updateData.description !== undefined) component.description = updateData.description;
-    if (updateData.manufacturer !== undefined) component.manufacturer = updateData.manufacturer;
+    if (updateData.rarity !== undefined) {
+component.rarity = updateData.rarity;
+}
+    if (updateData.cost !== undefined) {
+component.cost = updateData.cost;
+}
+    if (updateData.unlockLevel !== undefined) {
+component.unlockLevel = updateData.unlockLevel;
+}
+    if (updateData.imageUrl !== undefined) {
+component.imageUrl = updateData.imageUrl;
+}
+    if (updateData.description !== undefined) {
+component.description = updateData.description;
+}
+    if (updateData.manufacturer !== undefined) {
+component.manufacturer = updateData.manufacturer;
+}
 
     component.updatedAt = new Date();
     this.components.set(componentId, component);

@@ -26,7 +26,9 @@ export class MemoryOptimizationService {
    * Start memory monitoring
    */
   startMonitoring(): void {
-    if (this.isMonitoring) return;
+    if (this.isMonitoring) {
+return;
+}
 
     this.isMonitoring = true;
     this.monitorMemory();
@@ -45,7 +47,9 @@ export class MemoryOptimizationService {
    * Monitor memory usage
    */
   private monitorMemory(): void {
-    if (!this.isMonitoring) return;
+    if (!this.isMonitoring) {
+return;
+}
 
     const stats = this.getMemoryStats();
     if (stats) {
@@ -141,7 +145,7 @@ export class MemoryOptimizationService {
   /**
    * Debounce function to prevent excessive calls
    */
-  debounce<T extends (...args: any[]) => any>(
+  debounce<T extends(...args: any[]) => any>(
     func: T,
     wait: number
   ): (...args: Parameters<T>) => void {
@@ -155,7 +159,7 @@ export class MemoryOptimizationService {
   /**
    * Throttle function to limit call frequency
    */
-  throttle<T extends (...args: any[]) => any>(
+  throttle<T extends(...args: any[]) => any>(
     func: T,
     limit: number
   ): (...args: Parameters<T>) => void {
@@ -191,7 +195,7 @@ export class MemoryOptimizationService {
     // Note: This is a simplified approach - in production, track specific IDs
     const timeoutId = setTimeout(() => {}, 0);
     clearTimeout(timeoutId);
-    
+
     const intervalId = setInterval(() => {}, 0);
     clearInterval(intervalId);
   }

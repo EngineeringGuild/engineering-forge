@@ -23,7 +23,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ content, className = 
           Table of Contents
         </h3>
       </div>
-      
+
       <div className="text-sm text-gray-600 dark:text-gray-400">
         <p>Content navigation will be available here.</p>
         <p className="mt-2 text-xs">Select a section from the sidebar to view content.</p>

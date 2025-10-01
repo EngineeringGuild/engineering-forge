@@ -274,7 +274,9 @@ export class SaveService {
   private async loadFromLocalStorage(slotId: string): Promise<SaveSlot | undefined> {
     const key = `save_${slotId}`;
     const data = localStorage.getItem(key);
-    if (!data) return undefined;
+    if (!data) {
+return undefined;
+}
 
     try {
       const saveSlot = JSON.parse(data) as SaveSlot;
@@ -321,7 +323,9 @@ export class SaveService {
 
   // Backup operations
   private async createBackup(saveSlot: SaveSlot): Promise<void> {
-    if (!saveSlot.saveData) return;
+    if (!saveSlot.saveData) {
+return;
+}
 
     const backup: BackupInfo = {
       id: `backup_${saveSlot.id}_${Date.now()}`,

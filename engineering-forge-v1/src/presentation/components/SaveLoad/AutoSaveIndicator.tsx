@@ -29,7 +29,9 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
   const [timeUntilNextSave, setTimeUntilNextSave] = useState<string>('');
 
   useEffect(() => {
-    if (!nextAutoSave || !isEnabled) return;
+    if (!nextAutoSave || !isEnabled) {
+return;
+}
 
     const updateTimer = () => {
       const now = new Date();
@@ -57,16 +59,28 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
   }, [nextAutoSave, isEnabled]);
 
   const getStatusIcon = () => {
-    if (isSaving) return <Clock className="w-4 h-4 animate-spin" />;
-    if (hasError) return <AlertCircle className="w-4 h-4" />;
-    if (lastSaved) return <CheckCircle className="w-4 h-4" />;
+    if (isSaving) {
+return <Clock className="w-4 h-4 animate-spin" />;
+}
+    if (hasError) {
+return <AlertCircle className="w-4 h-4" />;
+}
+    if (lastSaved) {
+return <CheckCircle className="w-4 h-4" />;
+}
     return <Save className="w-4 h-4" />;
   };
 
   const getStatusColor = () => {
-    if (isSaving) return 'text-blue-400';
-    if (hasError) return 'text-red-400';
-    if (lastSaved) return 'text-green-400';
+    if (isSaving) {
+return 'text-blue-400';
+}
+    if (hasError) {
+return 'text-red-400';
+}
+    if (lastSaved) {
+return 'text-green-400';
+}
     return 'text-gray-400';
   };
 
@@ -91,7 +105,9 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
     return 'Auto-save enabled';
   };
 
-  if (!isEnabled) return null;
+  if (!isEnabled) {
+return null;
+}
 
   return (
     <div className={`relative ${className}`}>

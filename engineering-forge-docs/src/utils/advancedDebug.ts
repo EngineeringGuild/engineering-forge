@@ -17,7 +17,9 @@ class AdvancedDebugger {
   private isEnabled = process.env.NODE_ENV === 'development';
 
   logRender(componentName: string, props?: unknown, state?: unknown) {
-    if (!this.isEnabled) return;
+    if (!this.isEnabled) {
+return;
+}
 
     const count = (this.renderCounts.get(componentName) || 0) + 1;
     this.renderCounts.set(componentName, count);
@@ -55,7 +57,7 @@ class AdvancedDebugger {
 
     if (recentRenders.length >= 10) {
       const timeSpan = recentRenders[recentRenders.length - 1].timestamp - recentRenders[0].timestamp;
-      
+
       if (timeSpan < 1000) { // 10 renders in less than 1 second
         console.error('🚨 INFINITE LOOP DETECTED!', {
           component: componentName,

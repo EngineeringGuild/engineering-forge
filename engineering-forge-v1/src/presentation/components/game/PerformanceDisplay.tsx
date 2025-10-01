@@ -17,16 +17,28 @@ export const PerformanceDisplay: React.FC<PerformanceDisplayProps> = ({
   showDetails = true
 }) => {
   const getPerformanceColor = (value: number): string => {
-    if (value >= 80) return 'text-green-400';
-    if (value >= 60) return 'text-yellow-400';
-    if (value >= 40) return 'text-orange-400';
+    if (value >= 80) {
+return 'text-green-400';
+}
+    if (value >= 60) {
+return 'text-yellow-400';
+}
+    if (value >= 40) {
+return 'text-orange-400';
+}
     return 'text-red-400';
   };
 
   const getPerformanceBarColor = (value: number): string => {
-    if (value >= 80) return 'bg-green-500';
-    if (value >= 60) return 'bg-yellow-500';
-    if (value >= 40) return 'bg-orange-500';
+    if (value >= 80) {
+return 'bg-green-500';
+}
+    if (value >= 60) {
+return 'bg-yellow-500';
+}
+    if (value >= 40) {
+return 'bg-orange-500';
+}
     return 'bg-red-500';
   };
 

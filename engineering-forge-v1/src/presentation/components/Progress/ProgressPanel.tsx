@@ -46,7 +46,9 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({
   const [levelUpNotification, setLevelUpNotification] = useState<ProgressUpdate | null>(null);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible) {
+return;
+}
 
     // Initialize progress if not exists
     let userProgress = progressService.getUserProgress(userId);
@@ -80,7 +82,9 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({
 
   const updateProgressData = (userProgress: UserProgress) => {
     const analytics = progressService.getProgressAnalytics(userId);
-    if (!analytics) return;
+    if (!analytics) {
+return;
+}
 
     setProgressData({
       level: userProgress.level,
@@ -110,7 +114,9 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({
     return num.toLocaleString();
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

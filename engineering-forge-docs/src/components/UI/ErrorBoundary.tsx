@@ -29,12 +29,12 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     // Check for infinite loop patterns
     if (error.message.includes('Maximum update depth exceeded')) {
       console.error('Infinite loop detected! This is likely caused by improper useEffect dependencies or store subscriptions.');
     }
-    
+
     this.setState({ error, errorInfo });
   }
 
@@ -65,11 +65,11 @@ class ErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </h1>
             </div>
-            
+
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               The application encountered an unexpected error. This might be due to a configuration issue or a bug in the code.
             </p>
-            
+
             {this.state.error && (
               <details className="mb-4">
                 <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -88,7 +88,7 @@ class ErrorBoundary extends Component<Props, State> {
                 </div>
               </details>
             )}
-            
+
             <div className="flex space-x-3">
               <button
                 onClick={this.handleReload}
@@ -97,15 +97,15 @@ class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw size={16} />
                 <span>Reload Page</span>
               </button>
-              
+
               <button
                 onClick={() => {
                   // Clear error state and reset error count
-                  this.setState({ 
-                    hasError: false, 
-                    error: undefined, 
-                    errorInfo: undefined, 
-                    errorCount: 0 
+                  this.setState({
+                    hasError: false,
+                    error: undefined,
+                    errorInfo: undefined,
+                    errorCount: 0
                   });
                   // Clear any pending retry timeout
                   if (this.retryTimeout) {

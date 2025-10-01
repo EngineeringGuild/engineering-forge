@@ -17,8 +17,8 @@ export const gddSections: Section[] = [
       status: 'complete',
       author: 'Game Design Team',
       wordCount: 2500,
-      readingTime: 12,
-    },
+      readingTime: 12
+    }
   },
   {
     id: 'gdd-core-mechanics',
@@ -30,8 +30,8 @@ export const gddSections: Section[] = [
       status: 'complete',
       author: 'Game Design Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'gdd-game-systems',
@@ -43,8 +43,8 @@ export const gddSections: Section[] = [
       status: 'complete',
       author: 'Game Design Team',
       wordCount: 4000,
-      readingTime: 20,
-    },
+      readingTime: 20
+    }
   },
   {
     id: 'gdd-content-assets',
@@ -56,8 +56,8 @@ export const gddSections: Section[] = [
       status: 'complete',
       author: 'Game Design Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'gdd-business-model',
@@ -69,8 +69,8 @@ export const gddSections: Section[] = [
       status: 'complete',
       author: 'Game Design Team',
       wordCount: 1500,
-      readingTime: 8,
-    },
+      readingTime: 8
+    }
   },
   {
     id: 'gdd-project-plan',
@@ -82,9 +82,9 @@ export const gddSections: Section[] = [
       status: 'complete',
       author: 'Game Design Team',
       wordCount: 1000,
-      readingTime: 5,
-    },
-  },
+      readingTime: 5
+    }
+  }
 ];
 
 // TDD Content Structure
@@ -99,8 +99,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'tdd-frontend-architecture',
@@ -112,8 +112,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 4000,
-      readingTime: 20,
-    },
+      readingTime: 20
+    }
   },
   {
     id: 'tdd-backend-architecture',
@@ -125,8 +125,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3500,
-      readingTime: 18,
-    },
+      readingTime: 18
+    }
   },
   {
     id: 'tdd-backend-architecture-part2',
@@ -138,8 +138,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 2500,
-      readingTime: 12,
-    },
+      readingTime: 12
+    }
   },
   {
     id: 'tdd-blockchain-integration',
@@ -151,8 +151,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 4000,
-      readingTime: 20,
-    },
+      readingTime: 20
+    }
   },
   {
     id: 'tdd-security-architecture',
@@ -164,8 +164,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3500,
-      readingTime: 18,
-    },
+      readingTime: 18
+    }
   },
   {
     id: 'tdd-performance-scalability',
@@ -177,8 +177,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'tdd-devops-deployment',
@@ -190,8 +190,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 2500,
-      readingTime: 12,
-    },
+      readingTime: 12
+    }
   },
   {
     id: 'tdd-testing-strategy',
@@ -203,8 +203,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'tdd-monitoring-analytics',
@@ -216,8 +216,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3500,
-      readingTime: 18,
-    },
+      readingTime: 18
+    }
   },
   {
     id: 'tdd-development-workflow',
@@ -229,8 +229,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'tdd-database-design',
@@ -242,8 +242,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 2500,
-      readingTime: 12,
-    },
+      readingTime: 12
+    }
   },
   {
     id: 'tdd-technology-stack',
@@ -255,8 +255,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 2000,
-      readingTime: 10,
-    },
+      readingTime: 10
+    }
   },
   {
     id: 'tdd-system-architecture',
@@ -268,8 +268,8 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 3000,
-      readingTime: 15,
-    },
+      readingTime: 15
+    }
   },
   {
     id: 'tdd-appendices',
@@ -281,9 +281,9 @@ export const tddSections: Section[] = [
       status: 'complete',
       author: 'Technical Team',
       wordCount: 2000,
-      readingTime: 10,
-    },
-  },
+      readingTime: 10
+    }
+  }
 ];
 
 // Document structures
@@ -295,7 +295,7 @@ export const documentStructures: Record<'GDD' | 'TDD', DocumentStructure> = {
     sections: gddSections,
     totalSections: gddSections.length,
     totalWordCount: gddSections.reduce((sum, section) => sum + section.metadata.wordCount, 0),
-    estimatedReadingTime: gddSections.reduce((sum, section) => sum + section.metadata.readingTime, 0),
+    estimatedReadingTime: gddSections.reduce((sum, section) => sum + section.metadata.readingTime, 0)
   },
   TDD: {
     id: 'TDD',
@@ -304,8 +304,8 @@ export const documentStructures: Record<'GDD' | 'TDD', DocumentStructure> = {
     sections: tddSections,
     totalSections: tddSections.length,
     totalWordCount: tddSections.reduce((sum, section) => sum + section.metadata.wordCount, 0),
-    estimatedReadingTime: tddSections.reduce((sum, section) => sum + section.metadata.readingTime, 0),
-  },
+    estimatedReadingTime: tddSections.reduce((sum, section) => sum + section.metadata.readingTime, 0)
+  }
 };
 
 // Function to get section by ID
@@ -320,9 +320,9 @@ export const getDocumentSections = (documentType: 'GDD' | 'TDD'): Section[] => {
 };
 
 // REAL CONTENT LOADER - This will load actual markdown files with language support
-export const loadRealContent = async (
-  documentType: 'GDD' | 'TDD', 
-  sectionId: string, 
+export const loadRealContent = async(
+  documentType: 'GDD' | 'TDD',
+  sectionId: string,
   language: SupportedLanguage = 'en'
 ): Promise<string> => {
   try {
@@ -339,7 +339,7 @@ export const loadRealContent = async (
         'gdd-content-assets': 'GDD-v1.1.md',
         'gdd-business-model': 'GDD-v1.1.md',
         'gdd-project-plan': 'Project-Plan-v1.1.md',
-        
+
         // TDD sections - point to specific specification files
         'tdd-api-design': 'specifications/api-design.md',
         'tdd-frontend-architecture': 'specifications/frontend-architecture.md',
@@ -355,7 +355,7 @@ export const loadRealContent = async (
         'tdd-database-design': 'specifications/database-design.md',
         'tdd-technology-stack': 'specifications/technology-stack.md',
         'tdd-system-architecture': 'specifications/system-architecture.md',
-        'tdd-appendices': 'specifications/appendices.md',
+        'tdd-appendices': 'specifications/appendices.md'
       };
 
       // For Portuguese, try to load Portuguese versions first
@@ -384,12 +384,12 @@ export const loadRealContent = async (
     const pathsToTry = [
       `${basePath}/${fileName}`,
       // Fallback to English version if Portuguese not found
-      language === 'pt' ? `${basePath}/${fileName.replace('-pt.md', '.md')}` : null,
+      language === 'pt' ? `${basePath}/${fileName.replace('-pt.md', '.md')}` : null
     ].filter(Boolean) as string[];
-    
+
     let content = '';
     let lastError: Error | null = null;
-    
+
     // Try each path until one works
     for (const filePath of pathsToTry) {
       try {
@@ -407,47 +407,47 @@ export const loadRealContent = async (
         console.warn(`Failed to load content from ${filePath}:`, error);
       }
     }
-    
+
     // If we got content, process it
     if (content) {
       let processedContent = content;
-      
+
       // For GDD sections, we need to extract specific sections from the large file
       if (documentType === 'GDD' && sectionId !== 'gdd-project-plan') {
         processedContent = extractGDDSection(content, sectionId);
       }
-      
+
       // Handle translation for non-English content
       if (language !== 'en') {
         // Check if we loaded a Portuguese version (indicated by filename)
         const loadedPtVersion = pathsToTry[0].includes('-pt.md') && content;
-        
+
         if (!loadedPtVersion) {
           // If we didn't load a PT version, add translation service
           const { SUPPORTED_LANGUAGES } = await import('../i18n');
           const languageInfo = SUPPORTED_LANGUAGES[language];
-          
+
           // For now, add translation note. Later integrate with translation service
           processedContent = await translateContent(processedContent, language);
-          
+
           // Add note about translation status
           processedContent += `\n\n---\n\n*🌐 **Nota de Tradução**: Este conteúdo foi traduzido automaticamente para ${languageInfo.nativeName}. Para melhor experiência, versões nativas estão sendo preparadas.*`;
         }
       }
-      
+
       return processedContent;
     }
-    
+
     // If all paths failed, return rich demo content or fallback
     console.warn(`Could not fetch any path for ${fileName}:`, lastError);
-    
+
     // Try to return rich demo content first
     if (import.meta.env.DEV) {
       return generateRichDemoContent(documentType, sectionId, language);
     }
-    
+
     return generateFallbackContent(documentType, sectionId, fileName);
-    
+
   } catch (error) {
     return `# Error Loading Content
 
@@ -471,7 +471,7 @@ const extractGDDSection = (content: string, sectionId: string): string => {
     'gdd-core-mechanics': 'Core Mechanics',
     'gdd-game-systems': 'Game Systems',
     'gdd-content-assets': 'Content & Assets',
-    'gdd-business-model': 'Business Model',
+    'gdd-business-model': 'Business Model'
   };
 
   const sectionTitle = sectionMap[sectionId];
@@ -481,7 +481,7 @@ const extractGDDSection = (content: string, sectionId: string): string => {
 
   // Find the section in the content
   const lines = content.split('\n');
-  const startIndex = lines.findIndex(line => 
+  const startIndex = lines.findIndex(line =>
     line.startsWith('#') && line.includes(sectionTitle)
   );
 
@@ -507,7 +507,7 @@ const extractGDDSection = (content: string, sectionId: string): string => {
 const generateRichDemoContent = (documentType: 'GDD' | 'TDD', sectionId: string, language: SupportedLanguage): string => {
   const section = getSectionById(documentType, sectionId);
   const sectionTitle = section?.title || 'Unknown Section';
-  
+
   // Get translated section title if available
   const getTranslatedTitle = (id: string, lang: SupportedLanguage): string => {
     const translations: Record<string, Record<SupportedLanguage, string>> = {
@@ -533,10 +533,10 @@ const generateRichDemoContent = (documentType: 'GDD' | 'TDD', sectionId: string,
         zh: 'API设计'
       }
     };
-    
+
     return translations[id]?.[lang] || sectionTitle;
   };
-  
+
   const translatedTitle = getTranslatedTitle(sectionId, language);
 
   // Rich demo content based on section and language
@@ -546,7 +546,7 @@ const generateRichDemoContent = (documentType: 'GDD' | 'TDD', sectionId: string,
     }
     return getEnDemoContent(id, translatedTitle);
   };
-  
+
   return getDemoContent(sectionId, language);
 };
 

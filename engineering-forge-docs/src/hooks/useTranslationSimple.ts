@@ -11,12 +11,12 @@ const FALLBACK_TRANSLATIONS = {
   'navigation.search': 'Search...',
   'actions.toggleTheme': 'Toggle theme',
   'language.select': 'Select language',
-  'content.loading': 'Loading content...',
+  'content.loading': 'Loading content...'
 };
 
 export const useTranslation = (namespace?: string) => {
   debugRender(`useTranslationSimple-${namespace || 'default'}`);
-  
+
   // Ultra-simple translation function that never causes re-renders
   const t = (key: string): string => {
     const fallbackKey = key as keyof typeof FALLBACK_TRANSLATIONS;
@@ -27,7 +27,7 @@ export const useTranslation = (namespace?: string) => {
     t,
     i18n: {
       language: 'en',
-      dir: () => 'ltr',
+      dir: () => 'ltr'
     },
     ready: true,
     hasTranslation: () => true,
@@ -36,7 +36,7 @@ export const useTranslation = (namespace?: string) => {
     getDirection: () => 'ltr' as const,
     formatNumber: (value: number) => value.toString(),
     formatDate: (date: Date) => date.toLocaleDateString(),
-    formatCurrency: (value: number, currency: string = 'USD') => `${currency} ${value}`,
+    formatCurrency: (value: number, currency: string = 'USD') => `${currency} ${value}`
   };
 };
 

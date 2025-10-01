@@ -32,7 +32,9 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
 
   const snapToGridPosition = useCallback(
     (position: Position): Position => {
-      if (!snapToGrid) return position;
+      if (!snapToGrid) {
+return position;
+}
 
       const snappedX = Math.round(position.x / gridSize) * gridSize;
       const snappedY = Math.round(position.y / gridSize) * gridSize;
@@ -48,7 +50,9 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
       event.stopPropagation();
 
       const rect = workspaceRef.current?.getBoundingClientRect();
-      if (!rect) return;
+      if (!rect) {
+return;
+}
 
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
@@ -65,7 +69,9 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
-      if (!draggedComponent || !workspaceRef.current) return;
+      if (!draggedComponent || !workspaceRef.current) {
+return;
+}
 
       const rect = workspaceRef.current.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
@@ -106,7 +112,7 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
       onClick={handleWorkspaceClick}
       style={{
         backgroundImage: snapToGrid
-          ? `radial-gradient(circle, rgba(59, 130, 246, 0.3) 1px, transparent 1px)`
+          ? 'radial-gradient(circle, rgba(59, 130, 246, 0.3) 1px, transparent 1px)'
           : 'none',
         backgroundSize: `${gridSize}px ${gridSize}px`
       }}
@@ -187,7 +193,9 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
       {components.length > 1 && (
         <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
           {components.map((component, index) => {
-            if (index === 0) return null;
+            if (index === 0) {
+return null;
+}
             const prevComponent = components[index - 1];
             const startX = prevComponent.position.x + prevComponent.size.width / 2;
             const startY = prevComponent.position.y + prevComponent.size.height / 2;

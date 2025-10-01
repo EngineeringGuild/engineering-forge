@@ -231,7 +231,7 @@ export interface GameState {
 }
 
 // Action Types for State Management
-export type GameAction = 
+export type GameAction =
   | { type: 'SET_SESSION'; payload: GameSession }
   | { type: 'SET_PROJECT'; payload: Project }
   | { type: 'ADD_COMPONENT'; payload: Component }

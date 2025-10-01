@@ -10,7 +10,7 @@ import { User } from '../models/User';
 import { databaseService } from '../services/databaseService';
 
 // Initial data setup
-export const initializeDatabase = async (): Promise<void> => {
+export const initializeDatabase = async(): Promise<void> => {
   try {
     console.log('🚀 Initializing Engineering Forge Database...');
 
@@ -46,7 +46,7 @@ export const initializeDatabase = async (): Promise<void> => {
 /**
  * Seed initial data for the application
  */
-const seedInitialData = async (): Promise<void> => {
+const seedInitialData = async(): Promise<void> => {
   try {
     // Create default admin user
     const adminUser = await databaseService.createUser({
@@ -194,7 +194,7 @@ const seedInitialData = async (): Promise<void> => {
 /**
  * Close database connection
  */
-export const closeDatabase = async (): Promise<void> => {
+export const closeDatabase = async(): Promise<void> => {
   try {
     await databaseService.close();
     console.log('✅ Database connection closed successfully');

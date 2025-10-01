@@ -139,19 +139,37 @@ export class TestResult extends BaseEntity<string> {
   }
 
   public getGrade(): 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' {
-    if (this._score >= 95) return 'A+';
-    if (this._score >= 90) return 'A';
-    if (this._score >= 80) return 'B';
-    if (this._score >= 70) return 'C';
-    if (this._score >= 60) return 'D';
+    if (this._score >= 95) {
+return 'A+';
+}
+    if (this._score >= 90) {
+return 'A';
+}
+    if (this._score >= 80) {
+return 'B';
+}
+    if (this._score >= 70) {
+return 'C';
+}
+    if (this._score >= 60) {
+return 'D';
+}
     return 'F';
   }
 
   public getPerformanceRating(): 'excellent' | 'good' | 'average' | 'poor' | 'terrible' {
-    if (this._score >= 85) return 'excellent';
-    if (this._score >= 70) return 'good';
-    if (this._score >= 55) return 'average';
-    if (this._score >= 40) return 'poor';
+    if (this._score >= 85) {
+return 'excellent';
+}
+    if (this._score >= 70) {
+return 'good';
+}
+    if (this._score >= 55) {
+return 'average';
+}
+    if (this._score >= 40) {
+return 'poor';
+}
     return 'terrible';
   }
 }

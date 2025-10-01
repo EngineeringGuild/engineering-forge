@@ -14,10 +14,10 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
-  
+
   const { t } = useTranslation('common');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  
+
   // NUCLEAR FIX: Use individual selectors to prevent object recreation
   const currentDocument = useNavigationStore((state) => state.currentDocument);
   const theme = useNavigationStore((state) => state.theme);
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            
+
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">EF</span>
@@ -111,7 +111,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
             </button>
 
             {/* Mobile Search Button */}
-            <button 
+            <button
               onClick={() => setIsSearchModalOpen(true)}
               className="sm:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
@@ -146,9 +146,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Search Modal */}
-      <SearchModal 
+      <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
       />

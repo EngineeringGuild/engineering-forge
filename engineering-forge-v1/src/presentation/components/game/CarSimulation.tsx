@@ -103,7 +103,7 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
   /**
    * Start car simulation
    */
-  const startSimulation = useCallback(async () => {
+  const startSimulation = useCallback(async() => {
     try {
       console.log('🚀 Starting simulation with components:', components);
       setError(null);
@@ -144,7 +144,7 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
    * Start animation from simulation steps
    */
   const startAnimation = useCallback(
-    async (simulationSteps: any[]) => {
+    async(simulationSteps: any[]) => {
       try {
         console.log('🎬 Starting animation with steps:', simulationSteps.length);
         setAnimationState(prev => ({ ...prev, isAnimating: true }));
@@ -248,7 +248,9 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
   const renderCar = useCallback(
     (ctx: CanvasRenderingContext2D, frame: AnimationFrame) => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+return;
+}
 
       const centerX = canvas.width / 2;
       const carX =
@@ -294,7 +296,9 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
   const renderTrack = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+return;
+}
 
       const trackY = canvas.height / 2;
 
@@ -339,7 +343,9 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
    */
   const renderEffects = useCallback((ctx: CanvasRenderingContext2D, effects: any[]) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+return;
+}
 
     effects.forEach(effect => {
       ctx.save();
@@ -388,10 +394,14 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
    */
   const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+return;
+}
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+return;
+}
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);

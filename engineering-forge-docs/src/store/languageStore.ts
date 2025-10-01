@@ -12,7 +12,7 @@ interface LanguageState {
   lastChanged: number;
   isInitialized: boolean;
   _memoizedLanguages?: Array<typeof SUPPORTED_LANGUAGES[SupportedLanguage]>; // FIXED: Memoization field
-  
+
   // Actions
   setLanguage: (language: SupportedLanguage) => Promise<boolean>;
   detectLanguage: () => SupportedLanguage;
@@ -20,7 +20,7 @@ interface LanguageState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   initialize: () => void;
-  
+
   // Getters
   getLanguageInfo: () => typeof SUPPORTED_LANGUAGES[SupportedLanguage];
   isRTL: () => boolean;
@@ -32,16 +32,16 @@ const initialState = {
   isLoading: false,
   error: null,
   lastChanged: Date.now(),
-  isInitialized: true, // FIXED: Start as initialized to prevent loops
+  isInitialized: true // FIXED: Start as initialized to prevent loops
 };
 
 // NUCLEAR FIX: Disable persistence to prevent infinite loops
 export const useLanguageStore = create<LanguageState>()((set, get) => ({
   ...initialState,
 
-  setLanguage: async (language: SupportedLanguage) => {
+  setLanguage: async(language: SupportedLanguage) => {
     const currentState = get();
-    
+
     // ENTERPRISE OPTIMIZATION: Don't change if it's the same language
     if (currentState.currentLanguage === language) {
       return true;
@@ -56,19 +56,19 @@ export const useLanguageStore = create<LanguageState>()((set, get) => ({
 
     try {
       const success = await changeLanguage(language);
-      
+
       if (success) {
         set({
           currentLanguage: language,
           isLoading: false,
           error: null,
-          lastChanged: Date.now(),
+          lastChanged: Date.now()
         });
         return true;
       } else {
         set({
           isLoading: false,
-          error: `Failed to change language to ${language}`,
+          error: `Failed to change language to ${language}`
         });
         return false;
       }
@@ -76,7 +76,7 @@ export const useLanguageStore = create<LanguageState>()((set, get) => ({
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       set({
         isLoading: false,
-        error: `Language change failed: ${errorMessage}`,
+        error: `Language change failed: ${errorMessage}`
       });
       return false;
     }
@@ -85,7 +85,7 @@ export const useLanguageStore = create<LanguageState>()((set, get) => ({
   detectLanguage: () => {
     try {
       // Professional language detection with proper fallbacks
-      
+
       // 1. Check localStorage first
       const stored = localStorage.getItem('engineering-forge-language') as SupportedLanguage;
       if (stored && Object.keys(SUPPORTED_LANGUAGES).includes(stored)) {
@@ -170,7 +170,7 @@ export const useLanguageStore = create<LanguageState>()((set, get) => ({
       return sorted;
     }
     return state._memoizedLanguages;
-  },
+  }
 }));
 
 // Selectors for better performance
@@ -195,6 +195,6 @@ export const useLanguageActions = () => {
     detectLanguage: state.detectLanguage,
     resetLanguage: state.resetLanguage,
     setLoading: state.setLoading,
-    setError: state.setError,
+    setError: state.setError
   }));
 };

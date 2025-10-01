@@ -49,7 +49,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   /**
    * Handle file upload
    */
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async(file: File) => {
     setError(null);
     setUploading(true);
     setProgress(0);
@@ -149,7 +149,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   /**
    * Handle remove avatar
    */
-  const handleRemoveAvatar = async () => {
+  const handleRemoveAvatar = async() => {
     try {
       await UserService.deleteAvatar();
       onAvatarChange?.('');

@@ -146,16 +146,27 @@ export class GameSave {
     unlockedComponents?: string[];
     unlockedAchievements?: string[];
   }): void {
-    if (state.currentLevel !== undefined) this.data.currentLevel = state.currentLevel;
-    if (state.score !== undefined) this.data.score = state.score;
-    if (state.credits !== undefined) this.data.credits = state.credits;
-    if (state.workspaceComponents !== undefined)
-      this.data.workspaceComponents = [...state.workspaceComponents];
-    if (state.testResults !== undefined) this.data.testResults = [...state.testResults];
-    if (state.unlockedComponents !== undefined)
-      this.data.unlockedComponents = [...state.unlockedComponents];
-    if (state.unlockedAchievements !== undefined)
-      this.data.unlockedAchievements = [...state.unlockedAchievements];
+    if (state.currentLevel !== undefined) {
+this.data.currentLevel = state.currentLevel;
+}
+    if (state.score !== undefined) {
+this.data.score = state.score;
+}
+    if (state.credits !== undefined) {
+this.data.credits = state.credits;
+}
+    if (state.workspaceComponents !== undefined) {
+this.data.workspaceComponents = [...state.workspaceComponents];
+}
+    if (state.testResults !== undefined) {
+this.data.testResults = [...state.testResults];
+}
+    if (state.unlockedComponents !== undefined) {
+this.data.unlockedComponents = [...state.unlockedComponents];
+}
+    if (state.unlockedAchievements !== undefined) {
+this.data.unlockedAchievements = [...state.unlockedAchievements];
+}
 
     this.data.updatedAt = new Date();
   }
@@ -179,14 +190,30 @@ export class GameSave {
   validate(): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    if (!this.data.id) errors.push('Save ID is required');
-    if (!this.data.userId) errors.push('User ID is required');
-    if (!this.data.version) errors.push('Version is required');
-    if (!this.data.saveName) errors.push('Save name is required');
-    if (this.data.currentLevel < 1) errors.push('Current level must be at least 1');
-    if (this.data.score < 0) errors.push('Score cannot be negative');
-    if (this.data.credits < 0) errors.push('Credits cannot be negative');
-    if (this.data.playTime < 0) errors.push('Play time cannot be negative');
+    if (!this.data.id) {
+errors.push('Save ID is required');
+}
+    if (!this.data.userId) {
+errors.push('User ID is required');
+}
+    if (!this.data.version) {
+errors.push('Version is required');
+}
+    if (!this.data.saveName) {
+errors.push('Save name is required');
+}
+    if (this.data.currentLevel < 1) {
+errors.push('Current level must be at least 1');
+}
+    if (this.data.score < 0) {
+errors.push('Score cannot be negative');
+}
+    if (this.data.credits < 0) {
+errors.push('Credits cannot be negative');
+}
+    if (this.data.playTime < 0) {
+errors.push('Play time cannot be negative');
+}
 
     return {
       isValid: errors.length === 0,

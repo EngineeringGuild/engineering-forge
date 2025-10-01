@@ -115,7 +115,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({
   /**
    * Handle form submission
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {

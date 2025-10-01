@@ -340,7 +340,7 @@ export class CarSimulationService {
     if (!lastStep) {
       throw new Error('Invalid simulation steps');
     }
-    
+
     const maxSpeed = Math.max(...steps.map(s => s.speed));
     const averageSpeed = steps.reduce((sum, s) => sum + s.speed, 0) / steps.length;
 

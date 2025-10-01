@@ -35,7 +35,7 @@ router.use(logRequests);
  * POST /auth/register
  * Register a new user
  */
-router.post('/register', rateLimit(15 * 60 * 1000, 5), async (req: Request, res: Response) => {
+router.post('/register', rateLimit(15 * 60 * 1000, 5), async(req: Request, res: Response) => {
   try {
     const { email, password, username, firstName, lastName }: RegisterRequest = req.body;
 
@@ -107,7 +107,7 @@ router.post('/register', rateLimit(15 * 60 * 1000, 5), async (req: Request, res:
  * POST /auth/login
  * Authenticate user login
  */
-router.post('/login', rateLimit(15 * 60 * 1000, 10), async (req: Request, res: Response) => {
+router.post('/login', rateLimit(15 * 60 * 1000, 10), async(req: Request, res: Response) => {
   try {
     const { email, password }: LoginRequest = req.body;
 
@@ -150,7 +150,7 @@ router.post('/login', rateLimit(15 * 60 * 1000, 10), async (req: Request, res: R
  * POST /auth/refresh
  * Refresh access token
  */
-router.post('/refresh', rateLimit(15 * 60 * 1000, 20), async (req: Request, res: Response) => {
+router.post('/refresh', rateLimit(15 * 60 * 1000, 20), async(req: Request, res: Response) => {
   try {
     const { refreshToken }: RefreshTokenRequest = req.body;
 
@@ -180,7 +180,7 @@ router.post('/refresh', rateLimit(15 * 60 * 1000, 20), async (req: Request, res:
  * POST /auth/logout
  * Logout user (blacklist token)
  */
-router.post('/logout', authenticateToken, async (req: Request, res: Response) => {
+router.post('/logout', authenticateToken, async(req: Request, res: Response) => {
   try {
     const authHeader = (req as any).headers.authorization;
     const token = authHeader?.split(' ')[1];
@@ -210,7 +210,7 @@ router.post('/logout', authenticateToken, async (req: Request, res: Response) =>
  * GET /auth/me
  * Get current user profile
  */
-router.get('/me', authenticateToken, async (req: Request, res: Response) => {
+router.get('/me', authenticateToken, async(req: Request, res: Response) => {
   try {
     const user = req.user;
 
@@ -232,7 +232,7 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
  * PUT /auth/change-password
  * Change user password
  */
-router.put('/change-password', authenticateToken, async (req: Request, res: Response) => {
+router.put('/change-password', authenticateToken, async(req: Request, res: Response) => {
   try {
     const { currentPassword, newPassword }: ChangePasswordRequest = req.body;
     const userId = req.userId;
@@ -290,7 +290,7 @@ router.put('/change-password', authenticateToken, async (req: Request, res: Resp
 router.post(
   '/forgot-password',
   rateLimit(15 * 60 * 1000, 3),
-  async (req: Request, res: Response) => {
+  async(req: Request, res: Response) => {
     try {
       const { email }: ForgotPasswordRequest = req.body;
 
@@ -333,7 +333,7 @@ router.post(
 router.post(
   '/reset-password',
   rateLimit(15 * 60 * 1000, 3),
-  async (req: Request, res: Response) => {
+  async(req: Request, res: Response) => {
     try {
       const { token, newPassword }: ResetPasswordRequest = req.body;
 
@@ -377,7 +377,7 @@ router.post(
  * POST /auth/verify-email
  * Verify user email
  */
-router.post('/verify-email', rateLimit(15 * 60 * 1000, 5), async (req: Request, res: Response) => {
+router.post('/verify-email', rateLimit(15 * 60 * 1000, 5), async(req: Request, res: Response) => {
   try {
     const { token }: VerifyEmailRequest = req.body;
 

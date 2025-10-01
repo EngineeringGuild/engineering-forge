@@ -12,7 +12,7 @@ export const SUPPORTED_LANGUAGES = {
     nativeName: 'English',
     flag: '🇺🇸',
     rtl: false,
-    priority: 1, // Higher priority = more likely to be preloaded
+    priority: 1 // Higher priority = more likely to be preloaded
   },
   pt: {
     code: 'pt',
@@ -20,7 +20,7 @@ export const SUPPORTED_LANGUAGES = {
     nativeName: 'Português',
     flag: '🇧🇷',
     rtl: false,
-    priority: 2,
+    priority: 2
   },
   fr: {
     code: 'fr',
@@ -28,7 +28,7 @@ export const SUPPORTED_LANGUAGES = {
     nativeName: 'Français',
     flag: '🇫🇷',
     rtl: false,
-    priority: 3,
+    priority: 3
   },
   uk: {
     code: 'uk',
@@ -36,7 +36,7 @@ export const SUPPORTED_LANGUAGES = {
     nativeName: 'Українська',
     flag: '🇺🇦',
     rtl: false,
-    priority: 4,
+    priority: 4
   },
   zh: {
     code: 'zh',
@@ -44,8 +44,8 @@ export const SUPPORTED_LANGUAGES = {
     nativeName: '中文',
     flag: '🇨🇳',
     rtl: false,
-    priority: 5,
-  },
+    priority: 5
+  }
 } as const;
 
 export type SupportedLanguage = keyof typeof SUPPORTED_LANGUAGES;
@@ -60,10 +60,10 @@ i18n
     ns: ['common', 'navigation'],
     supportedLngs: ['en', 'pt', 'fr', 'uk', 'zh'],
     interpolation: {
-      escapeValue: false,
+      escapeValue: false
     },
     react: {
-      useSuspense: false,
+      useSuspense: false
     },
     // Professional configuration with all languages
     resources: {
@@ -76,7 +76,7 @@ i18n
           'sections.gdd-content-assets': 'Content & Assets',
           'sections.gdd-business-model': 'Business Model',
           'sections.gdd-project-plan': 'Project Plan',
-          
+
           // TDD Sections
           'sections.tdd-api-design': 'API Design',
           'sections.tdd-frontend-architecture': 'Frontend Architecture',
@@ -92,7 +92,7 @@ i18n
           'sections.tdd-database-design': 'Database Design',
           'sections.tdd-technology-stack': 'Technology Stack',
           'sections.tdd-system-architecture': 'System Architecture',
-          'sections.tdd-appendices': 'Appendices',
+          'sections.tdd-appendices': 'Appendices'
         },
         common: {
           'app.title': 'Engineering Forge',
@@ -145,7 +145,7 @@ i18n
           'sections.gdd-content-assets': 'Conteúdo & Assets',
           'sections.gdd-business-model': 'Modelo de Negócio',
           'sections.gdd-project-plan': 'Plano do Projeto',
-          
+
           // TDD Sections
           'sections.tdd-api-design': 'Design da API',
           'sections.tdd-frontend-architecture': 'Arquitetura Frontend',
@@ -161,7 +161,7 @@ i18n
           'sections.tdd-database-design': 'Design do Banco de Dados',
           'sections.tdd-technology-stack': 'Stack Tecnológico',
           'sections.tdd-system-architecture': 'Arquitetura do Sistema',
-          'sections.tdd-appendices': 'Apêndices',
+          'sections.tdd-appendices': 'Apêndices'
         },
         common: {
           'app.title': 'Engineering Forge',
@@ -214,7 +214,7 @@ i18n
           'sections.gdd-content-assets': 'Contenu & Assets',
           'sections.gdd-business-model': 'Modèle Commercial',
           'sections.gdd-project-plan': 'Plan de Projet',
-          
+
           // TDD Sections
           'sections.tdd-api-design': 'Conception API',
           'sections.tdd-frontend-architecture': 'Architecture Frontend',
@@ -230,7 +230,7 @@ i18n
           'sections.tdd-database-design': 'Conception Base de Données',
           'sections.tdd-technology-stack': 'Stack Technologique',
           'sections.tdd-system-architecture': 'Architecture Système',
-          'sections.tdd-appendices': 'Annexes',
+          'sections.tdd-appendices': 'Annexes'
         },
         common: {
           'app.title': 'Engineering Forge',
@@ -283,7 +283,7 @@ i18n
           'sections.gdd-content-assets': 'Контент & Ресурси',
           'sections.gdd-business-model': 'Бізнес Модель',
           'sections.gdd-project-plan': 'План Проекту',
-          
+
           // TDD Sections
           'sections.tdd-api-design': 'Дизайн API',
           'sections.tdd-frontend-architecture': 'Архітектура Frontend',
@@ -299,7 +299,7 @@ i18n
           'sections.tdd-database-design': 'Дизайн Бази Даних',
           'sections.tdd-technology-stack': 'Технологічний Стек',
           'sections.tdd-system-architecture': 'Системна Архітектура',
-          'sections.tdd-appendices': 'Додатки',
+          'sections.tdd-appendices': 'Додатки'
         },
         common: {
           'app.title': 'Engineering Forge',
@@ -352,7 +352,7 @@ i18n
           'sections.gdd-content-assets': '内容与资产',
           'sections.gdd-business-model': '商业模式',
           'sections.gdd-project-plan': '项目计划',
-          
+
           // TDD Sections
           'sections.tdd-api-design': 'API设计',
           'sections.tdd-frontend-architecture': '前端架构',
@@ -368,7 +368,7 @@ i18n
           'sections.tdd-database-design': '数据库设计',
           'sections.tdd-technology-stack': '技术栈',
           'sections.tdd-system-architecture': '系统架构',
-          'sections.tdd-appendices': '附录',
+          'sections.tdd-appendices': '附录'
         },
         common: {
           'app.title': 'Engineering Forge',
@@ -430,13 +430,13 @@ export const isRTL = (code: string): boolean => {
 };
 
 // Change language with professional error handling and direction management
-export const changeLanguage = async (language: string): Promise<boolean> => {
+export const changeLanguage = async(language: string): Promise<boolean> => {
   try {
     await i18n.changeLanguage(language);
-    
+
     // Use the professional language initializer to update direction
     languageInitializer.updateLanguageDirection(language);
-    
+
     return true;
   } catch (error) {
     console.error(`Failed to change language to ${language}:`, error);
@@ -447,8 +447,8 @@ export const changeLanguage = async (language: string): Promise<boolean> => {
 // Get current language with fallback
 export const getCurrentLanguage = (): SupportedLanguage => {
   const currentLang = i18n.language;
-  return Object.keys(SUPPORTED_LANGUAGES).includes(currentLang) 
-    ? currentLang as SupportedLanguage 
+  return Object.keys(SUPPORTED_LANGUAGES).includes(currentLang)
+    ? currentLang as SupportedLanguage
     : 'en';
 };
 
@@ -467,8 +467,10 @@ class LanguageInitializer {
   }
 
   public initializeLanguageDirection(): void {
-    if (this.isInitialized) return;
-    
+    if (this.isInitialized) {
+return;
+}
+
     try {
       // Only initialize if document is available (browser environment)
       if (typeof document !== 'undefined') {

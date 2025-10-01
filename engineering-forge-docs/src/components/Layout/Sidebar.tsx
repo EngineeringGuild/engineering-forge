@@ -25,11 +25,11 @@ interface SidebarItemProps {
   onSectionClick: (sectionId: string) => void;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ 
-  section, 
-  level = 0, 
-  isActive = false, 
-  onSectionClick 
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  section,
+  level = 0,
+  isActive = false,
+  onSectionClick
 }) => {
   const { t } = useTranslation('navigation'); // FIXED: Ativada tradução
   const [isExpanded, setIsExpanded] = useState(level === 0);
@@ -71,7 +71,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         ) : (
           <FileText size={16} className="mr-2 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
         )}
-        
+
         {hasSubsections && (
           <div className="mr-2">
             {isExpanded ? (
@@ -81,7 +81,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             )}
           </div>
         )}
-        
+
         <span className="truncate">
           {t(`sections.${section.id}`) || section.title}
         </span>
@@ -155,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onMobileClose }) => {
                 )}
               </button>
             </div>
-            
+
             {!sidebarCollapsed && (
               <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 {currentStructure.totalSections} sections • {currentStructure.estimatedReadingTime} min read

@@ -18,7 +18,7 @@ export const useContent = () => {
   const [contentState, setContentState] = useState<ContentState>({
     content: '',
     isLoading: false,
-    error: null,
+    error: null
   });
 
   // Store selectors - optimized to prevent unnecessary re-renders
@@ -33,29 +33,31 @@ export const useContent = () => {
   const loadingRef = useRef(false);
 
   // Load content function with error handling
-  const loadContent = useCallback(async (
-    document: 'GDD' | 'TDD', 
-    sectionId: string, 
+  const loadContent = useCallback(async(
+    document: 'GDD' | 'TDD',
+    sectionId: string,
     language: SupportedLanguage
   ) => {
-    if (loadingRef.current) return; // Prevent concurrent loads
-    
+    if (loadingRef.current) {
+return;
+} // Prevent concurrent loads
+
     try {
       loadingRef.current = true;
       setContentState(prev => ({ ...prev, isLoading: true, error: null }));
 
       const content = await loadRealContent(document, sectionId, language);
-      
+
       setContentState({
         content,
         isLoading: false,
-        error: null,
+        error: null
       });
     } catch (error) {
       setContentState({
         content: getDefaultContent(document),
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load content',
+        error: error instanceof Error ? error.message : 'Failed to load content'
       });
     } finally {
       loadingRef.current = false;
@@ -80,7 +82,7 @@ export const useContent = () => {
       setContentState({
         content: getDefaultContent(currentDocument),
         isLoading: false,
-        error: null,
+        error: null
       });
     }
   }, [currentDocument, currentSection, currentLanguage, loadContent]); // FIXED: Added loadContent back to dependencies
@@ -95,7 +97,7 @@ export const useContent = () => {
   // Memoize return object to prevent unnecessary re-renders
   return useMemo(() => ({
     ...contentState,
-    reloadContent,
+    reloadContent
   }), [contentState, reloadContent]);
 };
 

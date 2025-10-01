@@ -11,15 +11,15 @@ interface LanguageSelectorProps {
   className?: string;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
-  variant = 'header', 
-  className = '' 
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({
+  variant = 'header',
+  className = ''
 }) => {
-  
+
   const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // FIXED: Use memoized selectors to prevent infinite loops
   const currentLanguage = useLanguageStore((state) => state.currentLanguage);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
@@ -52,7 +52,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   }, []);
 
   // Language change handler
-  const handleLanguageChange = useCallback(async (languageCode: SupportedLanguage) => {
+  const handleLanguageChange = useCallback(async(languageCode: SupportedLanguage) => {
     if (languageCode === currentLanguage) {
       setIsOpen(false);
       return;

@@ -53,7 +53,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
     }
   }, [isVisible, userId, saveService]);
 
-  const loadSaveSlots = async () => {
+  const loadSaveSlots = async() => {
     try {
       const slots = saveService.getSaveSlots(userId);
       const displaySlots: SaveSlotDisplay[] = slots.map(slot => ({
@@ -69,7 +69,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async() => {
     if (!selectedSlot) {
       showMessage('error', 'Please select a save slot');
       return;
@@ -154,7 +154,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
     }
   };
 
-  const handleLoad = async (slotNumber: number) => {
+  const handleLoad = async(slotNumber: number) => {
     setIsLoading(true);
     try {
       const result = await saveService.loadGame(userId, slotNumber);
@@ -173,7 +173,7 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
     }
   };
 
-  const handleDelete = async (slotNumber: number) => {
+  const handleDelete = async(slotNumber: number) => {
     if (!confirm('Are you sure you want to delete this save? This action cannot be undone.')) {
       return;
     }
@@ -204,9 +204,11 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
     }
   };
 
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+return;
+}
 
     setIsLoading(true);
     try {
@@ -245,14 +247,18 @@ export const SaveLoadPanel: React.FC<SaveLoadPanelProps> = ({
   };
 
   const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) {
+return '0 B';
+}
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

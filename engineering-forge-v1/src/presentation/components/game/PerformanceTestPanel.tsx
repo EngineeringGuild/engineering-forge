@@ -36,7 +36,7 @@ export const PerformanceTestPanel = memo<PerformanceTestPanelProps>(({ onTestCom
   // const performanceService = PerformanceOptimizationService.getInstance(); // TODO: Use in future implementation
   const memoryService = MemoryOptimizationService.getInstance();
 
-  const runPerformanceTest = useCallback(async () => {
+  const runPerformanceTest = useCallback(async() => {
     setIsRunning(true);
     setTestProgress(0);
     setResults(null);
@@ -98,21 +98,39 @@ export const PerformanceTestPanel = memo<PerformanceTestPanelProps>(({ onTestCom
       setTestProgress(90);
 
       let score = 100;
-      if (testResults.fps < 60) score -= 20;
-      if (testResults.fps < 30) score -= 30;
-      if (testResults.memoryUsage > 50) score -= 15;
-      if (testResults.memoryUsage > 100) score -= 25;
-      if (testResults.loadTime > 2000) score -= 10;
-      if (testResults.renderTime > 16) score -= 20;
+      if (testResults.fps < 60) {
+score -= 20;
+}
+      if (testResults.fps < 30) {
+score -= 30;
+}
+      if (testResults.memoryUsage > 50) {
+score -= 15;
+}
+      if (testResults.memoryUsage > 100) {
+score -= 25;
+}
+      if (testResults.loadTime > 2000) {
+score -= 10;
+}
+      if (testResults.renderTime > 16) {
+score -= 20;
+}
 
       testResults.score = Math.max(0, score);
 
       // Determine Grade
-      if (testResults.score >= 90) testResults.grade = 'A';
-      else if (testResults.score >= 80) testResults.grade = 'B';
-      else if (testResults.score >= 70) testResults.grade = 'C';
-      else if (testResults.score >= 60) testResults.grade = 'D';
-      else testResults.grade = 'F';
+      if (testResults.score >= 90) {
+testResults.grade = 'A';
+} else if (testResults.score >= 80) {
+testResults.grade = 'B';
+} else if (testResults.score >= 70) {
+testResults.grade = 'C';
+} else if (testResults.score >= 60) {
+testResults.grade = 'D';
+} else {
+testResults.grade = 'F';
+}
 
       setTestProgress(100);
       setCurrentTest('Test Complete!');
@@ -129,10 +147,18 @@ export const PerformanceTestPanel = memo<PerformanceTestPanelProps>(({ onTestCom
   }, [metrics.fps, memoryService, onTestComplete]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-400';
-    if (score >= 80) return 'text-blue-400';
-    if (score >= 70) return 'text-yellow-400';
-    if (score >= 60) return 'text-orange-400';
+    if (score >= 90) {
+return 'text-green-400';
+}
+    if (score >= 80) {
+return 'text-blue-400';
+}
+    if (score >= 70) {
+return 'text-yellow-400';
+}
+    if (score >= 60) {
+return 'text-orange-400';
+}
     return 'text-red-400';
   };
 

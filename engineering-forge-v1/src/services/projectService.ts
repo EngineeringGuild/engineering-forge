@@ -165,18 +165,30 @@ export class ProjectService {
     }
 
     // Update fields
-    if (updateData.name !== undefined) project.name = updateData.name;
-    if (updateData.description !== undefined) project.description = updateData.description;
-    if (updateData.type !== undefined) project.type = updateData.type;
-    if (updateData.difficulty !== undefined) project.difficulty = updateData.difficulty;
+    if (updateData.name !== undefined) {
+project.name = updateData.name;
+}
+    if (updateData.description !== undefined) {
+project.description = updateData.description;
+}
+    if (updateData.type !== undefined) {
+project.type = updateData.type;
+}
+    if (updateData.difficulty !== undefined) {
+project.difficulty = updateData.difficulty;
+}
     if (updateData.status !== undefined) {
       project.status = updateData.status;
       if (updateData.status === 'completed' && project.status !== 'completed') {
         project.completedAt = new Date();
       }
     }
-    if (updateData.isPublic !== undefined) project.isPublic = updateData.isPublic;
-    if (updateData.tags !== undefined) project.tags = updateData.tags;
+    if (updateData.isPublic !== undefined) {
+project.isPublic = updateData.isPublic;
+}
+    if (updateData.tags !== undefined) {
+project.tags = updateData.tags;
+}
 
     project.updatedAt = new Date();
     this.projects.set(projectId, project);

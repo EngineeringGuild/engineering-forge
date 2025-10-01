@@ -283,10 +283,18 @@ export class SimulationResult extends BaseEntity<string> {
    * @returns Grade letter (A, B, C, D, F)
    */
   getGrade(): string {
-    if (this._score >= 90) return 'A';
-    if (this._score >= 80) return 'B';
-    if (this._score >= 70) return 'C';
-    if (this._score >= 60) return 'D';
+    if (this._score >= 90) {
+return 'A';
+}
+    if (this._score >= 80) {
+return 'B';
+}
+    if (this._score >= 70) {
+return 'C';
+}
+    if (this._score >= 60) {
+return 'D';
+}
     return 'F';
   }
 
@@ -295,10 +303,18 @@ export class SimulationResult extends BaseEntity<string> {
    * @returns Performance rating string
    */
   getPerformanceRating(): string {
-    if (this._score >= 90) return 'Excellent';
-    if (this._score >= 80) return 'Good';
-    if (this._score >= 70) return 'Average';
-    if (this._score >= 60) return 'Below Average';
+    if (this._score >= 90) {
+return 'Excellent';
+}
+    if (this._score >= 80) {
+return 'Good';
+}
+    if (this._score >= 70) {
+return 'Average';
+}
+    if (this._score >= 60) {
+return 'Below Average';
+}
     return 'Poor';
   }
 

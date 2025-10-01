@@ -98,7 +98,7 @@ export class PerformanceTestService {
       {
         id: 'acceleration_test_1',
         name: '0-100 km/h Acceleration Test',
-        description: "Test your car's acceleration from 0 to 100 km/h",
+        description: 'Test your car\'s acceleration from 0 to 100 km/h',
         testType: 'acceleration',
         duration: 30,
         environment: {
@@ -305,7 +305,9 @@ export class PerformanceTestService {
     performance: PerformanceMetrics,
     configuration: TestConfiguration
   ): number {
-    if (!configuration.targetPerformance) return performance.overall;
+    if (!configuration.targetPerformance) {
+return performance.overall;
+}
 
     const targetAcceleration = configuration.targetPerformance.acceleration;
     const actualAcceleration = performance.acceleration;
@@ -319,7 +321,9 @@ export class PerformanceTestService {
     performance: PerformanceMetrics,
     configuration: TestConfiguration
   ): number {
-    if (!configuration.targetPerformance) return performance.overall;
+    if (!configuration.targetPerformance) {
+return performance.overall;
+}
 
     const targetSpeed = configuration.targetPerformance.topSpeed;
     const actualSpeed = performance.topSpeed;
@@ -332,7 +336,9 @@ export class PerformanceTestService {
     performance: PerformanceMetrics,
     configuration: TestConfiguration
   ): number {
-    if (!configuration.targetPerformance) return performance.overall;
+    if (!configuration.targetPerformance) {
+return performance.overall;
+}
 
     const targetHandling = configuration.targetPerformance.handling;
     const actualHandling = performance.handling;
@@ -345,7 +351,9 @@ export class PerformanceTestService {
     performance: PerformanceMetrics,
     configuration: TestConfiguration
   ): number {
-    if (!configuration.targetPerformance) return performance.overall;
+    if (!configuration.targetPerformance) {
+return performance.overall;
+}
 
     const targetEfficiency = configuration.targetPerformance.fuelEfficiency;
     const actualEfficiency = performance.fuelEfficiency;
@@ -358,7 +366,9 @@ export class PerformanceTestService {
     performance: PerformanceMetrics,
     configuration: TestConfiguration
   ): number {
-    if (!configuration.targetPerformance) return performance.overall;
+    if (!configuration.targetPerformance) {
+return performance.overall;
+}
 
     const target = configuration.targetPerformance;
 

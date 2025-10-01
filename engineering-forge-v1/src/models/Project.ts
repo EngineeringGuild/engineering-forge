@@ -208,14 +208,16 @@ projectSchema.index({
 });
 
 // Virtual for total components count
-projectSchema.virtual('componentCount').get(function () {
+projectSchema.virtual('componentCount').get(function() {
   return this.components.length;
 });
 
 // Virtual for performance score (0-100)
-projectSchema.virtual('performanceScore').get(function () {
+projectSchema.virtual('performanceScore').get(function() {
   const perf = this.performance;
-  if (!perf) return 0;
+  if (!perf) {
+return 0;
+}
 
   // Weighted performance calculation
   const accelerationScore = Math.min(perf.acceleration / 10, 1) * 25; // 25% weight
@@ -227,7 +229,7 @@ projectSchema.virtual('performanceScore').get(function () {
 });
 
 // Pre-save middleware to update metadata
-projectSchema.pre('save', function (next) {
+projectSchema.pre('save', function(next) {
   if (this.isModified('components') || this.isModified('performance')) {
     this.metadata.lastModified = new Date();
     this.metadata.version = (this as any).incrementVersion(this.metadata.version || '1.0.0');
@@ -236,13 +238,13 @@ projectSchema.pre('save', function (next) {
 });
 
 // Method to increment version
-projectSchema.methods.incrementVersion = function (currentVersion: string): string {
+projectSchema.methods.incrementVersion = function(currentVersion: string): string {
   const [major, minor, patch] = currentVersion.split('.').map(Number);
   return `${major}.${minor}.${(patch || 0) + 1}`;
 };
 
 // Method to calculate performance
-projectSchema.methods.calculatePerformance = function (): IPerformance {
+projectSchema.methods.calculatePerformance = function(): IPerformance {
   const components = this.components;
 
   // Calculate totals

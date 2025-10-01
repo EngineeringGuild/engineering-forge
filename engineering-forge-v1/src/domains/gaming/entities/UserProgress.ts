@@ -336,7 +336,9 @@ export class UserProgress {
 
   getExperienceToNextLevel(): number {
     const nextLevel = this.getNextLevelInfo();
-    if (!nextLevel) return 0;
+    if (!nextLevel) {
+return 0;
+}
     return nextLevel.experienceRequired - this.data.totalExperience;
   }
 
@@ -344,7 +346,9 @@ export class UserProgress {
     const currentLevel = this.getCurrentLevelInfo();
     const nextLevel = this.getNextLevelInfo();
 
-    if (!currentLevel || !nextLevel) return 100;
+    if (!currentLevel || !nextLevel) {
+return 100;
+}
 
     const currentXP = this.data.totalExperience - currentLevel.experienceRequired;
     const levelXP = nextLevel.experienceRequired - currentLevel.experienceRequired;

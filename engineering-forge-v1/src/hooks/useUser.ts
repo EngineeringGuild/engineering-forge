@@ -24,7 +24,7 @@ export const useUser = (): UseUserReturn => {
   /**
    * Fetch user profile data
    */
-  const fetchUser = useCallback(async () => {
+  const fetchUser = useCallback(async() => {
     try {
       setLoading(true);
       setError(null);
@@ -41,7 +41,7 @@ export const useUser = (): UseUserReturn => {
   /**
    * Update user profile
    */
-  const updateProfile = useCallback(async (data: UpdateProfileRequest): Promise<boolean> => {
+  const updateProfile = useCallback(async(data: UpdateProfileRequest): Promise<boolean> => {
     try {
       setError(null);
 
@@ -65,7 +65,7 @@ export const useUser = (): UseUserReturn => {
    * Update user preferences
    */
   const updatePreferences = useCallback(
-    async (data: UpdatePreferencesRequest): Promise<boolean> => {
+    async(data: UpdatePreferencesRequest): Promise<boolean> => {
       try {
         setError(null);
 
@@ -90,7 +90,7 @@ export const useUser = (): UseUserReturn => {
   /**
    * Upload avatar
    */
-  const uploadAvatar = useCallback(async (file: File): Promise<boolean> => {
+  const uploadAvatar = useCallback(async(file: File): Promise<boolean> => {
     try {
       setError(null);
 
@@ -118,7 +118,7 @@ export const useUser = (): UseUserReturn => {
   /**
    * Refresh user data
    */
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async() => {
     await fetchUser();
   }, [fetchUser]);
 
@@ -151,7 +151,7 @@ export const useUserStatistics = () => {
   /**
    * Fetch user statistics
    */
-  const fetchStatistics = useCallback(async () => {
+  const fetchStatistics = useCallback(async() => {
     try {
       setLoading(true);
       setError(null);
@@ -175,7 +175,7 @@ export const useUserStatistics = () => {
   /**
    * Refresh statistics data
    */
-  const refreshStatistics = useCallback(async () => {
+  const refreshStatistics = useCallback(async() => {
     await fetchStatistics();
   }, [fetchStatistics]);
 

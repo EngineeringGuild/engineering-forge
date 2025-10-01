@@ -14,7 +14,7 @@ export const useTranslation = (namespace?: string) => {
       if (!ready || !i18nT) {
         return fallback || key;
       }
-      
+
       const result = i18nT(key);
       return typeof result === 'string' ? result : (fallback || key);
     } catch {
@@ -25,7 +25,7 @@ export const useTranslation = (namespace?: string) => {
   return {
     t,
     i18n: i18n || {},
-    ready: ready || true, // FIXED: Default to true to prevent loading issues
+    ready: ready || true // FIXED: Default to true to prevent loading issues
   };
 };
 

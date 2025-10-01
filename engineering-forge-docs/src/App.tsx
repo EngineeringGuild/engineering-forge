@@ -22,7 +22,7 @@ import './i18n';
 
 const App: React.FC = () => {
   const { t } = useTranslation('common');
-  
+
   // FIXED: Local state management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -75,7 +75,7 @@ const App: React.FC = () => {
     if (currentSection) {
       return t(`navigation.sections.${currentSection}`) || currentSection;
     }
-    return currentDocument === 'GDD' 
+    return currentDocument === 'GDD'
       ? (t('navigation.documents.gdd') || 'Game Design Document')
       : (t('navigation.documents.tdd') || 'Technical Design Document');
   }, [currentDocument, currentSection, t]);
@@ -98,14 +98,14 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         {/* Header */}
-        <Header 
+        <Header
           onMenuToggle={handleMenuToggle}
           isMobileMenuOpen={isMobileMenuOpen}
         />
 
         <div className="flex h-[calc(100vh-4rem)]">
           {/* Sidebar */}
-          <Sidebar 
+          <Sidebar
             isCollapsed={sidebarCollapsed}
             isMobileMenuOpen={isMobileMenuOpen}
             onMobileMenuClose={handleMobileMenuClose}
@@ -129,7 +129,7 @@ const App: React.FC = () => {
                     </p>
                   )}
                 </div>
-                
+
                 {/* Action Buttons */}
                 <div className="flex items-center space-x-2">
                   <button
@@ -193,7 +193,7 @@ const App: React.FC = () => {
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={handleMobileMenuClose}
           />

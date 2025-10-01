@@ -317,18 +317,20 @@ courseSchema.index({ 'pricing.isFree': 1 });
 courseSchema.index({ title: 'text', description: 'text' });
 
 // Virtual for lesson count in course
-courseSchema.virtual('lessonCount').get(function () {
+courseSchema.virtual('lessonCount').get(function() {
   return this.lessons.length;
 });
 
 // Virtual for completion rate
-courseSchema.virtual('completionRate').get(function () {
-  if (this.enrollment.totalEnrolled === 0) return 0;
+courseSchema.virtual('completionRate').get(function() {
+  if (this.enrollment.totalEnrolled === 0) {
+return 0;
+}
   return Math.round((this.enrollment.completed / this.enrollment.totalEnrolled) * 100);
 });
 
 // Pre-save middleware to update metadata
-courseSchema.pre('save', function (next) {
+courseSchema.pre('save', function(next) {
   if (this.isModified('lessons') || this.isModified('description')) {
     this.metadata.lastUpdated = new Date();
   }
@@ -336,19 +338,19 @@ courseSchema.pre('save', function (next) {
 });
 
 // Method to calculate course duration from lessons
-courseSchema.methods.calculateDuration = function (lessons: ILesson[]): number {
+courseSchema.methods.calculateDuration = function(lessons: ILesson[]): number {
   return lessons.reduce((total, lesson) => total + lesson.estimatedDuration, 0);
 };
 
 // Method to update enrollment stats
-courseSchema.methods.updateEnrollmentStats = function (enrolled: number, completed: number) {
+courseSchema.methods.updateEnrollmentStats = function(enrolled: number, completed: number) {
   this.enrollment.totalEnrolled = enrolled;
   this.enrollment.completed = completed;
   this.save();
 };
 
 // Method to update rating
-courseSchema.methods.updateRating = function (newRating: number) {
+courseSchema.methods.updateRating = function(newRating: number) {
   const totalRatings = this.enrollment.totalRatings + 1;
   const currentTotal = this.enrollment.averageRating * this.enrollment.totalRatings;
   this.enrollment.averageRating = (currentTotal + newRating) / totalRatings;

@@ -229,7 +229,9 @@ export class AudioService {
 
   public stopSound(instanceId: string, fadeOut?: boolean, fadeOutDuration?: number): void {
     const instance = this.audioInstances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+return;
+}
 
     if (fadeOut) {
       this.fadeOut(instanceId, fadeOutDuration || 1000);
@@ -244,7 +246,9 @@ export class AudioService {
 
   public pauseSound(instanceId: string): void {
     const instance = this.audioInstances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+return;
+}
 
     instance.audio.pause();
     instance.isPlaying = false;
@@ -253,7 +257,9 @@ export class AudioService {
 
   public resumeSound(instanceId: string): void {
     const instance = this.audioInstances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+return;
+}
 
     instance.audio.play();
     instance.isPlaying = true;
@@ -262,7 +268,9 @@ export class AudioService {
 
   public setVolume(instanceId: string, volume: number): void {
     const instance = this.audioInstances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+return;
+}
 
     const clampedVolume = Math.max(0, Math.min(1, volume));
     instance.audio.volume = this.calculateVolume(instance.track, clampedVolume);
@@ -324,7 +332,9 @@ export class AudioService {
   }
 
   private calculateVolume(track: AudioTrack, customVolume?: number): number {
-    if (this.settings.muted) return 0;
+    if (this.settings.muted) {
+return 0;
+}
 
     const baseVolume = customVolume ?? track.volume;
     const typeVolume = this.getTypeVolume(track.type);
@@ -347,7 +357,9 @@ export class AudioService {
 
   private fadeIn(instanceId: string, duration: number): void {
     const instance = this.audioInstances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+return;
+}
 
     const startVolume = 0;
     const targetVolume = instance.volume;
@@ -368,7 +380,9 @@ export class AudioService {
 
   private fadeOut(instanceId: string, duration: number): void {
     const instance = this.audioInstances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+return;
+}
 
     const startVolume = instance.audio.volume;
     const startTime = Date.now();
@@ -390,7 +404,9 @@ export class AudioService {
   public async preloadAudio(trackIds: string[]): Promise<void> {
     const promises = trackIds.map(async trackId => {
       const track = this.audioTracks.get(trackId);
-      if (!track) return;
+      if (!track) {
+return;
+}
 
       try {
         const audio = new Audio(track.url);

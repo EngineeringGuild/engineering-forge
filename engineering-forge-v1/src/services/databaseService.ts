@@ -1,6 +1,6 @@
 /**
  * Database Service - Engineering Forge V1.0
- * 
+ *
  * This service provides high-level database operations and connection management
  * for all domains in the Engineering Forge application.
  */
@@ -77,7 +77,7 @@ export class DatabaseService {
       User: !!User,
       Project: !!Project,
       Lesson: !!Lesson,
-      Course: !!Course,
+      Course: !!Course
     };
 
     // Test database operations
@@ -93,7 +93,7 @@ export class DatabaseService {
       status: connection ? 'healthy' : 'unhealthy',
       connection,
       models,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
   }
 
@@ -412,7 +412,7 @@ export class DatabaseService {
         Lesson.countDocuments(),
         Course.countDocuments(),
         Project.countDocuments({ isPublic: true }),
-        Course.countDocuments({ isPublished: true }),
+        Course.countDocuments({ isPublished: true })
       ]);
 
       return {
@@ -421,7 +421,7 @@ export class DatabaseService {
         lessons,
         courses,
         publicProjects,
-        publishedCourses,
+        publishedCourses
       };
     } catch (error) {
       console.error('❌ Failed to get statistics:', error);
@@ -446,14 +446,14 @@ export class DatabaseService {
 
       const [projects, publicProjects] = await Promise.all([
         Project.countDocuments({ userId }),
-        Project.countDocuments({ userId, isPublic: true }),
+        Project.countDocuments({ userId, isPublic: true })
       ]);
 
       return {
         projects,
         publicProjects,
         totalXP: user.statistics.totalXP,
-        level: user.statistics.level,
+        level: user.statistics.level
       };
     } catch (error) {
       console.error('❌ Failed to get user statistics:', error);
@@ -466,10 +466,10 @@ export class DatabaseService {
 export const databaseService = DatabaseService.getInstance();
 
 // Export helper functions
-export const initializeDatabaseService = async (): Promise<void> => {
+export const initializeDatabaseService = async(): Promise<void> => {
   await databaseService.initialize();
 };
 
-export const closeDatabaseService = async (): Promise<void> => {
+export const closeDatabaseService = async(): Promise<void> => {
   await databaseService.close();
 };

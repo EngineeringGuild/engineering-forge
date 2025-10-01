@@ -115,7 +115,7 @@ const GamePage: React.FC = () => {
   // Initialize save service
   useEffect(() => {
     console.log('Initializing save service...');
-    const initSaveService = async () => {
+    const initSaveService = async() => {
       try {
         await saveService.initialize(userId);
         console.log('Save service initialized successfully');
@@ -404,7 +404,7 @@ const GamePage: React.FC = () => {
 
   // Save/Load functions
   const handleSave = useCallback(
-    async (saveData: GameSaveData) => {
+    async(saveData: GameSaveData) => {
       setLastSaved(new Date());
       playSave();
       console.log('Game saved:', saveData.saveName);
@@ -413,7 +413,7 @@ const GamePage: React.FC = () => {
   );
 
   const handleLoad = useCallback(
-    async (saveData: GameSaveData) => {
+    async(saveData: GameSaveData) => {
       // Restore game state from save data
       setLevel(saveData.currentLevel);
       setScore(saveData.score);
