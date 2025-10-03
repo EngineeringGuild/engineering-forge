@@ -1,8 +1,9 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/application/use-cases/StartGameSessionUseCase.ts
 
-import { GameSession } from '../../domain/entities/GameSession';
-import { GameSessionRepository } from '../../domain/repositories/GameSessionRepository';
-import { ProjectRepository } from '../../domain/repositories/ProjectRepository';
+import { GameSession } from "../../domain/entities/GameSession";
+import { GameSessionFactory } from "../../domain/factories/GameSessionFactory";
+import { GameSessionRepository } from "../../domain/repositories/GameSessionRepository";
+import { ProjectRepository } from "../../domain/repositories/ProjectRepository";
 
 export interface StartGameSessionRequest {
   userId: string;
@@ -18,19 +19,21 @@ export interface StartGameSessionResponse {
 export class StartGameSessionUseCase {
   constructor(
     private gameSessionRepository: GameSessionRepository,
-    private projectRepository: ProjectRepository
+    private projectRepository: ProjectRepository,
+    private gameSessionFactory: typeof GameSessionFactory
   ) {}
 
-  async execute(request: StartGameSessionRequest): Promise<StartGameSessionResponse> {
+  async execute(
+    request: StartGameSessionRequest
+  ): Promise<StartGameSessionResponse> {
     try {
       // Check if user already has an active session
-      const existingActiveSession = await this.gameSessionRepository.findActiveByUserId(
-        request.userId
-      );
+      const existingActiveSession =
+        await this.gameSessionRepository.findActiveByUserId(request.userId);
       if (existingActiveSession) {
         return {
           success: false,
-          error: 'User already has an active game session'
+          error: "User already has an active game session",
         };
       }
 
@@ -39,35 +42,28 @@ export class StartGameSessionUseCase {
       if (!project) {
         return {
           success: false,
-          error: 'Project not found'
+          error: "Project not found",
         };
       }
 
-      // Create new game session
-      const gameSession = new GameSession(
-        `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        {
-          userId: request.userId,
-          projectId: request.projectId,
-          startTime: new Date(),
-          status: 'active',
-          currentPhase: 'planning',
-          components: [],
-          achievements: []
-        }
-      );
+      // Create new game session using factory
+      const gameSession = this.gameSessionFactory.create({
+        userId: request.userId,
+        projectId: request.projectId,
+      });
 
       // Save the session
       await this.gameSessionRepository.save(gameSession);
 
       return {
         success: true,
-        gameSession
+        gameSession,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }

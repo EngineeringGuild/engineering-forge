@@ -117,7 +117,7 @@ if (typeof window !== 'undefined') {
       strokeStyle: '',
       lineWidth: 1,
       font: ''
-    }));
+    } as any));
   }
 }
 

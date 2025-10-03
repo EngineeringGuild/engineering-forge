@@ -10,5 +10,5 @@ export { default as ProgressBar } from './ProgressBar';
 export { default as ProgressPanel } from './ProgressPanel';
 
 // Re-export types
-export type { ProgressUpdate } from '../../../domains/gaming/services/ProgressService';
+export type { ProgressUpdate } from '../../../domains/gaming/domain/services/ProgressService';
 

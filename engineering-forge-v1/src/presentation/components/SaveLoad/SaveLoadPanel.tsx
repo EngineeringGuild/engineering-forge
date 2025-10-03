@@ -7,8 +7,8 @@
 
 import { AlertCircle, Download, HardDrive, Save, Trash2, Upload } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { GameSaveData, SaveSlot } from '../../../domains/gaming/entities/GameSave';
-import { SaveService } from '../../../domains/gaming/services/SaveService';
+import { GameSaveData, SaveSlot } from '../../../domains/gaming/domain/entities/GameSave';
+import { SaveService } from '../../../domains/gaming/domain/services/SaveService';
 
 interface SaveLoadPanelProps {
   userId: string;

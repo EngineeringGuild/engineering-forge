@@ -1,9 +1,9 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/services/PerformanceTestService.ts
 
-import { Component } from '../entities/Component';
-import { TestResult, TestType } from '../entities/TestResult';
-import { PerformanceMetrics } from '../value-objects/PerformanceMetrics';
-import { PhysicsSimulationService } from './PhysicsSimulationService';
+import { Component } from "../entities/Component";
+import { TestResult, TestType } from "../entities/TestResult";
+import { PerformanceMetrics } from "../value-objects/PerformanceMetrics";
+import { CarSimulationService } from "./CarSimulationService";
 
 export interface TestConfiguration {
   testType: TestType;
@@ -12,7 +12,7 @@ export interface TestConfiguration {
     temperature: number;
     humidity: number;
     windSpeed: number;
-    trackCondition: 'dry' | 'wet' | 'snow' | 'ice';
+    trackCondition: "dry" | "wet" | "snow" | "ice";
   };
   targetPerformance?: PerformanceMetrics;
   passThreshold: number; // 0-100
@@ -24,10 +24,10 @@ export interface TestScenario {
   description: string;
   testType: TestType;
   duration: number;
-  environment: TestConfiguration['environment'];
+  environment: TestConfiguration["environment"];
   targetPerformance: PerformanceMetrics;
   passThreshold: number;
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty: "easy" | "medium" | "hard" | "expert";
   rewards: {
     xp: number;
     credits: number;
@@ -36,17 +36,19 @@ export interface TestScenario {
 }
 
 export class PerformanceTestService {
-  constructor(private physicsService: PhysicsSimulationService) {}
+  constructor(private physicsService: CarSimulationService) {}
 
   public async runTest(
     components: Component[],
     configuration: TestConfiguration
   ): Promise<TestResult> {
-    const testId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const testId = `test_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const testResult = new TestResult(testId, {
       testType: configuration.testType,
-      status: 'pending',
+      status: "pending",
       startTime: new Date(),
       performance: new PerformanceMetrics({
         acceleration: 0,
@@ -56,11 +58,11 @@ export class PerformanceTestService {
         weight: 0,
         power: 0,
         torque: 0,
-        overall: 0
+        overall: 0,
       }),
       score: 0,
       passed: false,
-      environment: configuration.environment
+      environment: configuration.environment,
     });
 
     try {
@@ -70,7 +72,10 @@ export class PerformanceTestService {
       await this.simulateTestDuration(configuration.duration);
 
       // Calculate performance based on test type
-      const performance = this.calculateTestPerformance(components, configuration);
+      const performance = this.calculateTestPerformance(
+        components,
+        configuration
+      );
 
       // Calculate score
       const score = this.calculateTestScore(performance, configuration);
@@ -88,7 +93,9 @@ export class PerformanceTestService {
 
       return testResult;
     } catch (error) {
-      testResult.failTest(error instanceof Error ? error.message : 'Unknown error occurred');
+      testResult.failTest(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
       return testResult;
     }
   }
@@ -96,16 +103,16 @@ export class PerformanceTestService {
   public getAvailableTestScenarios(): TestScenario[] {
     return [
       {
-        id: 'acceleration_test_1',
-        name: '0-100 km/h Acceleration Test',
-        description: 'Test your car\'s acceleration from 0 to 100 km/h',
-        testType: 'acceleration',
+        id: "acceleration_test_1",
+        name: "0-100 km/h Acceleration Test",
+        description: "Test your car's acceleration from 0 to 100 km/h",
+        testType: "acceleration",
         duration: 30,
         environment: {
           temperature: 20,
           humidity: 50,
           windSpeed: 5,
-          trackCondition: 'dry'
+          trackCondition: "dry",
         },
         targetPerformance: new PerformanceMetrics({
           acceleration: 8.0,
@@ -115,26 +122,26 @@ export class PerformanceTestService {
           weight: 0,
           power: 0,
           torque: 0,
-          overall: 0
+          overall: 0,
         }),
         passThreshold: 60,
-        difficulty: 'easy',
+        difficulty: "easy",
         rewards: {
           xp: 50,
-          credits: 100
-        }
+          credits: 100,
+        },
       },
       {
-        id: 'top_speed_test_1',
-        name: 'Top Speed Challenge',
-        description: 'Reach maximum speed on a straight track',
-        testType: 'top_speed',
+        id: "top_speed_test_1",
+        name: "Top Speed Challenge",
+        description: "Reach maximum speed on a straight track",
+        testType: "top_speed",
         duration: 60,
         environment: {
           temperature: 25,
           humidity: 40,
           windSpeed: 10,
-          trackCondition: 'dry'
+          trackCondition: "dry",
         },
         targetPerformance: new PerformanceMetrics({
           acceleration: 0,
@@ -144,26 +151,26 @@ export class PerformanceTestService {
           weight: 0,
           power: 0,
           torque: 0,
-          overall: 0
+          overall: 0,
         }),
         passThreshold: 70,
-        difficulty: 'medium',
+        difficulty: "medium",
         rewards: {
           xp: 75,
-          credits: 150
-        }
+          credits: 150,
+        },
       },
       {
-        id: 'handling_test_1',
-        name: 'Slalom Course',
-        description: 'Navigate through a series of cones as fast as possible',
-        testType: 'handling',
+        id: "handling_test_1",
+        name: "Slalom Course",
+        description: "Navigate through a series of cones as fast as possible",
+        testType: "handling",
         duration: 45,
         environment: {
           temperature: 18,
           humidity: 60,
           windSpeed: 8,
-          trackCondition: 'dry'
+          trackCondition: "dry",
         },
         targetPerformance: new PerformanceMetrics({
           acceleration: 0,
@@ -173,26 +180,26 @@ export class PerformanceTestService {
           weight: 0,
           power: 0,
           torque: 0,
-          overall: 0
+          overall: 0,
         }),
         passThreshold: 65,
-        difficulty: 'medium',
+        difficulty: "medium",
         rewards: {
           xp: 60,
-          credits: 120
-        }
+          credits: 120,
+        },
       },
       {
-        id: 'efficiency_test_1',
-        name: 'Fuel Economy Run',
-        description: 'Complete a distance with maximum fuel efficiency',
-        testType: 'efficiency',
+        id: "efficiency_test_1",
+        name: "Fuel Economy Run",
+        description: "Complete a distance with maximum fuel efficiency",
+        testType: "efficiency",
         duration: 120,
         environment: {
           temperature: 22,
           humidity: 45,
           windSpeed: 3,
-          trackCondition: 'dry'
+          trackCondition: "dry",
         },
         targetPerformance: new PerformanceMetrics({
           acceleration: 0,
@@ -202,26 +209,26 @@ export class PerformanceTestService {
           weight: 0,
           power: 0,
           torque: 0,
-          overall: 0
+          overall: 0,
         }),
         passThreshold: 55,
-        difficulty: 'easy',
+        difficulty: "easy",
         rewards: {
           xp: 40,
-          credits: 80
-        }
+          credits: 80,
+        },
       },
       {
-        id: 'comprehensive_test_1',
-        name: 'Complete Performance Test',
-        description: 'Comprehensive test covering all performance aspects',
-        testType: 'comprehensive',
+        id: "comprehensive_test_1",
+        name: "Complete Performance Test",
+        description: "Comprehensive test covering all performance aspects",
+        testType: "comprehensive",
         duration: 180,
         environment: {
           temperature: 20,
           humidity: 50,
           windSpeed: 5,
-          trackCondition: 'dry'
+          trackCondition: "dry",
         },
         targetPerformance: new PerformanceMetrics({
           acceleration: 6.0,
@@ -231,23 +238,23 @@ export class PerformanceTestService {
           weight: 0,
           power: 0,
           torque: 0,
-          overall: 80
+          overall: 80,
         }),
         passThreshold: 75,
-        difficulty: 'hard',
+        difficulty: "hard",
         rewards: {
           xp: 150,
           credits: 300,
-          achievements: ['comprehensive_master']
-        }
-      }
+          achievements: ["comprehensive_master"],
+        },
+      },
     ];
   }
 
   private async simulateTestDuration(duration: number): Promise<void> {
     // Simulate test duration with a shorter delay for demo purposes
     const delay = Math.min(duration * 100, 2000); // Max 2 seconds for demo
-    return new Promise(resolve => setTimeout(resolve, delay));
+    return new Promise((resolve) => setTimeout(resolve, delay));
   }
 
   private calculateTestPerformance(
@@ -255,18 +262,16 @@ export class PerformanceTestService {
     configuration: TestConfiguration
   ): PerformanceMetrics {
     // Use physics service to calculate performance
-    const physicsResult = this.physicsService.simulateProject({
-      components,
-      environment: {
-        gravity: 9.81,
-        airDensity: this.calculateAirDensity(configuration.environment),
-        temperature: configuration.environment.temperature,
-        windSpeed: configuration.environment.windSpeed
-      }
-    });
+    const performanceCalculator =
+      this.physicsService.getPerformanceCalculator();
+    const physicsResult =
+      performanceCalculator.calculateInitialPerformance(components);
 
     // Adjust performance based on test type and environment
-    return this.adjustPerformanceForTest(physicsResult.performance, configuration);
+    return this.adjustPerformanceForTest(
+      physicsResult,
+      configuration
+    );
   }
 
   private calculateTestScore(
@@ -276,19 +281,19 @@ export class PerformanceTestService {
     let score = 0;
 
     switch (configuration.testType) {
-      case 'acceleration':
+      case "acceleration":
         score = this.calculateAccelerationScore(performance, configuration);
         break;
-      case 'top_speed':
+      case "top_speed":
         score = this.calculateTopSpeedScore(performance, configuration);
         break;
-      case 'handling':
+      case "handling":
         score = this.calculateHandlingScore(performance, configuration);
         break;
-      case 'efficiency':
+      case "efficiency":
         score = this.calculateEfficiencyScore(performance, configuration);
         break;
-      case 'comprehensive':
+      case "comprehensive":
         score = this.calculateComprehensiveScore(performance, configuration);
         break;
       default:
@@ -306,8 +311,8 @@ export class PerformanceTestService {
     configuration: TestConfiguration
   ): number {
     if (!configuration.targetPerformance) {
-return performance.overall;
-}
+      return performance.overall;
+    }
 
     const targetAcceleration = configuration.targetPerformance.acceleration;
     const actualAcceleration = performance.acceleration;
@@ -322,8 +327,8 @@ return performance.overall;
     configuration: TestConfiguration
   ): number {
     if (!configuration.targetPerformance) {
-return performance.overall;
-}
+      return performance.overall;
+    }
 
     const targetSpeed = configuration.targetPerformance.topSpeed;
     const actualSpeed = performance.topSpeed;
@@ -337,8 +342,8 @@ return performance.overall;
     configuration: TestConfiguration
   ): number {
     if (!configuration.targetPerformance) {
-return performance.overall;
-}
+      return performance.overall;
+    }
 
     const targetHandling = configuration.targetPerformance.handling;
     const actualHandling = performance.handling;
@@ -352,8 +357,8 @@ return performance.overall;
     configuration: TestConfiguration
   ): number {
     if (!configuration.targetPerformance) {
-return performance.overall;
-}
+      return performance.overall;
+    }
 
     const targetEfficiency = configuration.targetPerformance.fuelEfficiency;
     const actualEfficiency = performance.fuelEfficiency;
@@ -367,8 +372,8 @@ return performance.overall;
     configuration: TestConfiguration
   ): number {
     if (!configuration.targetPerformance) {
-return performance.overall;
-}
+      return performance.overall;
+    }
 
     const target = configuration.targetPerformance;
 
@@ -382,8 +387,8 @@ return performance.overall;
         weight: target.weight,
         power: target.power,
         torque: target.torque,
-        overall: target.overall
-      })
+        overall: target.overall,
+      }),
     });
     const speedScore = this.calculateTopSpeedScore(performance, {
       ...configuration,
@@ -395,8 +400,8 @@ return performance.overall;
         weight: target.weight,
         power: target.power,
         torque: target.torque,
-        overall: target.overall
-      })
+        overall: target.overall,
+      }),
     });
     const handlingScore = this.calculateHandlingScore(performance, {
       ...configuration,
@@ -408,8 +413,8 @@ return performance.overall;
         weight: target.weight,
         power: target.power,
         torque: target.torque,
-        overall: target.overall
-      })
+        overall: target.overall,
+      }),
     });
     const efficiencyScore = this.calculateEfficiencyScore(performance, {
       ...configuration,
@@ -421,11 +426,13 @@ return performance.overall;
         weight: target.weight,
         power: target.power,
         torque: target.torque,
-        overall: target.overall
-      })
+        overall: target.overall,
+      }),
     });
 
-    return (accelerationScore + speedScore + handlingScore + efficiencyScore) / 4;
+    return (
+      (accelerationScore + speedScore + handlingScore + efficiencyScore) / 4
+    );
   }
 
   private adjustPerformanceForTest(
@@ -433,12 +440,16 @@ return performance.overall;
     configuration: TestConfiguration
   ): PerformanceMetrics {
     // Adjust performance based on environment conditions
-    const temperatureFactor = 1 - Math.abs(configuration.environment.temperature - 20) * 0.01;
+    const temperatureFactor =
+      1 - Math.abs(configuration.environment.temperature - 20) * 0.01;
     const humidityFactor = 1 - configuration.environment.humidity * 0.005;
     const windFactor = 1 - configuration.environment.windSpeed * 0.02;
-    const trackFactor = this.getTrackConditionFactor(configuration.environment.trackCondition);
+    const trackFactor = this.getTrackConditionFactor(
+      configuration.environment.trackCondition
+    );
 
-    const adjustmentFactor = temperatureFactor * humidityFactor * windFactor * trackFactor;
+    const adjustmentFactor =
+      temperatureFactor * humidityFactor * windFactor * trackFactor;
 
     return new PerformanceMetrics({
       acceleration: performance.acceleration * adjustmentFactor,
@@ -448,13 +459,13 @@ return performance.overall;
       weight: performance.weight,
       power: performance.power,
       torque: performance.torque,
-      overall: performance.overall * adjustmentFactor
+      overall: performance.overall * adjustmentFactor,
     });
   }
 
   private applyEnvironmentModifiers(
     score: number,
-    environment: TestConfiguration['environment']
+    environment: TestConfiguration["environment"]
   ): number {
     let modifiedScore = score;
 
@@ -474,7 +485,9 @@ return performance.overall;
     }
 
     // Track condition modifier
-    const trackModifier = this.getTrackConditionFactor(environment.trackCondition);
+    const trackModifier = this.getTrackConditionFactor(
+      environment.trackCondition
+    );
     modifiedScore *= trackModifier;
 
     return modifiedScore;
@@ -482,61 +495,56 @@ return performance.overall;
 
   private getTrackConditionFactor(trackCondition: string): number {
     switch (trackCondition) {
-      case 'dry':
+      case "dry":
         return 1.0;
-      case 'wet':
+      case "wet":
         return 0.8;
-      case 'snow':
+      case "snow":
         return 0.6;
-      case 'ice':
+      case "ice":
         return 0.4;
       default:
         return 1.0;
     }
   }
 
-  private calculateAirDensity(environment: TestConfiguration['environment']): number {
-    // Simplified air density calculation based on temperature and humidity
-    const baseDensity = 1.225; // kg/m³ at sea level, 15°C
-    const temperatureFactor = 1 - (environment.temperature - 15) * 0.01;
-    const humidityFactor = 1 - environment.humidity * 0.001;
 
-    return baseDensity * temperatureFactor * humidityFactor;
-  }
-
-  private generateTestNotes(performance: PerformanceMetrics, score: number): string {
+  private generateTestNotes(
+    performance: PerformanceMetrics,
+    score: number
+  ): string {
     const notes = [];
 
     if (score >= 90) {
-      notes.push('Outstanding performance!');
+      notes.push("Outstanding performance!");
     } else if (score >= 80) {
-      notes.push('Excellent performance!');
+      notes.push("Excellent performance!");
     } else if (score >= 70) {
-      notes.push('Good performance.');
+      notes.push("Good performance.");
     } else if (score >= 60) {
-      notes.push('Average performance.');
+      notes.push("Average performance.");
     } else {
-      notes.push('Performance needs improvement.');
+      notes.push("Performance needs improvement.");
     }
 
     if (performance.acceleration < 5) {
-      notes.push('Excellent acceleration.');
+      notes.push("Excellent acceleration.");
     } else if (performance.acceleration > 10) {
-      notes.push('Acceleration could be improved.');
+      notes.push("Acceleration could be improved.");
     }
 
     if (performance.topSpeed > 200) {
-      notes.push('Impressive top speed.');
+      notes.push("Impressive top speed.");
     } else if (performance.topSpeed < 100) {
-      notes.push('Top speed is limited.');
+      notes.push("Top speed is limited.");
     }
 
     if (performance.handling > 80) {
-      notes.push('Great handling characteristics.');
+      notes.push("Great handling characteristics.");
     } else if (performance.handling < 50) {
-      notes.push('Handling needs work.');
+      notes.push("Handling needs work.");
     }
 
-    return notes.join(' ');
+    return notes.join(" ");
   }
 }

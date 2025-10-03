@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameActions } from '../../../domains/gaming/application/services/GameActions';
+import { GameActions } from '../../../domains/gaming/application/use-cases/GameActionsUseCase';
 import { GameState } from '../../../domains/gaming/domain/value-objects/GameState';
 import { AchievementsTab } from './tabs/AchievementsTab';
 import { BuildTab } from './tabs/BuildTab';
@@ -7,7 +7,7 @@ import { PerformanceTab } from './tabs/PerformanceTab';
 import { TestTab } from './tabs/TestTab';
 
 interface GameTabsProps {
-  activeTab: 'build' | 'test' | 'performance' | 'achievements';
+  activeTab: 'build' | 'test' | 'performance' | 'achievements' | 'simulation';
   gameState: GameState;
   gameActions: GameActions;
 }

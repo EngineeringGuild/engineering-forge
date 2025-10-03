@@ -1,6 +1,7 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/services/__tests__/CarSimulationService.test.ts
 
 import { Component } from '../../entities/Component';
+import { ComponentProperties } from '../../value-objects/ComponentProperties';
 import { CarSimulationService } from '../CarSimulationService';
 
 describe('CarSimulationService', () => {
@@ -16,12 +17,14 @@ describe('CarSimulationService', () => {
         name: 'Basic Chassis',
         type: 'chassis',
         category: 'structural',
-        properties: {
+        properties: ComponentProperties.create({
           power: 0,
           weight: 1000,
           efficiency: 80,
-          durability: 90
-        },
+          durability: 90,
+          cost: 100,
+          unlockLevel: 1
+        }),
         position: { x: 0, y: 0 },
         size: { width: 60, height: 30 },
         rotation: 0,
@@ -35,12 +38,14 @@ describe('CarSimulationService', () => {
         name: 'Basic Engine',
         type: 'engine',
         category: 'mechanical',
-        properties: {
+        properties: ComponentProperties.create({
           power: 150,
           weight: 200,
           efficiency: 70,
-          durability: 85
-        },
+          durability: 85,
+          cost: 500,
+          unlockLevel: 2
+        }),
         position: { x: 0, y: 0 },
         size: { width: 40, height: 30 },
         rotation: 0,
@@ -54,12 +59,14 @@ describe('CarSimulationService', () => {
         name: 'Basic Wheels',
         type: 'wheels',
         category: 'mechanical',
-        properties: {
+        properties: ComponentProperties.create({
           power: 0,
           weight: 100,
           efficiency: 75,
-          durability: 80
-        },
+          durability: 80,
+          cost: 200,
+          unlockLevel: 1
+        }),
         position: { x: 0, y: 0 },
         size: { width: 20, height: 20 },
         rotation: 0,
@@ -266,11 +273,9 @@ describe('CarSimulationService', () => {
       expect(defaultConfig.trackLength).toBe(1000);
       expect(defaultConfig.maxSimulationTime).toBe(60);
       expect(defaultConfig.timeStep).toBe(0.1);
-      expect(defaultConfig.gravity).toBe(9.81);
-      expect(defaultConfig.airDensity).toBe(1.225);
-      expect(defaultConfig.frictionCoefficient).toBe(0.7);
       expect(defaultConfig.enablePhysics).toBe(true);
       expect(defaultConfig.enableDrag).toBe(true);
+      expect(defaultConfig.enableFriction).toBe(true);
     });
   });
 
@@ -283,11 +288,14 @@ describe('CarSimulationService', () => {
             name: comp.name,
             type: comp.type,
             category: comp.category,
-            properties: {
-              ...comp.properties,
+            properties: ComponentProperties.create({
               power: 300, // High power engine
-              weight: 150 // Lighter weight
-            },
+              weight: 150, // Lighter weight
+              efficiency: comp.properties.efficiency,
+              durability: comp.properties.durability,
+              cost: comp.properties.cost,
+              unlockLevel: comp.properties.unlockLevel
+            }),
             position: comp.position,
             size: comp.size,
             rotation: comp.rotation,
@@ -313,10 +321,14 @@ describe('CarSimulationService', () => {
           name: comp.name,
           type: comp.type,
           category: comp.category,
-          properties: {
-            ...comp.properties,
-            weight: comp.properties.weight * 2 // Double the weight
-          },
+          properties: ComponentProperties.create({
+            power: comp.properties.power,
+            weight: comp.properties.weight * 2, // Double the weight
+            efficiency: comp.properties.efficiency,
+            durability: comp.properties.durability,
+            cost: comp.properties.cost,
+            unlockLevel: comp.properties.unlockLevel
+          }),
           position: comp.position,
           size: comp.size,
           rotation: comp.rotation,

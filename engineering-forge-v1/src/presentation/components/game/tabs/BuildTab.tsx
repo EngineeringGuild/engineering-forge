@@ -1,26 +1,35 @@
-import { Pause, Play, Zap } from 'lucide-react';
-import React, { useState } from 'react';
-import { getUnlockedComponents } from '../../../../data/components';
-import { GameActions } from '../../../../domains/gaming/application/services/GameActions';
-import { GameState } from '../../../../domains/gaming/domain/value-objects/GameState';
-import { ComponentPalette } from '../ComponentPalette';
-import { ConstructionWorkspace } from '../ConstructionWorkspace';
+import { Pause, Play, Zap } from "lucide-react";
+import React, { useState } from "react";
+import { getUnlockedComponents } from "../../../../data/components";
+import { GameActions } from "../../../../domains/gaming/application/use-cases/GameActionsUseCase";
+import { GameState } from "../../../../domains/gaming/domain/value-objects/GameState";
+import { ComponentPalette } from "../workspace/ComponentPalette";
+import { ConstructionWorkspace } from "../workspace/ConstructionWorkspace";
 
 interface BuildTabProps {
   gameState: GameState;
   gameActions: GameActions;
 }
 
-export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) => {
+export const BuildTab: React.FC<BuildTabProps> = ({
+  gameState,
+  gameActions,
+}) => {
   const availableComponents = getUnlockedComponents(gameState.level);
   const [selectedCategory, setSelectedCategory] = useState<
-    'mechanical' | 'electrical' | 'structural' | 'aerodynamic'
-  >('mechanical');
+    "mechanical" | "electrical" | "structural" | "aerodynamic"
+  >("mechanical");
 
   // Check if car is complete (has chassis, engine, and wheels)
-  const hasChassis = gameState.workspaceComponents.some(c => c.type === 'chassis');
-  const hasEngine = gameState.workspaceComponents.some(c => c.type === 'engine');
-  const hasWheels = gameState.workspaceComponents.some(c => c.type === 'wheels');
+  const hasChassis = gameState.workspaceComponents.some(
+    (c) => c.type === "chassis"
+  );
+  const hasEngine = gameState.workspaceComponents.some(
+    (c) => c.type === "engine"
+  );
+  const hasWheels = gameState.workspaceComponents.some(
+    (c) => c.type === "wheels"
+  );
   const isCarComplete = hasChassis && hasEngine && hasWheels;
 
   return (
@@ -29,12 +38,12 @@ export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) =>
       <div className="lg:col-span-1">
         <ComponentPalette
           components={availableComponents}
-          onComponentSelect={component => {
-            console.log('Component selected:', component.name);
+          onComponentSelect={(component) => {
+            console.log("Component selected:", component.name);
 
             // Check if component type already exists
             const existingComponent = gameState.workspaceComponents.find(
-              c => c.type === component.type
+              (c) => c.type === component.type
             );
             if (existingComponent) {
               alert(
@@ -68,19 +77,27 @@ export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) =>
                 {/* Car completion indicator */}
                 <div className="flex items-center space-x-2">
                   <div
-                    className={`w-3 h-3 rounded-full ${hasChassis ? 'bg-green-500' : 'bg-gray-500'}`}
+                    className={`w-3 h-3 rounded-full ${
+                      hasChassis ? "bg-green-500" : "bg-gray-500"
+                    }`}
                     title="Chassis"
                   />
                   <div
-                    className={`w-3 h-3 rounded-full ${hasEngine ? 'bg-green-500' : 'bg-gray-500'}`}
+                    className={`w-3 h-3 rounded-full ${
+                      hasEngine ? "bg-green-500" : "bg-gray-500"
+                    }`}
                     title="Engine"
                   />
                   <div
-                    className={`w-3 h-3 rounded-full ${hasWheels ? 'bg-green-500' : 'bg-gray-500'}`}
+                    className={`w-3 h-3 rounded-full ${
+                      hasWheels ? "bg-green-500" : "bg-gray-500"
+                    }`}
                     title="Wheels"
                   />
                   {isCarComplete && (
-                    <span className="text-green-400 text-sm font-medium">🚗 Complete!</span>
+                    <span className="text-green-400 text-sm font-medium">
+                      🚗 Complete!
+                    </span>
                   )}
                 </div>
                 <button
@@ -109,8 +126,12 @@ export const BuildTab: React.FC<BuildTabProps> = ({ gameState, gameActions }) =>
               onComponentMove={(componentId, position) =>
                 gameActions.moveComponent(componentId, position)
               }
-              onComponentSelect={componentId => gameActions.selectComponent(componentId)}
-              onComponentRemove={componentId => gameActions.removeComponent(componentId)}
+              onComponentSelect={(componentId) =>
+                gameActions.selectComponent(componentId)
+              }
+              onComponentRemove={(componentId) =>
+                gameActions.removeComponent(componentId)
+              }
               selectedComponentId={gameState.selectedComponentId || undefined}
               gridSize={gameState.gridSize}
               snapToGrid={gameState.snapToGrid}

@@ -228,7 +228,7 @@ export class ProjectAggregate extends BaseEntity<string> {
   }
 
   public calculatePerformance(): PerformanceMetrics {
-    // This would be implemented by the PhysicsSimulationService
+    // This would be implemented by the CarSimulationService
     // For now, return a basic calculation
     const totalPower = this.getTotalPower();
     const totalWeight = this.getTotalWeight();

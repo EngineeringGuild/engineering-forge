@@ -12,7 +12,7 @@ import {
   logRequests,
   rateLimit
 } from '../middleware/auth';
-import { AuthenticationService } from '../services/authService';
+import { AuthenticationService } from '../domains/gaming/infrastructure/services/authService';
 import {
   ApiResponse,
   ChangePasswordRequest,

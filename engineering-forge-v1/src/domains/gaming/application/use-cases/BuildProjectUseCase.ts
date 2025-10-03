@@ -1,9 +1,10 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/application/use-cases/BuildProjectUseCase.ts
 
-import { ProjectAggregate } from '../../domain/aggregates/ProjectAggregate';
-import { Component } from '../../domain/entities/Component';
-import { ProjectRepository } from '../../domain/repositories/ProjectRepository';
-import { PhysicsSimulationService } from '../../domain/services/PhysicsSimulationService';
+import { ProjectAggregate } from "../../domain/aggregates/ProjectAggregate";
+import { Component } from "../../domain/entities/Component";
+import { ProjectRepository } from "../../domain/repositories/ProjectRepository";
+import { CarSimulationService } from "../../domain/services/CarSimulationService";
+import { PerformanceMetrics } from "../../domain/value-objects/PerformanceMetrics";
 
 export interface BuildProjectRequest {
   projectId: string;
@@ -13,14 +14,14 @@ export interface BuildProjectRequest {
 export interface BuildProjectResponse {
   success: boolean;
   project?: ProjectAggregate;
-  performance?: any;
+  performance?: PerformanceMetrics;
   error?: string;
 }
 
 export class BuildProjectUseCase {
   constructor(
     private projectRepository: ProjectRepository,
-    private physicsService: PhysicsSimulationService
+    private physicsService: CarSimulationService
   ) {}
 
   async execute(request: BuildProjectRequest): Promise<BuildProjectResponse> {
@@ -30,23 +31,19 @@ export class BuildProjectUseCase {
       if (!project) {
         return {
           success: false,
-          error: 'Project not found'
+          error: "Project not found",
         };
       }
 
       // Add component to project
       project.addComponent(request.component);
 
-      // Calculate new performance
-      const performance = this.physicsService.simulateProject({
-        components: project.components,
-        environment: {
-          gravity: 9.81,
-          airDensity: 1.225,
-          temperature: 20,
-          windSpeed: 0
-        }
-      });
+      // Calculate new performance using the performance calculator
+      const performanceCalculator =
+        this.physicsService.getPerformanceCalculator();
+      const performance = performanceCalculator.calculateInitialPerformance(
+        project.components
+      );
 
       // Save the project
       await this.projectRepository.save(project);
@@ -54,12 +51,13 @@ export class BuildProjectUseCase {
       return {
         success: true,
         project,
-        performance
+        performance,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }

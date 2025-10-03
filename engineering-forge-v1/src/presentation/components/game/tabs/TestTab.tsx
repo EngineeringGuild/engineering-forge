@@ -1,8 +1,8 @@
-import { Trophy } from 'lucide-react';
-import React from 'react';
-import { GameActions } from '../../../../domains/gaming/application/services/GameActions';
-import { GameState } from '../../../../domains/gaming/domain/value-objects/GameState';
-import { PerformanceTestPanel } from '../PerformanceTestPanel';
+import { Trophy } from "lucide-react";
+import React from "react";
+import { GameActions } from "../../../../domains/gaming/application/use-cases/GameActionsUseCase";
+import { GameState } from "../../../../domains/gaming/domain/value-objects/GameState";
+import { PerformanceTestPanel } from "../performance/PerformanceTestPanel";
 
 interface TestTabProps {
   gameState: GameState;
@@ -20,7 +20,7 @@ export const TestTab: React.FC<TestTabProps> = ({ gameState, gameActions }) => {
     recommendations: string[];
   }) => {
     // TODO: Create proper TestResult entity
-    console.log('Test completed:', results);
+    console.log("Test completed:", results);
     gameActions.playTestComplete();
   };
 
@@ -50,18 +50,20 @@ export const TestTab: React.FC<TestTabProps> = ({ gameState, gameActions }) => {
                 key={result.id}
                 className={`p-3 rounded-lg border ${
                   result.passed
-                    ? 'bg-green-900/20 border-green-500/30'
-                    : 'bg-red-900/20 border-red-500/30'
+                    ? "bg-green-900/20 border-green-500/30"
+                    : "bg-red-900/20 border-red-500/30"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-white">Test #{index + 1}</span>
+                  <span className="text-sm font-medium text-white">
+                    Test #{index + 1}
+                  </span>
                   <span
                     className={`text-xs font-bold ${
-                      result.passed ? 'text-green-400' : 'text-red-400'
+                      result.passed ? "text-green-400" : "text-red-400"
                     }`}
                   >
-                    {result.passed ? 'PASSED' : 'FAILED'}
+                    {result.passed ? "PASSED" : "FAILED"}
                   </span>
                 </div>
                 <div className="text-xs text-gray-300">

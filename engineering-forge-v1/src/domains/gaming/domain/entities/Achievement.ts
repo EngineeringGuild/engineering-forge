@@ -1,234 +1,351 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/entities/Achievement.ts
 
-import { BaseEntity } from '../../../../shared/domain/BaseEntity';
-
-export type AchievementType =
-  | 'completion'
-  | 'performance'
-  | 'speed'
-  | 'efficiency'
-  | 'innovation'
-  | 'collection'
-  | 'social';
-export type AchievementCategory =
-  | 'builder'
-  | 'engineer'
-  | 'speedster'
-  | 'perfectionist'
-  | 'explorer'
-  | 'collector'
-  | 'social';
-export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
-
-export interface AchievementRequirement {
-  type: string;
-  value: number;
-  description: string;
-  currentValue?: number;
-}
-
 export interface AchievementProps {
-  title: string;
-  description: string;
-  type: AchievementType;
-  category: AchievementCategory;
-  icon: string;
-  points: number;
-  rarity: AchievementRarity;
-  requirements: AchievementRequirement[];
-  isUnlocked: boolean;
-  unlockedAt?: Date;
-  progress: number; // 0-100
-  rewards: {
-    xp: number;
-    credits: number;
-    components?: string[];
-    title?: string;
-  };
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: string;
+  readonly category: AchievementCategory;
+  readonly rarity: AchievementRarity;
+  readonly requirements: AchievementRequirements;
+  readonly rewards: AchievementRewards;
+  readonly unlockedAt?: Date;
+  readonly progress: number; // 0-100
+  readonly isUnlocked: boolean;
+  readonly isHidden: boolean;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }
 
-export class Achievement extends BaseEntity<string> {
-  private _title: string;
-  private _description: string;
-  private _type: AchievementType;
-  private _category: AchievementCategory;
-  private _icon: string;
-  private _points: number;
-  private _rarity: AchievementRarity;
-  private _requirements: AchievementRequirement[];
-  private _isUnlocked: boolean;
-  private _unlockedAt?: Date;
-  private _progress: number;
-  private _rewards: AchievementProps['rewards'];
+export type AchievementCategory =
+  | "construction"
+  | "performance"
+  | "testing"
+  | "exploration"
+  | "mastery"
+  | "special";
 
-  constructor(id: string, props: AchievementProps) {
-    super(id);
-    this._title = props.title;
-    this._description = props.description;
-    this._type = props.type;
-    this._category = props.category;
-    this._icon = props.icon;
-    this._points = props.points;
-    this._rarity = props.rarity;
-    this._requirements = [...props.requirements];
-    this._isUnlocked = props.isUnlocked;
-    this._unlockedAt = props.unlockedAt;
-    this._progress = props.progress;
-    this._rewards = props.rewards;
+export type AchievementRarity =
+  | "common"
+  | "rare"
+  | "epic"
+  | "legendary"
+  | "mythic";
+
+export interface AchievementRequirements {
+  readonly type:
+    | "component_count"
+    | "performance_score"
+    | "test_count"
+    | "level"
+    | "custom";
+  readonly target: number;
+  readonly description: string;
+  readonly conditions?: Record<string, unknown>;
+}
+
+export interface AchievementRewards {
+  readonly xp: number;
+  readonly credits: number;
+  readonly title?: string;
+  readonly badge?: string;
+  readonly unlockComponent?: string;
+  readonly customReward?: string;
+}
+
+export class Achievement {
+  private readonly props: AchievementProps;
+
+  private constructor(props: AchievementProps) {
+    this.props = props;
+  }
+
+  public static create(
+    props: Omit<AchievementProps, "id" | "createdAt" | "updatedAt">
+  ): Achievement {
+    this.validateAchievement(props);
+
+    const now = new Date();
+    return new Achievement({
+      ...props,
+      id: `achievement_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  public static restore(props: AchievementProps): Achievement {
+    return new Achievement(props);
+  }
+
+  private static validateAchievement(
+    props: Omit<AchievementProps, "id" | "createdAt" | "updatedAt">
+  ): void {
+    if (!props.title || props.title.trim().length === 0) {
+      throw new Error("Achievement title is required");
+    }
+
+    if (props.title.length > 100) {
+      throw new Error("Achievement title must be less than 100 characters");
+    }
+
+    if (!props.description || props.description.trim().length === 0) {
+      throw new Error("Achievement description is required");
+    }
+
+    if (props.description.length > 500) {
+      throw new Error(
+        "Achievement description must be less than 500 characters"
+      );
+    }
+
+    if (!props.icon || props.icon.trim().length === 0) {
+      throw new Error("Achievement icon is required");
+    }
+
+    if (
+      ![
+        "construction",
+        "performance",
+        "testing",
+        "exploration",
+        "mastery",
+        "special",
+      ].includes(props.category)
+    ) {
+      throw new Error("Invalid achievement category");
+    }
+
+    if (
+      !["common", "rare", "epic", "legendary", "mythic"].includes(props.rarity)
+    ) {
+      throw new Error("Invalid achievement rarity");
+    }
+
+    if (props.progress < 0 || props.progress > 100) {
+      throw new Error("Achievement progress must be between 0 and 100");
+    }
+
+    if (props.rewards.xp < 0) {
+      throw new Error("Achievement XP reward must be non-negative");
+    }
+
+    if (props.rewards.credits < 0) {
+      throw new Error("Achievement credits reward must be non-negative");
+    }
+  }
+
+  // Getters
+  get id(): string {
+    return this.props.id;
   }
 
   get title(): string {
-    return this._title;
+    return this.props.title;
   }
 
   get description(): string {
-    return this._description;
-  }
-
-  get type(): AchievementType {
-    return this._type;
-  }
-
-  get category(): AchievementCategory {
-    return this._category;
+    return this.props.description;
   }
 
   get icon(): string {
-    return this._icon;
+    return this.props.icon;
   }
 
-  get points(): number {
-    return this._points;
+  get category(): AchievementCategory {
+    return this.props.category;
   }
 
   get rarity(): AchievementRarity {
-    return this._rarity;
+    return this.props.rarity;
   }
 
-  get requirements(): AchievementRequirement[] {
-    return [...this._requirements];
+  get requirements(): AchievementRequirements {
+    return { ...this.props.requirements };
   }
 
-  get isUnlocked(): boolean {
-    return this._isUnlocked;
+  get rewards(): AchievementRewards {
+    return { ...this.props.rewards };
   }
 
   get unlockedAt(): Date | undefined {
-    return this._unlockedAt;
+    return this.props.unlockedAt;
   }
 
   get progress(): number {
-    return this._progress;
+    return this.props.progress;
   }
 
-  get rewards(): AchievementProps['rewards'] {
-    return this._rewards;
+  get isUnlocked(): boolean {
+    return this.props.isUnlocked;
   }
 
-  public unlock(): void {
-    if (this._isUnlocked) {
-      throw new Error('Achievement is already unlocked');
-    }
-
-    this._isUnlocked = true;
-    this._unlockedAt = new Date();
-    this._progress = 100;
-    this.updateTimestamp();
+  get isHidden(): boolean {
+    return this.props.isHidden;
   }
 
-  public updateProgress(progress: number): void {
-    if (this._isUnlocked) {
-      return; // Don't update progress for unlocked achievements
-    }
-
-    this._progress = Math.max(0, Math.min(100, progress));
-    this.updateTimestamp();
+  get createdAt(): Date {
+    return this.props.createdAt;
   }
 
-  public updateRequirementProgress(requirementIndex: number, currentValue: number): void {
-    if (this._isUnlocked) {
-      return; // Don't update requirements for unlocked achievements
-    }
-
-    if (requirementIndex < 0 || requirementIndex >= this._requirements.length) {
-      throw new Error('Invalid requirement index');
-    }
-
-    this._requirements[requirementIndex].currentValue = currentValue;
-    this.calculateProgress();
-    this.updateTimestamp();
+  get updatedAt(): Date {
+    return this.props.updatedAt;
   }
 
-  private calculateProgress(): void {
-    if (this._requirements.length === 0) {
-      this._progress = 0;
-      return;
-    }
-
-    let totalProgress = 0;
-    for (const requirement of this._requirements) {
-      const currentValue = requirement.currentValue || 0;
-      const progress = Math.min(100, (currentValue / requirement.value) * 100);
-      totalProgress += progress;
-    }
-
-    this._progress = totalProgress / this._requirements.length;
+  // Computed properties for UI
+  get points(): number {
+    return this.props.rewards.xp;
   }
 
-  public canBeUnlocked(): boolean {
-    if (this._isUnlocked) {
-      return false;
+  // Business Methods
+  /**
+   * Update achievement progress
+   */
+  updateProgress(progress: number): Achievement {
+    if (progress < 0 || progress > 100) {
+      throw new Error("Progress must be between 0 and 100");
     }
 
-    for (const requirement of this._requirements) {
-      const currentValue = requirement.currentValue || 0;
-      if (currentValue < requirement.value) {
-        return false;
-      }
-    }
+    const newProgress = Math.min(progress, 100);
+    const isUnlocked = newProgress >= 100 && !this.props.isUnlocked;
+    const unlockedAt = isUnlocked ? new Date() : this.props.unlockedAt;
 
-    return true;
+    return new Achievement({
+      ...this.props,
+      progress: newProgress,
+      isUnlocked: isUnlocked || this.props.isUnlocked,
+      unlockedAt,
+      updatedAt: new Date(),
+    });
   }
 
-  public getProgressText(): string {
-    if (this._isUnlocked) {
-      return 'Unlocked';
+  /**
+   * Unlock achievement
+   */
+  unlock(): Achievement {
+    if (this.props.isUnlocked) {
+      return this;
     }
 
-    const completedRequirements = this._requirements.filter(
-      req => (req.currentValue || 0) >= req.value
-    ).length;
-
-    return `${completedRequirements}/${this._requirements.length} requirements met`;
+    return new Achievement({
+      ...this.props,
+      isUnlocked: true,
+      progress: 100,
+      unlockedAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
-  public getRarityColor(): string {
-    switch (this._rarity) {
-      case 'common':
-        return '#9CA3AF'; // Gray
-      case 'rare':
-        return '#3B82F6'; // Blue
-      case 'epic':
-        return '#8B5CF6'; // Purple
-      case 'legendary':
-        return '#F59E0B'; // Gold
-      default:
-        return '#9CA3AF';
-    }
+  /**
+   * Check if achievement can be unlocked
+   */
+  canBeUnlocked(): boolean {
+    return this.props.progress >= 100 && !this.props.isUnlocked;
   }
 
-  public getRarityName(): string {
-    switch (this._rarity) {
-      case 'common':
-        return 'Common';
-      case 'rare':
-        return 'Rare';
-      case 'epic':
-        return 'Epic';
-      case 'legendary':
-        return 'Legendary';
-      default:
-        return 'Unknown';
+  /**
+   * Get progress percentage for display
+   */
+  getProgressPercentage(): number {
+    return Math.round(this.props.progress);
+  }
+
+  /**
+   * Get rarity color for UI
+   */
+  getRarityColor(): string {
+    const colors: Record<AchievementRarity, string> = {
+      common: "#9CA3AF", // Gray
+      rare: "#3B82F6", // Blue
+      epic: "#8B5CF6", // Purple
+      legendary: "#F59E0B", // Gold
+      mythic: "#EF4444", // Red
+    };
+    return colors[this.props.rarity];
+  }
+
+  /**
+   * Get category display name
+   */
+  getCategoryDisplayName(): string {
+    const names: Record<AchievementCategory, string> = {
+      construction: "Construction",
+      performance: "Performance",
+      testing: "Testing",
+      exploration: "Exploration",
+      mastery: "Mastery",
+      special: "Special",
+    };
+    return names[this.props.category];
+  }
+
+  /**
+   * Get rarity display name
+   */
+  getRarityName(): string {
+    const names: Record<AchievementRarity, string> = {
+      common: "Common",
+      rare: "Rare",
+      epic: "Epic",
+      legendary: "Legendary",
+      mythic: "Mythic",
+    };
+    return names[this.props.rarity];
+  }
+
+  /**
+   * Check if achievement is visible to user
+   */
+  isVisible(): boolean {
+    return !this.props.isHidden || this.props.isUnlocked;
+  }
+
+  /**
+   * Get formatted unlock date
+   */
+  getFormattedUnlockDate(): string | null {
+    if (!this.props.unlockedAt) return null;
+    return this.props.unlockedAt.toLocaleDateString();
+  }
+
+  /**
+   * Get progress text for display
+   */
+  getProgressText(): string {
+    if (this.props.isUnlocked) {
+      return "Unlocked";
     }
+
+    const percentage = this.getProgressPercentage();
+    return `${percentage}% complete`;
+  }
+
+  /**
+   * Clone achievement with updated properties
+   */
+  clone(
+    updates: Partial<Omit<AchievementProps, "id" | "createdAt">>
+  ): Achievement {
+    return new Achievement({
+      ...this.props,
+      ...updates,
+      updatedAt: new Date(),
+    });
+  }
+
+  /**
+   * Convert to plain object
+   */
+  toJSON(): AchievementProps {
+    return { ...this.props };
+  }
+
+  /**
+   * Create from plain object
+   */
+  static fromJSON(props: AchievementProps): Achievement {
+    return new Achievement(props);
   }
 }

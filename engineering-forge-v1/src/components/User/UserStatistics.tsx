@@ -4,17 +4,25 @@
  * This component displays user statistics, achievements, and progress.
  */
 
-import React from 'react';
-import { useUserLevel, useUserStatistics } from '../../hooks/useUser';
-import { UserService } from '../../services/userService';
+import React from "react";
+import { UserService } from "../../domains/gaming/domain/services/userService";
+import { useUserLevel, useUserStatistics } from "../../hooks/useUser";
 
 interface UserStatisticsProps {
   className?: string;
 }
 
-export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }) => {
-  const { statistics, achievements, favoriteComponents, loading, error, refreshStatistics } =
-    useUserStatistics();
+export const UserStatistics: React.FC<UserStatisticsProps> = ({
+  className = "",
+}) => {
+  const {
+    statistics,
+    achievements,
+    favoriteComponents,
+    loading,
+    error,
+    refreshStatistics,
+  } = useUserStatistics();
 
   const levelData = statistics ? useUserLevel(statistics.totalXP) : null;
 
@@ -29,10 +37,16 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
 
   if (error) {
     return (
-      <div className={`p-6 bg-red-50 border border-red-200 rounded-lg ${className}`}>
+      <div
+        className={`p-6 bg-red-50 border border-red-200 rounded-lg ${className}`}
+      >
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              className="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path
                 fillRule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -41,7 +55,9 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error loading statistics</h3>
+            <h3 className="text-sm font-medium text-red-800">
+              Error loading statistics
+            </h3>
             <p className="text-sm text-red-700 mt-1">{error}</p>
           </div>
         </div>
@@ -51,7 +67,9 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
 
   if (!statistics || !levelData) {
     return (
-      <div className={`p-6 bg-gray-50 border border-gray-200 rounded-lg ${className}`}>
+      <div
+        className={`p-6 bg-gray-50 border border-gray-200 rounded-lg ${className}`}
+      >
         <p className="text-gray-600">No statistics available</p>
       </div>
     );
@@ -62,7 +80,9 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
       {/* Header */}
       <div className="border-b border-gray-200 pb-4">
         <h2 className="text-2xl font-bold text-gray-900">Statistics</h2>
-        <p className="text-sm text-gray-600 mt-1">Track your progress and achievements.</p>
+        <p className="text-sm text-gray-600 mt-1">
+          Track your progress and achievements.
+        </p>
       </div>
 
       {/* Level Progress */}
@@ -88,7 +108,9 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
 
         <div className="flex justify-between text-sm text-blue-100">
           <span>{levelData.xpCurrent} XP</span>
-          <span>{levelData.nextLevelXp - levelData.xpCurrent} XP to next level</span>
+          <span>
+            {levelData.nextLevelXp - levelData.xpCurrent} XP to next level
+          </span>
         </div>
       </div>
 
@@ -114,7 +136,9 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Projects</p>
-              <p className="text-2xl font-semibold text-gray-900">{statistics.projectsCompleted}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {statistics.projectsCompleted}
+              </p>
             </div>
           </div>
         </div>
@@ -139,7 +163,9 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Lessons</p>
-              <p className="text-2xl font-semibold text-gray-900">{statistics.lessonsCompleted}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {statistics.lessonsCompleted}
+              </p>
             </div>
           </div>
         </div>
@@ -204,18 +230,21 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900">Achievements</h3>
           <span className="text-sm text-gray-500">
-            {achievements.filter(a => a.unlockedAt).length} of {achievements.length} unlocked
+            {achievements.filter((a) => a.unlockedAt).length} of{" "}
+            {achievements.length} unlocked
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {achievements.map(achievement => (
+          {achievements.map((achievement) => (
             <div
               key={achievement._id}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 achievement.unlockedAt
-                  ? `${UserService.getAchievementRarityBackground(achievement.rarity)} border-current`
-                  : 'bg-gray-50 border-gray-200 opacity-60'
+                  ? `${UserService.getAchievementRarityBackground(
+                      achievement.rarity
+                    )} border-current`
+                  : "bg-gray-50 border-gray-200 opacity-60"
               }`}
             >
               <div className="flex items-start space-x-3">
@@ -224,30 +253,39 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
                   <h4
                     className={`text-sm font-medium ${
                       achievement.unlockedAt
-                        ? UserService.getAchievementRarityColor(achievement.rarity)
-                        : 'text-gray-500'
+                        ? UserService.getAchievementRarityColor(
+                            achievement.rarity
+                          )
+                        : "text-gray-500"
                     }`}
                   >
                     {achievement.name}
                   </h4>
-                  <p className="text-xs text-gray-500 mt-1">{achievement.description}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {achievement.description}
+                  </p>
 
                   {/* Progress Bar */}
                   <div className="mt-2">
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
                       <div
                         className={`h-1.5 rounded-full transition-all duration-300 ${
-                          achievement.unlockedAt ? 'bg-green-500' : 'bg-blue-500'
+                          achievement.unlockedAt
+                            ? "bg-green-500"
+                            : "bg-blue-500"
                         }`}
                         style={{ width: `${achievement.progress}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{achievement.progress}%</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {achievement.progress}%
+                    </p>
                   </div>
 
                   {achievement.unlockedAt && (
                     <p className="text-xs text-gray-500 mt-1">
-                      Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                      Unlocked{" "}
+                      {new Date(achievement.unlockedAt).toLocaleDateString()}
                     </p>
                   )}
                 </div>
@@ -260,42 +298,44 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
       {/* Favorite Components Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">Favorite Components</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            Favorite Components
+          </h3>
           <span className="text-sm text-gray-500">
-            {favoriteComponents.filter(c => c.isUnlocked).length} of {favoriteComponents.length}{' '}
-            unlocked
+            {favoriteComponents.filter((c) => c.isUnlocked).length} of{" "}
+            {favoriteComponents.length} unlocked
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {favoriteComponents.map(component => (
+          {favoriteComponents.map((component) => (
             <div
               key={component._id}
               className={`p-4 rounded-lg border transition-all duration-200 ${
                 component.isUnlocked
-                  ? 'bg-white border-gray-200 hover:border-gray-300'
-                  : 'bg-gray-50 border-gray-200 opacity-60'
+                  ? "bg-white border-gray-200 hover:border-gray-300"
+                  : "bg-gray-50 border-gray-200 opacity-60"
               }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <h4
                   className={`text-sm font-medium ${
-                    component.isUnlocked ? 'text-gray-900' : 'text-gray-500'
+                    component.isUnlocked ? "text-gray-900" : "text-gray-500"
                   }`}
                 >
                   {component.name}
                 </h4>
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${
-                    component.rarity === 'common'
-                      ? 'bg-gray-100 text-gray-600'
-                      : component.rarity === 'uncommon'
-                        ? 'bg-green-100 text-green-600'
-                        : component.rarity === 'rare'
-                          ? 'bg-blue-100 text-blue-600'
-                          : component.rarity === 'epic'
-                            ? 'bg-purple-100 text-purple-600'
-                            : 'bg-yellow-100 text-yellow-600'
+                    component.rarity === "common"
+                      ? "bg-gray-100 text-gray-600"
+                      : component.rarity === "uncommon"
+                      ? "bg-green-100 text-green-600"
+                      : component.rarity === "rare"
+                      ? "bg-blue-100 text-blue-600"
+                      : component.rarity === "epic"
+                      ? "bg-purple-100 text-purple-600"
+                      : "bg-yellow-100 text-yellow-600"
                   }`}
                 >
                   {component.rarity}
@@ -310,7 +350,10 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ className = '' }
               {!component.isUnlocked && (
                 <div className="mt-2">
                   <div className="w-full bg-gray-200 rounded-full h-1">
-                    <div className="bg-gray-400 h-1 rounded-full" style={{ width: '0%' }}></div>
+                    <div
+                      className="bg-gray-400 h-1 rounded-full"
+                      style={{ width: "0%" }}
+                    ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Locked</p>
                 </div>

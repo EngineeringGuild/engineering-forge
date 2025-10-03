@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { ProgressUpdate } from '../../../domains/gaming/services/ProgressService';
+import { ProgressUpdate } from '../../../domains/gaming/domain/services/ProgressService';
 
 interface LevelUpNotificationProps {
   update: ProgressUpdate | null;

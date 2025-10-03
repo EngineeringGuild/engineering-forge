@@ -4,7 +4,7 @@
  * This file contains all component-related API routes.
  */
 
-import { Router } from 'express';
+import { Router } from "express";
 import {
   createComponent,
   deleteComponent,
@@ -15,17 +15,21 @@ import {
   getComponentStatistics,
   getUnlockedComponents,
   unlockComponent,
-  updateComponent
-} from '../controllers/componentController';
+  updateComponent,
+} from "../domains/gaming/application/use-cases/componentController";
 import {
   authenticateToken,
   corsAuth,
   errorHandler,
   logRequests,
   rateLimit,
-  requireAdmin
-} from '../middleware/auth';
-import { paginate, sanitizeInput, validateComponentData } from '../middleware/validation';
+  requireAdmin,
+} from "../middleware/auth";
+import {
+  paginate,
+  sanitizeInput,
+  validateComponentData,
+} from "../middleware/validation";
 
 const router = Router();
 
@@ -38,31 +42,31 @@ router.use(sanitizeInput);
  * GET /api/components/statistics
  * Get component statistics
  */
-router.get('/statistics', getComponentStatistics);
+router.get("/statistics", getComponentStatistics);
 
 /**
  * GET /api/components/type/:type
  * Get components by type
  */
-router.get('/type/:type', getComponentsByType);
+router.get("/type/:type", getComponentsByType);
 
 /**
  * GET /api/components/rarity/:rarity
  * Get components by rarity
  */
-router.get('/rarity/:rarity', getComponentsByRarity);
+router.get("/rarity/:rarity", getComponentsByRarity);
 
 /**
  * GET /api/components
  * Get all components with filtering and pagination
  */
-router.get('/', paginate, getComponents);
+router.get("/", paginate, getComponents);
 
 /**
  * GET /api/components/:id
  * Get component by ID
  */
-router.get('/:id', getComponentById);
+router.get("/:id", getComponentById);
 
 // All routes below require authentication
 router.use(authenticateToken);
@@ -71,13 +75,13 @@ router.use(authenticateToken);
  * GET /api/components/unlocked
  * Get unlocked components for user
  */
-router.get('/unlocked', getUnlockedComponents);
+router.get("/unlocked", getUnlockedComponents);
 
 /**
  * POST /api/components/:id/unlock
  * Unlock component for user
  */
-router.post('/:id/unlock', rateLimit(15 * 60 * 1000, 20), unlockComponent);
+router.post("/:id/unlock", rateLimit(15 * 60 * 1000, 20), unlockComponent);
 
 // Admin-only routes
 router.use(requireAdmin);
@@ -86,19 +90,29 @@ router.use(requireAdmin);
  * POST /api/components
  * Create a new component (Admin only)
  */
-router.post('/', rateLimit(15 * 60 * 1000, 5), validateComponentData, createComponent);
+router.post(
+  "/",
+  rateLimit(15 * 60 * 1000, 5),
+  validateComponentData,
+  createComponent
+);
 
 /**
  * PUT /api/components/:id
  * Update component (Admin only)
  */
-router.put('/:id', rateLimit(15 * 60 * 1000, 10), validateComponentData, updateComponent);
+router.put(
+  "/:id",
+  rateLimit(15 * 60 * 1000, 10),
+  validateComponentData,
+  updateComponent
+);
 
 /**
  * DELETE /api/components/:id
  * Delete component (Admin only)
  */
-router.delete('/:id', rateLimit(15 * 60 * 1000, 5), deleteComponent);
+router.delete("/:id", rateLimit(15 * 60 * 1000, 5), deleteComponent);
 
 // Apply error handling middleware
 router.use(errorHandler);

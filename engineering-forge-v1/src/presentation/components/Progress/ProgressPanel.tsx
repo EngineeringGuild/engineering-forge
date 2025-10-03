@@ -6,8 +6,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { UserProgress } from '../../../domains/gaming/entities/UserProgress';
-import { ProgressService, ProgressUpdate } from '../../../domains/gaming/services/ProgressService';
+import { UserProgress } from '../../../domains/gaming/domain/entities/UserProgress';
+import { ProgressService, ProgressUpdate } from '../../../domains/gaming/domain/services/ProgressService';
 
 interface ProgressPanelProps {
   userId: string;

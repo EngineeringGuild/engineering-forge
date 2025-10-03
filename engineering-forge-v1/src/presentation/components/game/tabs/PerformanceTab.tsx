@@ -1,15 +1,17 @@
-import { TrendingUp } from 'lucide-react';
-import React from 'react';
-import { GameActions } from '../../../../domains/gaming/application/services/GameActions';
-import { GameState } from '../../../../domains/gaming/domain/value-objects/GameState';
-import { PerformanceDisplay } from '../PerformanceDisplay';
+import { TrendingUp } from "lucide-react";
+import React from "react";
+import { GameActions } from "../../../../domains/gaming/application/use-cases/GameActionsUseCase";
+import { GameState } from "../../../../domains/gaming/domain/value-objects/GameState";
+import { PerformanceDisplay } from "../performance/PerformanceDisplay";
 
 interface PerformanceTabProps {
   gameState: GameState;
   gameActions: GameActions;
 }
 
-export const PerformanceTab: React.FC<PerformanceTabProps> = ({ gameState }) => {
+export const PerformanceTab: React.FC<PerformanceTabProps> = ({
+  gameState,
+}) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
       {/* Current Performance */}
@@ -23,7 +25,9 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ gameState }) => 
         ) : (
           <div className="bg-gray-800 border border-gray-600 rounded-lg p-8 text-center">
             <div className="text-4xl mb-4">🚗</div>
-            <h3 className="text-lg font-semibold text-white mb-2">No Components Added</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              No Components Added
+            </h3>
             <p className="text-gray-400">
               Add components to your project to see performance metrics
             </p>
@@ -42,13 +46,17 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ gameState }) => 
             <div className="text-center text-gray-400 py-8">
               <div className="text-4xl mb-2">📈</div>
               <div>No performance data yet</div>
-              <div className="text-sm">Run tests to build performance history</div>
+              <div className="text-sm">
+                Run tests to build performance history
+              </div>
             </div>
           ) : (
             gameState.testResults.map((result, index) => (
               <div key={result.id} className="bg-gray-700 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-white">Test #{index + 1}</span>
+                  <span className="text-sm font-medium text-white">
+                    Test #{index + 1}
+                  </span>
                   <span className="text-sm text-gray-400">
                     {result.startTime.toLocaleTimeString()}
                   </span>
@@ -62,7 +70,9 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ gameState }) => 
                   </div>
                   <div>
                     <div className="text-gray-400">Score</div>
-                    <div className="text-white font-medium">{result.score.toFixed(1)}/100</div>
+                    <div className="text-white font-medium">
+                      {result.score.toFixed(1)}/100
+                    </div>
                   </div>
                 </div>
               </div>

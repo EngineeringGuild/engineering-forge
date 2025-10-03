@@ -1,19 +1,17 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/presentation/components/game/CarSimulation.tsx
 
-import { Pause, Play, RotateCcw, TrendingUp, Zap } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Component } from '../../../domains/gaming/domain/entities/Component';
-import { SimulationResult } from '../../../domains/gaming/domain/entities/SimulationResult';
+import { Pause, Play, RotateCcw, TrendingUp, Zap } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  CarSimulationResult,
-  CarSimulationService
-} from '../../../domains/gaming/domain/services/CarSimulationService';
-import {
-  AnimationFrame,
-  AnimationService
-} from '../../../domains/gaming/services/AnimationService';
-import { AnimatedButton } from '../ui/AnimatedButton';
-import { GlassCard } from '../ui/GlassCard';
+  CarSimulationConfig,
+  CarSimulationEvents,
+  CarSimulationManager,
+} from "../../../domains/gaming/application/services/CarSimulationManager";
+import { Component } from "../../../domains/gaming/domain/entities/Component";
+import { SimulationResult } from "../../../domains/gaming/domain/entities/SimulationResult";
+import { AnimationState } from "../../../domains/gaming/domain/value-objects/AnimationState";
+import { AnimatedButton } from "../ui/AnimatedButton";
+import { GlassCard } from "../ui/GlassCard";
 
 /**
  * Car Simulation Props Interface
@@ -30,20 +28,9 @@ export interface CarSimulationProps {
   enablePhysics?: boolean;
   showControls?: boolean;
   autoStart?: boolean;
-}
-
-/**
- * Animation State Interface
- * State for animation rendering
- */
-interface AnimationState {
-  isAnimating: boolean;
-  currentFrame: AnimationFrame | null;
-  progress: number;
-  speed: number;
-  distance: number;
-  maxSpeed: number;
-  effects: any[];
+  enableEffects?: boolean;
+  animationDuration?: number;
+  frameRate?: number;
 }
 
 /**
@@ -62,372 +49,192 @@ export const CarSimulation: React.FC<CarSimulationProps> = ({
   onSimulationComplete,
   onSimulationStart,
   onSimulationStop,
-  className = '',
+  className = "",
   trackLength = 1000,
   maxSimulationTime = 60,
   enablePhysics = true,
   showControls = true,
-  autoStart = false
+  autoStart = false,
+  enableEffects = true,
+  animationDuration = 5000,
+  frameRate = 60,
 }) => {
-  // Services
-  const [simulationService] = useState(() => new CarSimulationService());
-  const [animationService] = useState(() => new AnimationService());
-
   // State
   const [isSimulating, setIsSimulating] = useState(false);
-  const [simulationResult, setSimulationResult] = useState<CarSimulationResult | null>(null);
-  const [animationState, setAnimationState] = useState<AnimationState>({
-    isAnimating: false,
-    currentFrame: null,
-    progress: 0,
-    speed: 0,
-    distance: 0,
-    maxSpeed: 0,
-    effects: []
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [showResults, setShowResults] = useState(false);
-
-  // Refs
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const simulationRef = useRef<CarSimulationResult | null>(null);
-
-  // Auto-start simulation if enabled
-  useEffect(() => {
-    if (autoStart && components.length > 0 && !isSimulating) {
-      startSimulation();
-    }
-  }, [autoStart, components.length, isSimulating]);
-
-  /**
-   * Start car simulation
-   */
-  const startSimulation = useCallback(async() => {
-    try {
-      console.log('🚀 Starting simulation with components:', components);
-      setError(null);
-      setIsSimulating(true);
-      onSimulationStart?.();
-
-      // Run simulation
-      const result = await simulationService.runSimulation(components, {
-        trackLength,
-        maxSimulationTime,
-        enablePhysics
-      });
-
-      console.log('✅ Simulation completed:', result);
-      simulationRef.current = result;
-      setSimulationResult(result);
-
-      // Start animation
-      await startAnimation(result.simulationSteps);
-    } catch (err) {
-      console.error('❌ Simulation error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Simulation failed';
-      setError(errorMessage);
-      setIsSimulating(false);
-      onSimulationStop?.();
-    }
-  }, [
-    components,
-    trackLength,
-    maxSimulationTime,
-    enablePhysics,
-    simulationService,
-    onSimulationStart,
-    onSimulationStop
-  ]);
-
-  /**
-   * Start animation from simulation steps
-   */
-  const startAnimation = useCallback(
-    async(simulationSteps: any[]) => {
-      try {
-        console.log('🎬 Starting animation with steps:', simulationSteps.length);
-        setAnimationState(prev => ({ ...prev, isAnimating: true }));
-
-        // Add animation event listeners
-        animationService.addEventListener('frame', event => {
-          if (event.data) {
-            setAnimationState(prev => ({
-              ...prev,
-              currentFrame: event.data,
-              progress: event.data.position.x / trackLength,
-              speed: event.data.speed,
-              distance: event.data.position.x,
-              effects: event.data.effects || []
-            }));
-          }
-        });
-
-        animationService.addEventListener('complete', () => {
-          setAnimationState(prev => ({ ...prev, isAnimating: false }));
-          setIsSimulating(false);
-          setShowResults(true);
-          onSimulationStop?.();
-
-          // Convert to SimulationResult entity and notify parent
-          if (simulationRef.current) {
-            const simulationResult = new SimulationResult(simulationRef.current.id, {
-              startTime: simulationRef.current.startTime,
-              endTime: simulationRef.current.endTime,
-              duration: simulationRef.current.duration,
-              distance: simulationRef.current.distance,
-              maxSpeed: simulationRef.current.maxSpeed,
-              averageSpeed: simulationRef.current.averageSpeed,
-              finalPerformance: simulationRef.current.finalPerformance,
-              score: simulationRef.current.score,
-              passed: simulationRef.current.passed,
-              simulationSteps: simulationSteps.map(step => ({
-                timestamp: step.timestamp,
-                position: step.position,
-                speed: step.speed,
-                acceleration: step.acceleration,
-                performance: step.performance
-              })),
-              userId: 'user-001' // TODO: Get from auth context
-            });
-
-            onSimulationComplete(simulationResult);
-          }
-        });
-
-        // Start animation
-        await animationService.startAnimation(simulationSteps, {
-          duration: 5000, // 5 seconds animation
-          frameRate: 60,
-          easing: 'easeInOut',
-          enableParticles: true,
-          enableTrail: true,
-          enableSpeedLines: true
-        });
-      } catch (err) {
-        console.error('Animation error:', err);
-        setAnimationState(prev => ({ ...prev, isAnimating: false }));
-        setIsSimulating(false);
-      }
-    },
-    [animationService, trackLength, onSimulationComplete, onSimulationStop]
-  );
-
-  /**
-   * Stop simulation
-   */
-  const stopSimulation = useCallback(() => {
-    animationService.stopAnimation();
-    setIsSimulating(false);
-    setAnimationState(prev => ({ ...prev, isAnimating: false }));
-    onSimulationStop?.();
-  }, [animationService, onSimulationStop]);
-
-  /**
-   * Reset simulation
-   */
-  const resetSimulation = useCallback(() => {
-    stopSimulation();
-    setSimulationResult(null);
-    setAnimationState({
+  const [animationState, setAnimationState] = useState<AnimationState>(
+    AnimationState.create({
       isAnimating: false,
       currentFrame: null,
       progress: 0,
       speed: 0,
       distance: 0,
       maxSpeed: 0,
-      effects: []
-    });
+      effects: [],
+    })
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [showResults, setShowResults] = useState(false);
+
+  // Refs
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const simulationManagerRef = useRef<CarSimulationManager | null>(null);
+  const hasAutoStarted = useRef(false);
+
+  // Initialize simulation manager
+  useEffect(() => {
+    const config: CarSimulationConfig = {
+      trackLength,
+      maxSimulationTime,
+      enablePhysics,
+      animationDuration,
+      frameRate,
+      enableEffects,
+    };
+
+    const events: CarSimulationEvents = {
+      onSimulationStart: () => {
+        setIsSimulating(true);
+        setError(null);
+        onSimulationStart?.();
+      },
+      onSimulationStop: () => {
+        setIsSimulating(false);
+        onSimulationStop?.();
+      },
+      onSimulationComplete: (result) => {
+        setShowResults(true);
+        onSimulationComplete(result);
+      },
+      onAnimationFrame: (state) => {
+        setAnimationState(state);
+      },
+      onError: (errorMessage) => {
+        setError(errorMessage);
+        setIsSimulating(false);
+      },
+    };
+
+    simulationManagerRef.current = new CarSimulationManager(config, events);
+  }, [
+    trackLength,
+    maxSimulationTime,
+    enablePhysics,
+    animationDuration,
+    frameRate,
+    enableEffects,
+    onSimulationStart,
+    onSimulationStop,
+    onSimulationComplete,
+  ]);
+
+  /**
+   * Start car simulation
+   */
+  const startSimulation = useCallback(async () => {
+    if (!simulationManagerRef.current) {
+      console.error("❌ Simulation manager not initialized");
+      return;
+    }
+
+    try {
+      console.log("🚀 Starting simulation with components:", components);
+      console.log(
+        "🚀 Component details:",
+        components.map((c) => ({
+          id: c.id,
+          type: c.type,
+          name: c.name,
+        }))
+      );
+
+      await simulationManagerRef.current.startSimulation(components);
+      console.log("✅ Simulation started successfully");
+    } catch (err) {
+      console.error("❌ Simulation error:", err);
+      console.error(
+        "❌ Error stack:",
+        err instanceof Error ? err.stack : "No stack"
+      );
+      const errorMessage =
+        err instanceof Error ? err.message : "Simulation failed";
+      setError(errorMessage);
+    }
+  }, [components]);
+
+  /**
+   * Stop simulation
+   */
+  const stopSimulation = useCallback(() => {
+    if (!simulationManagerRef.current) return;
+
+    console.log("🛑 CarSimulation: Stopping simulation");
+    simulationManagerRef.current.stopSimulation();
+  }, []);
+
+  /**
+   * Reset simulation
+   */
+  const resetSimulation = useCallback(() => {
+    if (!simulationManagerRef.current) return;
+
+    simulationManagerRef.current.resetSimulation();
+    setAnimationState(
+      AnimationState.create({
+        isAnimating: false,
+        currentFrame: null,
+        progress: 0,
+        speed: 0,
+        distance: 0,
+        maxSpeed: 0,
+        effects: [],
+      })
+    );
     setShowResults(false);
     setError(null);
-  }, [stopSimulation]);
-
-  /**
-   * Render car on canvas
-   */
-  const renderCar = useCallback(
-    (ctx: CanvasRenderingContext2D, frame: AnimationFrame) => {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-return;
-}
-
-      const centerX = canvas.width / 2;
-      const carX =
-        centerX + (frame.position.x / trackLength) * (canvas.width * 0.8) - canvas.width * 0.4;
-      const carY = canvas.height / 2;
-
-      // Save context
-      ctx.save();
-
-      // Apply transformations
-      ctx.translate(carX, carY);
-      ctx.scale(frame.scale, frame.scale);
-      ctx.rotate(frame.rotation);
-      ctx.globalAlpha = frame.opacity;
-
-      // Draw car body
-      ctx.fillStyle = '#3B82F6';
-      ctx.fillRect(-30, -15, 60, 30);
-
-      // Draw wheels
-      ctx.fillStyle = '#1F2937';
-      ctx.fillRect(-25, -20, 8, 10);
-      ctx.fillRect(17, -20, 8, 10);
-      ctx.fillRect(-25, 10, 8, 10);
-      ctx.fillRect(17, 10, 8, 10);
-
-      // Draw speed indicator
-      if (frame.speed > 0) {
-        ctx.fillStyle = '#10B981';
-        ctx.font = '12px Arial';
-        ctx.fillText(`${Math.round(frame.speed)} km/h`, -20, -25);
-      }
-
-      // Restore context
-      ctx.restore();
-    },
-    [trackLength]
-  );
-
-  /**
-   * Render track on canvas
-   */
-  const renderTrack = useCallback(
-    (ctx: CanvasRenderingContext2D) => {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-return;
-}
-
-      const trackY = canvas.height / 2;
-
-      // Draw track background
-      ctx.fillStyle = '#374151';
-      ctx.fillRect(0, trackY - 50, canvas.width, 100);
-
-      // Draw track lines
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([10, 10]);
-      ctx.beginPath();
-      ctx.moveTo(0, trackY);
-      ctx.lineTo(canvas.width, trackY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Draw track borders
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, trackY - 50);
-      ctx.lineTo(canvas.width, trackY - 50);
-      ctx.moveTo(0, trackY + 50);
-      ctx.lineTo(canvas.width, trackY + 50);
-      ctx.stroke();
-
-      // Draw distance markers
-      ctx.fillStyle = '#9CA3AF';
-      ctx.font = '12px Arial';
-      for (let i = 0; i <= 10; i++) {
-        const x = (canvas.width / 10) * i;
-        const distance = (i / 10) * trackLength;
-        ctx.fillText(`${Math.round(distance)}m`, x, trackY - 60);
-      }
-    },
-    [trackLength]
-  );
-
-  /**
-   * Render effects on canvas
-   */
-  const renderEffects = useCallback((ctx: CanvasRenderingContext2D, effects: any[]) => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-return;
-}
-
-    effects.forEach(effect => {
-      ctx.save();
-      ctx.globalAlpha = effect.intensity;
-
-      switch (effect.type) {
-        case 'particle':
-          ctx.fillStyle = effect.color;
-          ctx.beginPath();
-          ctx.arc(effect.position.x, effect.position.y, 2, 0, Math.PI * 2);
-          ctx.fill();
-          break;
-
-        case 'trail':
-          ctx.strokeStyle = effect.color;
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(effect.position.x, effect.position.y - 5);
-          ctx.lineTo(effect.position.x, effect.position.y + 5);
-          ctx.stroke();
-          break;
-
-        case 'speedLine':
-          ctx.strokeStyle = effect.color;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(effect.position.x - 20, effect.position.y);
-          ctx.lineTo(effect.position.x + 20, effect.position.y);
-          ctx.stroke();
-          break;
-
-        case 'dust':
-          ctx.fillStyle = effect.color;
-          ctx.beginPath();
-          ctx.arc(effect.position.x, effect.position.y, 1, 0, Math.PI * 2);
-          ctx.fill();
-          break;
-      }
-
-      ctx.restore();
-    });
+    hasAutoStarted.current = false;
   }, []);
+
+  // Auto-start simulation if enabled
+  useEffect(() => {
+    if (
+      autoStart &&
+      components.length > 0 &&
+      !isSimulating &&
+      !hasAutoStarted.current
+    ) {
+      hasAutoStarted.current = true;
+      startSimulation();
+    }
+
+    if (!autoStart) {
+      hasAutoStarted.current = false;
+    }
+  }, [autoStart, components.length, isSimulating, startSimulation]);
 
   /**
    * Render canvas
    */
   const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-return;
-}
+    if (!canvas || !simulationManagerRef.current) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-return;
-}
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Render track
-    renderTrack(ctx);
-
-    // Render effects
-    if (animationState.currentFrame) {
-      renderEffects(ctx, animationState.effects);
-      renderCar(ctx, animationState.currentFrame);
-    }
-
-    // Render progress bar
-    if (animationState.isAnimating) {
-      ctx.fillStyle = '#10B981';
-      ctx.fillRect(0, canvas.height - 4, canvas.width * animationState.progress, 4);
-    }
-  }, [animationState, renderTrack, renderEffects, renderCar]);
+    simulationManagerRef.current.renderCanvas(ctx);
+  }, []);
 
   // Render canvas on animation frame
   useEffect(() => {
     if (animationState.isAnimating) {
-      animationFrameRef.current = requestAnimationFrame(() => {
+      const animate = () => {
         renderCanvas();
-      });
+        animationFrameRef.current = requestAnimationFrame(animate);
+      };
+      animationFrameRef.current = requestAnimationFrame(animate);
+    } else {
+      renderCanvas();
     }
 
     return () => {
@@ -437,23 +244,63 @@ return;
     };
   }, [animationState.isAnimating, renderCanvas]);
 
-  // Update canvas size on mount
+  // Update canvas size on mount and render initial state
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      const width = canvas.offsetWidth || 800;
+      const height = canvas.offsetHeight || 256;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      console.log("🎨 Canvas initialized - Width:", width, "Height:", height);
+      renderCanvas();
     }
-  }, []);
+  }, [renderCanvas]);
+
+  // Get simulation result for display
+  const simulationResult = simulationManagerRef.current?.getSimulationResult();
 
   return (
     <div className={`car-simulation ${className}`}>
+      {/* Welcome message */}
+      {!isSimulating && !simulationResult && components.length === 0 && (
+        <div className="bg-gray-800/50 border border-gray-600/30 rounded-lg p-6 mb-4">
+          <div className="text-center">
+            <div className="text-4xl mb-3">🏁</div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              Welcome to Car Simulation!
+            </h3>
+            <p className="text-gray-300 mb-2">
+              Build your car in the Build tab first, then come back here to test
+              it!
+            </p>
+            <p className="text-gray-400 text-sm">
+              You need: Chassis + Engine + Wheels
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading indicator */}
+      {isSimulating && !animationState.isAnimating && (
+        <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-3"></div>
+            <span className="text-blue-300">Calculating simulation...</span>
+          </div>
+        </div>
+      )}
+
       {/* Canvas for animation */}
       <div className="relative bg-gray-900 rounded-lg overflow-hidden mb-4">
         <canvas
           ref={canvasRef}
           className="w-full h-64"
-          style={{ background: 'linear-gradient(135deg, #1F2937 0%, #374151 100%)' }}
+          style={{
+            background: "linear-gradient(135deg, #1F2937 0%, #374151 100%)",
+          }}
         />
 
         {/* Speed display overlay */}
@@ -462,7 +309,9 @@ return;
             <div className="text-white text-sm">
               <div className="flex items-center mb-1">
                 <Zap className="w-4 h-4 mr-2 text-yellow-400" />
-                <span className="font-medium">{Math.round(animationState.speed)} km/h</span>
+                <span className="font-medium">
+                  {Math.round(animationState.speed)} km/h
+                </span>
               </div>
               <div className="flex items-center">
                 <TrendingUp className="w-4 h-4 mr-2 text-blue-400" />
@@ -497,13 +346,19 @@ return;
       {showControls && (
         <div className="flex items-center justify-center space-x-4 mb-4">
           <AnimatedButton
-            variant={isSimulating ? 'danger' : 'primary'}
+            variant={isSimulating ? "danger" : "primary"}
             size="lg"
             onClick={isSimulating ? stopSimulation : startSimulation}
             disabled={components.length === 0}
-            icon={isSimulating ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+            icon={
+              isSimulating ? (
+                <Pause className="w-5 h-5" />
+              ) : (
+                <Play className="w-5 h-5" />
+              )
+            }
           >
-            {isSimulating ? 'Stop Simulation' : 'Start Simulation'}
+            {isSimulating ? "Stop Simulation" : "Start Simulation"}
           </AnimatedButton>
 
           <AnimatedButton
@@ -519,7 +374,10 @@ return;
 
       {/* Error display */}
       {error && (
-        <GlassCard variant="danger" className="p-4 mb-4">
+        <GlassCard
+          variant="colored"
+          className="p-4 mb-4 bg-red-900/20 border-red-500/30"
+        >
           <div className="text-red-300">
             <h4 className="font-semibold mb-2">Simulation Error</h4>
             <p>{error}</p>
@@ -552,38 +410,40 @@ return;
 
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-sm text-gray-400 mb-1">Score</div>
-              <div className="text-2xl font-bold text-white">{simulationResult.score}/100</div>
+              <div className="text-2xl font-bold text-white">
+                {simulationResult.score}/100
+              </div>
             </div>
 
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-sm text-gray-400 mb-1">Status</div>
               <div
                 className={`text-2xl font-bold ${
-                  simulationResult.passed ? 'text-green-400' : 'text-red-400'
+                  simulationResult.passed ? "text-green-400" : "text-red-400"
                 }`}
               >
-                {simulationResult.passed ? 'PASSED' : 'FAILED'}
+                {simulationResult.passed ? "PASSED" : "FAILED"}
               </div>
             </div>
           </div>
 
           <div className="text-center">
             <div className="text-lg text-gray-300 mb-2">
-              Performance Grade:{' '}
+              Performance Grade:{" "}
               <span className="font-bold text-white">
                 {simulationResult.score >= 90
-                  ? 'A'
+                  ? "A"
                   : simulationResult.score >= 80
-                    ? 'B'
-                    : simulationResult.score >= 70
-                      ? 'C'
-                      : simulationResult.score >= 60
-                        ? 'D'
-                        : 'F'}
+                  ? "B"
+                  : simulationResult.score >= 70
+                  ? "C"
+                  : simulationResult.score >= 60
+                  ? "D"
+                  : "F"}
               </span>
             </div>
             <div className="text-sm text-gray-400">
-              Duration: {simulationResult.duration.toFixed(1)}s | Average Speed:{' '}
+              Duration: {simulationResult.duration.toFixed(1)}s | Average Speed:{" "}
               {Math.round(simulationResult.averageSpeed)} km/h
             </div>
           </div>

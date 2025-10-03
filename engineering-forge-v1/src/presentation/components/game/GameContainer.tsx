@@ -1,17 +1,19 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useGameActions } from '../../../domains/gaming/application/hooks/useGameActions';
-import { useGameNotifications } from '../../../domains/gaming/application/hooks/useGameNotifications';
-import { useGameState } from '../../../domains/gaming/application/hooks/useGameState';
-import { GameHeader } from './GameHeader';
-import { GameSettings } from './GameSettings';
-import { GameTabs } from './GameTabs';
-import { TabNavigation } from './TabNavigation';
+import React, { useCallback, useMemo, useState } from "react";
+import { useGameActions } from "../../../domains/gaming/application/hooks/useGameActions";
+import { useGameNotifications } from "../../../domains/gaming/application/hooks/useGameNotifications";
+import { useGameState } from "../../../domains/gaming/application/hooks/useGameState";
+import { GameHeader } from "./GameHeader";
+import { GameTabs } from "./GameTabs";
+import { GameSettings } from "./settings/GameSettings";
+import { TabNavigation } from "./TabNavigation";
 
 interface GameContainerProps {
   className?: string;
 }
 
-export const GameContainer: React.FC<GameContainerProps> = ({ className = '' }) => {
+export const GameContainer: React.FC<GameContainerProps> = ({
+  className = "",
+}) => {
   // Game state management
   const gameState = useGameState();
   const gameActions = useGameActions(gameState);
@@ -21,13 +23,13 @@ export const GameContainer: React.FC<GameContainerProps> = ({ className = '' }) 
   const [showSettings, setShowSettings] = useState(false);
   const [showProgressPanel, setShowProgressPanel] = useState(false);
   const [showSaveLoadPanel, setShowSaveLoadPanel] = useState(false);
-  const [activeTab, setActiveTab] = useState<'build' | 'test' | 'performance' | 'achievements'>(
-    'build'
-  );
+  const [activeTab, setActiveTab] = useState<
+    "build" | "test" | "performance" | "achievements" | "simulation"
+  >("build");
 
   // Memoized handlers
   const handleTabSwitch = useCallback(
-    (tab: typeof activeTab) => {
+    (tab: "build" | "test" | "performance" | "achievements" | "simulation") => {
       setActiveTab(tab);
       gameActions.playTabSwitch();
     },
@@ -45,7 +47,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({ className = '' }) 
       autoSaveError: gameState.autoSaveError,
       onProgressClick: () => setShowProgressPanel(!showProgressPanel),
       onSaveClick: () => setShowSaveLoadPanel(!showSaveLoadPanel),
-      onSettingsClick: () => setShowSettings(!showSettings)
+      onSettingsClick: () => setShowSettings(!showSettings),
     }),
     [gameState, showProgressPanel, showSaveLoadPanel, showSettings]
   );
@@ -79,7 +81,11 @@ export const GameContainer: React.FC<GameContainerProps> = ({ className = '' }) 
           <TabNavigation activeTab={activeTab} onTabSwitch={handleTabSwitch} />
 
           {/* Tab Content */}
-          <GameTabs activeTab={activeTab} gameState={gameState} gameActions={gameActions} />
+          <GameTabs
+            activeTab={activeTab}
+            gameState={gameState}
+            gameActions={gameActions}
+          />
         </div>
       </div>
 

@@ -5,7 +5,7 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { AuthenticationService } from '../services/authService';
+import { AuthenticationService } from '../domains/gaming/infrastructure/services/authService';
 import { AuthenticatedRequest, UserRole } from '../types/auth.types';
 import { extractTokenFromHeader, isTokenBlacklisted, verifyAccessToken } from '../utils/jwt';
 

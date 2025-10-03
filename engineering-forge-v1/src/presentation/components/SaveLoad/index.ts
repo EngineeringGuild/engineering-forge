@@ -9,5 +9,5 @@ export { default as AutoSaveIndicator } from './AutoSaveIndicator';
 export { default as SaveLoadPanel } from './SaveLoadPanel';
 
 // Re-export types
-export type { GameSaveData } from '../../../domains/gaming/entities/GameSave';
-export type { SaveOperationResult } from '../../../domains/gaming/services/SaveService';
+export type { GameSaveData } from '../../../domains/gaming/domain/entities/GameSave';
+export type { SaveOperationResult } from '../../../domains/gaming/domain/services/SaveService';

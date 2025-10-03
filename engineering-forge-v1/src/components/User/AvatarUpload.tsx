@@ -4,22 +4,22 @@
  * This component provides avatar upload functionality with preview and validation.
  */
 
-import React, { useRef, useState } from 'react';
-import { useAvatarUpload } from '../../hooks/useUser';
-import { UserService } from '../../services/userService';
+import React, { useRef, useState } from "react";
+import { UserService } from "../../domains/gaming/domain/services/userService";
+import { useAvatarUpload } from "../../hooks/useUser";
 
 interface AvatarUploadProps {
   currentAvatar?: string;
   onAvatarChange?: (avatarUrl: string) => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   currentAvatar,
   onAvatarChange,
-  className = '',
-  size = 'lg'
+  className = "",
+  size = "lg",
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
@@ -31,17 +31,17 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     clearPreview,
     setUploading,
     setProgress,
-    setError
+    setError,
   } = useAvatarUpload();
 
   const [dragActive, setDragActive] = useState(false);
 
   // Size configurations
   const sizeConfig = {
-    sm: { container: 'w-16 h-16', icon: 'w-6 h-6', text: 'text-xs' },
-    md: { container: 'w-24 h-24', icon: 'w-8 h-8', text: 'text-sm' },
-    lg: { container: 'w-32 h-32', icon: 'w-10 h-10', text: 'text-base' },
-    xl: { container: 'w-40 h-40', icon: 'w-12 h-12', text: 'text-lg' }
+    sm: { container: "w-16 h-16", icon: "w-6 h-6", text: "text-xs" },
+    md: { container: "w-24 h-24", icon: "w-8 h-8", text: "text-sm" },
+    lg: { container: "w-32 h-32", icon: "w-10 h-10", text: "text-base" },
+    xl: { container: "w-40 h-40", icon: "w-12 h-12", text: "text-lg" },
   };
 
   const config = sizeConfig[size];
@@ -49,7 +49,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   /**
    * Handle file upload
    */
-  const handleFileUpload = async(file: File) => {
+  const handleFileUpload = async (file: File) => {
     setError(null);
     setUploading(true);
     setProgress(0);
@@ -57,7 +57,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     try {
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -82,7 +82,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         setProgress(0);
       }, 500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload avatar');
+      setError(err instanceof Error ? err.message : "Failed to upload avatar");
       setUploading(false);
       setProgress(0);
     }
@@ -149,12 +149,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   /**
    * Handle remove avatar
    */
-  const handleRemoveAvatar = async() => {
+  const handleRemoveAvatar = async () => {
     try {
       await UserService.deleteAvatar();
-      onAvatarChange?.('');
+      onAvatarChange?.("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove avatar');
+      setError(err instanceof Error ? err.message : "Failed to remove avatar");
     }
   };
 
@@ -166,9 +166,11 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       {/* Avatar Display */}
       <div className="relative">
         <div
-          className={`${config.container} rounded-full overflow-hidden border-4 border-gray-200 bg-gray-100 cursor-pointer transition-all duration-200 hover:border-blue-300 ${
-            dragActive ? 'border-blue-400 scale-105' : ''
-          } ${uploading ? 'opacity-75' : ''}`}
+          className={`${
+            config.container
+          } rounded-full overflow-hidden border-4 border-gray-200 bg-gray-100 cursor-pointer transition-all duration-200 hover:border-blue-300 ${
+            dragActive ? "border-blue-400 scale-105" : ""
+          } ${uploading ? "opacity-75" : ""}`}
           onClick={handleClick}
           onDragEnter={handleDragIn}
           onDragLeave={handleDragOut}
@@ -176,7 +178,11 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           onDrop={handleDrop}
         >
           {avatarSrc ? (
-            <img src={avatarSrc} alt="User avatar" className="w-full h-full object-cover" />
+            <img
+              src={avatarSrc}
+              alt="User avatar"
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
               <svg
@@ -238,7 +244,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
             title="Remove avatar"
           >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -257,9 +268,15 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           disabled={uploading}
           className={`${config.text} text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          {uploading ? 'Uploading...' : avatarSrc ? 'Change Avatar' : 'Upload Avatar'}
+          {uploading
+            ? "Uploading..."
+            : avatarSrc
+            ? "Change Avatar"
+            : "Upload Avatar"}
         </button>
-        <p className="text-xs text-gray-500 mt-1">Click to upload or drag and drop</p>
+        <p className="text-xs text-gray-500 mt-1">
+          Click to upload or drag and drop
+        </p>
         <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
       </div>
 
@@ -268,7 +285,11 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 max-w-sm">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-4 w-4 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                className="h-4 w-4 text-red-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"

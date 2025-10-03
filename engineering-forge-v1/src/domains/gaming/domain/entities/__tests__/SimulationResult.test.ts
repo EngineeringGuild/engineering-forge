@@ -690,7 +690,13 @@ describe('SimulationStep', () => {
 
       const newPosition = new PositionVO(200, 100);
       const newPerformance = new PerformanceMetrics({
-        ...mockPerformanceMetrics,
+        acceleration: 75,
+        topSpeed: 120,
+        handling: 80,
+        fuelEfficiency: 12,
+        weight: 1300,
+        power: 150,
+        torque: 200,
         overall: 90
       });
 

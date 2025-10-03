@@ -1,0 +1,129 @@
+# 🚀 PROMPT PARA NOVA CONVERSA - Engineering Forge
+
+## 📋 CONTEXTO ATUAL
+
+**Projeto**: Engineering Forge - Plataforma educacional gamificada com blockchain
+**Status**: Limpeza completa realizada, pronto para reinstalação e sincronização
+**Localização**: `/Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge`
+
+## 🎯 OBJETIVO DA SESSÃO
+
+Realizar uma **avaliação completa de compatibilidade** e **reinstalação sincronizada** dos projetos Engineering Forge, focando em:
+
+1. ✅ **Limpeza completa realizada** (node_modules, caches, package-lock.json removidos)
+2. 🔍 **Avaliação de versões** (Node.js, npm, dependências)
+3. 🔄 **Sincronização entre projetos** (engineering-forge-docs e engineering-forge-v1)
+4. 📦 **Reinstalação limpa** com versões compatíveis
+5. ✅ **Verificação de funcionamento**
+
+## 🏗️ ESTRUTURA DO PROJETO
+
+```
+Engineering Forge/
+├── docs/                          # Documentação completa (DDD)
+├── engineering-forge-docs/        # Site de documentação (React + Vite)
+├── engineering-forge-v1/          # Jogo V1.0 (React + TypeScript)
+└── scripts/                       # Scripts de setup
+```
+
+## 🚨 REGRAS OBRIGATÓRIAS (CURSOR SYSTEM)
+
+**SEMPRE seguir estas regras:**
+
+1. **LER PRIMEIRO**: `docs/CURSOR-SYSTEM.md`
+2. **USAR TEMPLATE**: `docs/CURSOR-CHAT-TEMPLATE.md`
+3. **SEGUIR METODOLOGIA**: `docs/CURSOR-METHODOLOGY.md`
+4. **USAR COMANDOS**: `docs/CURSOR-COMMANDS.md`
+5. **ATUALIZAR DASHBOARD**: `docs/PROGRESS-DASHBOARD.md`
+
+## 🎯 TAREFAS PRIORITÁRIAS
+
+### FASE 1: AVALIAÇÃO E DIAGNÓSTICO
+- [ ] Verificar versões do Node.js, npm, pnpm
+- [ ] Analisar package.json de ambos projetos
+- [ ] Identificar incompatibilidades
+- [ ] Verificar dependências conflitantes
+
+### FASE 2: SINCRONIZAÇÃO
+- [ ] Padronizar versões entre projetos
+- [ ] Alinhar dependências comuns
+- [ ] Verificar scripts de build
+- [ ] Validar configurações TypeScript
+
+### FASE 3: INSTALAÇÃO LIMPA
+- [ ] Instalar engineering-forge-docs
+- [ ] Instalar engineering-forge-v1
+- [ ] Testar builds de ambos
+- [ ] Verificar funcionamento
+
+### FASE 4: VALIDAÇÃO FINAL
+- [ ] Testar npm run dev em ambos
+- [ ] Verificar se não há erros
+- [ ] Atualizar documentação
+- [ ] Sincronizar dashboard
+
+## 📚 DOCUMENTOS DE REFERÊNCIA
+
+**OBRIGATÓRIO LER:**
+- `docs/CURSOR-SYSTEM.md` - Sistema principal
+- `docs/PROGRESS-DASHBOARD.md` - Status atual
+- `docs/DOMAINS/gaming/README.md` - Domínio gaming
+- `docs/VERSIONS/v1.0-prototype/README.md` - Versão V1.0
+- `engineering-forge-docs/package.json` - Dependências docs
+- `engineering-forge-v1/package.json` - Dependências jogo
+
+## 🔧 COMANDOS PADRÃO
+
+```bash
+# Inicialização obrigatória
+@ai read-methodology
+@ai check-status
+@ai read-domain gaming
+@ai read-version v1.0-prototype
+
+# Avaliação
+@ai check-versions
+@ai analyze-compatibility
+@ai sync-dependencies
+
+# Instalação
+@ai install-clean
+@ai test-builds
+@ai validate-setup
+```
+
+## ⚠️ PROBLEMAS IDENTIFICADOS
+
+1. **Terminal travado** com aspas não fechadas (resolvido com nova conversa)
+2. **Dependências conflitantes** entre projetos
+3. **Versões não sincronizadas** de ferramentas
+4. **Cache corrompido** (já limpo)
+
+## 🎯 RESULTADO ESPERADO
+
+- ✅ Ambos projetos funcionando perfeitamente
+- ✅ Versões sincronizadas e compatíveis
+- ✅ Builds funcionando sem erros
+- ✅ Documentação atualizada
+- ✅ Dashboard sincronizado
+
+## 📞 CONTEXTO TÉCNICO
+
+**Stack Principal:**
+- React 18/19 + TypeScript
+- Vite para build
+- Tailwind CSS
+- Zustand para state
+- MongoDB Atlas
+- Solana blockchain (V2.0)
+
+**Versões Atuais:**
+- Node.js: [verificar]
+- npm: [verificar]
+- pnpm: [verificar]
+- React: [verificar]
+- TypeScript: [verificar]
+
+---
+
+**INSTRUÇÃO PARA O AI**: Use este prompt como contexto completo. Comece lendo os documentos obrigatórios e siga exatamente o fluxo de tarefas. Mantenha foco na sincronização e compatibilidade entre os projetos.
