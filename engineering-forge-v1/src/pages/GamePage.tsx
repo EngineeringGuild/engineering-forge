@@ -31,10 +31,7 @@ import {
 import { SaveService } from "../domains/gaming/domain/services/SaveService";
 import { ComponentProperties } from "../domains/gaming/domain/value-objects/ComponentProperties";
 import { PerformanceMetrics } from "../domains/gaming/domain/value-objects/PerformanceMetrics";
-import {
-  Position,
-  PositionVO,
-} from "../domains/gaming/domain/value-objects/Position";
+import { PositionVO } from "../domains/gaming/domain/value-objects/Position";
 import { useGameSounds, useUISounds } from "../hooks/useAudio";
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 import { AchievementNotification } from "../presentation/components/game/achievements/AchievementNotification";
@@ -54,6 +51,7 @@ import { AnimatedButton } from "../presentation/components/ui/AnimatedButton";
 import { GlassCard } from "../presentation/components/ui/GlassCard";
 
 const GamePage: React.FC = () => {
+  // Game state
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
@@ -65,17 +63,27 @@ const GamePage: React.FC = () => {
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
     null
   );
-  const [showSettings, setShowSettings] = useState(false);
-  const [gridSize, setGridSize] = useState(20);
-  const [snapToGrid, setSnapToGrid] = useState(true);
   const [currentPerformance, setCurrentPerformance] =
     useState<PerformanceMetrics | null>(null);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
 
+  // UI state
+  const [showSettings, setShowSettings] = useState(false);
+  const [showProgressPanel, setShowProgressPanel] = useState(false);
+  const [showSaveLoadPanel, setShowSaveLoadPanel] = useState(false);
+  const [showAchievementNotification, setShowAchievementNotification] =
+    useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "build" | "test" | "performance" | "achievements" | "simulation"
+  >("build");
+
+  // Settings state
+  const [gridSize, setGridSize] = useState(20);
+  const [snapToGrid, setSnapToGrid] = useState(true);
+
   // Progress tracking state
   const [progressService] = useState(() => new ProgressService());
   const [userId] = useState("user-001"); // TODO: Get from auth system
-  const [showProgressPanel, setShowProgressPanel] = useState(false);
   const [levelUpNotification, setLevelUpNotification] =
     useState<ProgressUpdate | null>(null);
 
@@ -89,25 +97,29 @@ const GamePage: React.FC = () => {
         enableAutoBackup: true,
       })
   );
-  const [showSaveLoadPanel, setShowSaveLoadPanel] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isAutoSaving] = useState(false);
   const [autoSaveError] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "build" | "test" | "performance" | "achievements" | "simulation"
-  >("build");
+
+  // Achievement state
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<
     Achievement[]
   >([]);
-  const [showAchievementNotification, setShowAchievementNotification] =
-    useState(false);
 
   // Simulation state
 
-  // Initialize services
+  // Initialize services (memoized to prevent recreation)
   const physicsService = useMemo(() => new CarSimulationService(), []);
   const achievementService = useMemo(() => new AchievementService(), []);
+  const performanceService = useMemo(
+    () => PerformanceOptimizationService.getInstance(),
+    []
+  );
+  const memoryService = useMemo(
+    () => MemoryOptimizationService.getInstance(),
+    []
+  );
 
   // Audio hooks
   const { playTestComplete, playAchievement, playBackgroundMusic } =
@@ -125,16 +137,6 @@ const GamePage: React.FC = () => {
         }
       },
     });
-
-  // Performance optimization service
-  const performanceService = useMemo(
-    () => PerformanceOptimizationService.getInstance(),
-    []
-  );
-  const memoryService = useMemo(
-    () => MemoryOptimizationService.getInstance(),
-    []
-  );
 
   // Initialize progress tracking
   useEffect(() => {
@@ -187,6 +189,25 @@ const GamePage: React.FC = () => {
     [level]
   );
 
+  // Memoized car completion check
+  const carCompletionStatus = useMemo(() => {
+    const hasChassis = workspaceComponents.some((c) => c.type === "chassis");
+    const hasEngine = workspaceComponents.some((c) => c.type === "engine");
+    const hasWheels = workspaceComponents.some((c) => c.type === "wheels");
+
+    return {
+      isComplete: hasChassis && hasEngine && hasWheels,
+      hasChassis,
+      hasEngine,
+      hasWheels,
+      missingComponents: [
+        !hasChassis && "chassis",
+        !hasEngine && "engine",
+        !hasWheels && "wheels",
+      ].filter(Boolean) as string[],
+    };
+  }, [workspaceComponents]);
+
   // Load achievements on component mount
   useEffect(() => {
     setAchievements(achievementService.getAllAchievements());
@@ -195,50 +216,26 @@ const GamePage: React.FC = () => {
     playBackgroundMusic("bg-music-main");
   }, [achievementService, playBackgroundMusic]);
 
-  // Validation function for complete car
-  const isCarComplete = useCallback(() => {
-    const hasChassis = workspaceComponents.some((c) => c.type === "chassis");
-    const hasEngine = workspaceComponents.some((c) => c.type === "engine");
-    const hasWheels = workspaceComponents.some((c) => c.type === "wheels");
-
-    return hasChassis && hasEngine && hasWheels;
-  }, [workspaceComponents]);
-
   const handlePlayPause = useCallback(() => {
-    console.log("🎮 Play/Pause clicked! Current state:", isPlaying);
-    console.log(
-      "🔍 Current components:",
-      workspaceComponents.map((c) => c.type)
-    );
-
     // Validate car is complete before allowing play
-    if (!isCarComplete()) {
-      const missing = [];
-      if (!workspaceComponents.some((c) => c.type === "chassis"))
-        missing.push("chassis");
-      if (!workspaceComponents.some((c) => c.type === "engine"))
-        missing.push("engine");
-      if (!workspaceComponents.some((c) => c.type === "wheels"))
-        missing.push("wheels");
-
+    if (!carCompletionStatus.isComplete) {
       alert(
-        `Complete your car first! Missing components: ${missing.join(", ")}`
+        `Complete your car first! Missing components: ${carCompletionStatus.missingComponents.join(
+          ", "
+        )}`
       );
       return;
     }
 
     if (!isPlaying) {
       // Switch to simulation tab and start simulation
-      console.log("🚀 Starting simulation - switching to simulation tab");
       setActiveTab("simulation");
       setIsPlaying(true);
-      // Don't set isSimulationRunning here - let CarSimulation handle it
     } else {
       // Stop simulation
-      console.log("🛑 Stopping simulation");
       setIsPlaying(false);
     }
-  }, [isPlaying, isCarComplete, workspaceComponents]);
+  }, [isPlaying, carCompletionStatus]);
 
   const handleReset = useCallback(() => {
     console.log("Reset clicked!");
@@ -251,12 +248,25 @@ const GamePage: React.FC = () => {
   }, []);
 
   const handleComponentMove = useCallback(
-    (componentId: string, position: Position) => {
+    (componentId: string, position: PositionVO) => {
       setWorkspaceComponents((prev) =>
         prev.map((comp) => {
           if (comp.id === componentId) {
-            comp.moveTo(position);
-            return comp;
+            // Create new component with updated position
+            return new Component(comp.id, {
+              name: comp.name,
+              type: comp.type,
+              category: comp.category,
+              properties: comp.properties,
+              position: position,
+              size: comp.size,
+              rotation: comp.rotation,
+              isUnlocked: comp.isUnlocked,
+              rarity: comp.rarity,
+              icon: comp.icon,
+              description: comp.description,
+              level: comp.level,
+            });
           }
           return comp;
         })
@@ -286,7 +296,7 @@ const GamePage: React.FC = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (components.length > 0) {
-          // Use the performance calculator directly for real-time performance updates
+          // Use the performance calculator for initial performance calculation
           const performanceCalculator =
             physicsService.getPerformanceCalculator();
           const performance =
@@ -680,9 +690,7 @@ const GamePage: React.FC = () => {
                         <div className="flex items-center space-x-2">
                           <div
                             className={`w-3 h-3 rounded-full ${
-                              workspaceComponents.some(
-                                (c) => c.type === "chassis"
-                              )
+                              carCompletionStatus.hasChassis
                                 ? "bg-green-500"
                                 : "bg-gray-500"
                             }`}
@@ -690,9 +698,7 @@ const GamePage: React.FC = () => {
                           />
                           <div
                             className={`w-3 h-3 rounded-full ${
-                              workspaceComponents.some(
-                                (c) => c.type === "engine"
-                              )
+                              carCompletionStatus.hasEngine
                                 ? "bg-green-500"
                                 : "bg-gray-500"
                             }`}
@@ -700,27 +706,17 @@ const GamePage: React.FC = () => {
                           />
                           <div
                             className={`w-3 h-3 rounded-full ${
-                              workspaceComponents.some(
-                                (c) => c.type === "wheels"
-                              )
+                              carCompletionStatus.hasWheels
                                 ? "bg-green-500"
                                 : "bg-gray-500"
                             }`}
                             title="Wheels"
                           />
-                          {workspaceComponents.some(
-                            (c) => c.type === "chassis"
-                          ) &&
-                            workspaceComponents.some(
-                              (c) => c.type === "engine"
-                            ) &&
-                            workspaceComponents.some(
-                              (c) => c.type === "wheels"
-                            ) && (
-                              <span className="text-green-400 text-sm font-medium">
-                                🚗 Complete!
-                              </span>
-                            )}
+                          {carCompletionStatus.isComplete && (
+                            <span className="text-green-400 text-sm font-medium">
+                              🚗 Complete!
+                            </span>
+                          )}
                         </div>
                         <button
                           onClick={handlePlayPause}

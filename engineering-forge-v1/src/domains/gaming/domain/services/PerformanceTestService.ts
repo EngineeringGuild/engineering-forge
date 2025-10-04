@@ -1,9 +1,18 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/services/PerformanceTestService.ts
 
 import { Component } from "../entities/Component";
-import { TestResult, TestType } from "../entities/TestResult";
+import { TestResult } from "../entities/TestResult";
 import { PerformanceMetrics } from "../value-objects/PerformanceMetrics";
 import { CarSimulationService } from "./CarSimulationService";
+
+// Definir TestType localmente para evitar duplicação
+export type TestType =
+  | 'acceleration'
+  | 'top_speed'
+  | 'handling'
+  | 'efficiency'
+  | 'endurance'
+  | 'comprehensive';
 
 export interface TestConfiguration {
   testType: TestType;
@@ -51,7 +60,7 @@ export class PerformanceTestService {
       status: "pending",
       startTime: new Date(),
       performance: new PerformanceMetrics({
-        acceleration: 0,
+        acceleration: 10, // 10 segundos (valor padrão realista)
         topSpeed: 0,
         handling: 0,
         fuelEfficiency: 0,
@@ -115,7 +124,7 @@ export class PerformanceTestService {
           trackCondition: "dry",
         },
         targetPerformance: new PerformanceMetrics({
-          acceleration: 8.0,
+          acceleration: 8.0, // 8 segundos para 0-100 km/h
           topSpeed: 0,
           handling: 0,
           fuelEfficiency: 0,
@@ -253,7 +262,7 @@ export class PerformanceTestService {
 
   private async simulateTestDuration(duration: number): Promise<void> {
     // Simulate test duration with a shorter delay for demo purposes
-    const delay = Math.min(duration * 100, 2000); // Max 2 seconds for demo
+    const delay = Math.min(duration * 50, 5000); // Max 5 seconds for demo, mais realista
     return new Promise((resolve) => setTimeout(resolve, delay));
   }
 

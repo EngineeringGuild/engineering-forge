@@ -2,7 +2,7 @@
 
 import { Component } from "../entities/Component";
 import { PerformanceMetrics } from "../value-objects/PerformanceMetrics";
-import { Position, PositionVO } from "../value-objects/Position";
+import { PositionVO } from "../value-objects/Position";
 import { PerformanceCalculator } from "./performance/PerformanceCalculator";
 import {
   SimulationConfig,
@@ -34,7 +34,7 @@ export interface CarSimulationResult {
  */
 export interface SimulationStep {
   timestamp: number; // in seconds
-  position: Position;
+  position: PositionVO;
   speed: number; // in km/h
   acceleration: number; // in m/s²
   performance: PerformanceMetrics;
@@ -55,7 +55,7 @@ export class CarSimulationService {
   private performanceCalculator: PerformanceCalculator;
   private defaultConfig: SimulationConfig = {
     trackLength: 1000, // 1km track
-    maxSimulationTime: 60, // 60 seconds max
+    maxSimulationTime: 30, // 30 seconds max (consistente com SimulationRunner)
     timeStep: 0.1, // 100ms steps
     enablePhysics: true,
     enableDrag: true,

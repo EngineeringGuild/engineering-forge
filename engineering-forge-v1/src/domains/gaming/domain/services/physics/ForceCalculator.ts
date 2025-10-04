@@ -1,6 +1,7 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/services/physics/ForceCalculator.ts
 
 import { Component } from "../../entities/Component";
+import { CarPropertiesCalculator } from "../utils/CarPropertiesCalculator";
 
 /**
  * Force Configuration Interface
@@ -63,7 +64,8 @@ export class ForceCalculator {
     enableDrag: boolean = true,
     enableFriction: boolean = true
   ): ForceResult {
-    const carProperties = this.calculateCarProperties(components);
+    const carProperties =
+      CarPropertiesCalculator.calculateCarProperties(components);
 
     const engineForce = this.calculateEngineForce(
       carProperties.power,
@@ -99,10 +101,10 @@ export class ForceCalculator {
     // Calculate force based on power and velocity
     // At very low speeds, provide maximum torque (realistic engine behavior)
     let force: number;
-    if (velocity < 1.0) {
+    if (velocity < 0.5) {
       // Maximum force at very low speeds (standing start)
       // Use realistic torque multiplier for low speeds
-      force = powerWatts * 0.8; // Higher multiplier for starting force
+      force = powerWatts * 0.15; // More realistic multiplier
     } else {
       // Force = Power / Velocity (correct physics formula)
       // Apply realistic scaling factor
@@ -110,11 +112,11 @@ export class ForceCalculator {
     }
 
     // Ensure minimum force for movement
-    const minForce = powerWatts * 0.1; // Minimum force to ensure movement
+    const minForce = powerWatts * 0.02; // Minimum force to ensure movement
     force = Math.max(force, minForce);
 
     // Cap the force to prevent unrealistic values
-    const maxForce = powerWatts * 1.5; // Realistic maximum force cap
+    const maxForce = powerWatts * 0.3; // Realistic maximum force cap
     return Math.min(force, maxForce);
   }
 
@@ -149,39 +151,6 @@ export class ForceCalculator {
     return (
       weight * this.config.gravity * this.config.frictionCoefficient * 0.01
     );
-  }
-
-  /**
-   * Calculate car properties from components
-   * @param components - Car components
-   * @returns Car properties object
-   */
-  private calculateCarProperties(components: Component[]): {
-    power: number;
-    weight: number;
-    efficiency: number;
-  } {
-    let totalPower = 0;
-    let totalWeight = 0;
-    let totalEfficiency = 0;
-    let componentCount = 0;
-
-    components.forEach((component) => {
-      totalPower += component.properties.power || 0;
-      totalWeight += component.properties.weight || 0;
-      totalEfficiency += component.properties.efficiency || 0;
-      componentCount++;
-    });
-
-    // Ensure minimum values for realistic simulation
-    totalWeight = Math.max(totalWeight, 100); // Minimum 100kg
-    totalPower = Math.max(totalPower, 10); // Minimum 10hp
-
-    return {
-      power: totalPower,
-      weight: totalWeight,
-      efficiency: componentCount > 0 ? totalEfficiency / componentCount : 50,
-    };
   }
 
   /**

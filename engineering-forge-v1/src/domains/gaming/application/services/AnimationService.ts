@@ -1,7 +1,8 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/application/services/AnimationService.ts
 
-import { SimulationStep } from "../../domain/entities/SimulationResult";
-import { Position, PositionVO } from "../../domain/value-objects/Position";
+import { AnimationEffect as AnimationEffectVO } from "../../domain/value-objects/AnimationEffect";
+import { PositionVO } from "../../domain/value-objects/Position";
+import { SimulationStepData } from "../../domain/value-objects/SimulationStepData";
 
 /**
  * Animation Configuration Interface
@@ -24,7 +25,7 @@ export interface AnimationConfig {
  */
 export interface AnimationFrame {
   timestamp: number;
-  position: Position;
+  position: PositionVO;
   speed: number;
   acceleration: number;
   opacity: number;
@@ -38,11 +39,14 @@ export interface AnimationFrame {
  * Represents visual effects for animation
  */
 export interface AnimationEffect {
-  type: "particle" | "trail" | "speedLine" | "dust" | "spark";
-  position: Position;
+  type: "particle" | "trail" | "speedLine" | "dust" | "explosion" | "smoke";
+  position: { x: number; y: number };
   intensity: number;
   duration: number;
   color: string;
+  size?: number;
+  opacity?: number;
+  velocity?: { x: number; y: number };
 }
 
 /**
@@ -104,7 +108,7 @@ export class AnimationService {
    * @returns Promise that resolves when animation completes
    */
   async startAnimation(
-    simulationSteps: SimulationStep[],
+    simulationSteps: SimulationStepData[],
     config?: Partial<AnimationConfig>
   ): Promise<void> {
     if (this.isAnimating) {
@@ -218,7 +222,7 @@ export class AnimationService {
    * @param onComplete - Callback when animation completes
    */
   private runAnimationLoop(
-    simulationSteps: SimulationStep[],
+    simulationSteps: SimulationStepData[],
     config: AnimationConfig,
     onComplete: () => void
   ): void {
@@ -281,7 +285,7 @@ export class AnimationService {
    * @returns Animation frame
    */
   private generateAnimationFrame(
-    simulationSteps: SimulationStep[],
+    simulationSteps: SimulationStepData[],
     progress: number,
     config: AnimationConfig
   ): AnimationFrame {
@@ -316,10 +320,10 @@ export class AnimationService {
    * @returns Interpolated simulation step
    */
   private interpolateSimulationSteps(
-    simulationSteps: SimulationStep[],
+    simulationSteps: SimulationStepData[],
     progress: number
   ): {
-    position: Position;
+    position: PositionVO;
     speed: number;
     acceleration: number;
   } {
@@ -340,8 +344,8 @@ export class AnimationService {
     const targetTime =
       progress * simulationSteps[simulationSteps.length - 1].timestamp;
 
-    let beforeStep: SimulationStep | null = null;
-    let afterStep: SimulationStep | null = null;
+    let beforeStep: SimulationStepData | null = null;
+    let afterStep: SimulationStepData | null = null;
 
     for (let i = 0; i < simulationSteps.length - 1; i++) {
       const currentStep = simulationSteps[i];
@@ -472,7 +476,7 @@ export class AnimationService {
    */
   private generateEffects(
     interpolatedStep: {
-      position: Position;
+      position: PositionVO;
       speed: number;
       acceleration: number;
     },
@@ -487,16 +491,20 @@ export class AnimationService {
       );
 
       for (let i = 0; i < particleCount; i++) {
-        effects.push({
-          type: "particle",
-          position: new PositionVO(
-            interpolatedStep.position.x + (Math.random() - 0.5) * 20,
-            interpolatedStep.position.y + (Math.random() - 0.5) * 20
-          ),
-          intensity: Math.random(),
-          duration: 1000 + Math.random() * 2000,
-          color: "#FFD700", // Gold particles
-        });
+        effects.push(
+          AnimationEffectVO.create({
+            type: "particle",
+            position: {
+              x: interpolatedStep.position.x + (Math.random() - 0.5) * 20,
+              y: interpolatedStep.position.y + (Math.random() - 0.5) * 20,
+            },
+            intensity: Math.random(),
+            duration: 1000 + Math.random() * 2000,
+            color: "#FFD700", // Gold particles
+            size: 2 + Math.random() * 3,
+            opacity: 0.8 + Math.random() * 0.2,
+          })
+        );
       }
     }
 
@@ -504,17 +512,22 @@ export class AnimationService {
       // Generate trail effect
       for (let i = 0; i < config.trailLength; i++) {
         const trailProgress = i / config.trailLength;
-        effects.push({
-          type: "trail",
-          position: new PositionVO(
-            interpolatedStep.position.x -
-              interpolatedStep.speed * trailProgress * 0.1,
-            interpolatedStep.position.y
-          ),
-          intensity: 1 - trailProgress,
-          duration: 500,
-          color: "#00FFFF", // Cyan trail
-        });
+        effects.push(
+          AnimationEffectVO.create({
+            type: "trail",
+            position: {
+              x:
+                interpolatedStep.position.x -
+                interpolatedStep.speed * trailProgress * 0.1,
+              y: interpolatedStep.position.y,
+            },
+            intensity: 1 - trailProgress,
+            duration: 500,
+            color: "#00FFFF", // Cyan trail
+            size: 2,
+            opacity: 1 - trailProgress,
+          })
+        );
       }
     }
 
@@ -523,31 +536,39 @@ export class AnimationService {
       const lineCount = Math.floor(interpolatedStep.speed / 25);
 
       for (let i = 0; i < lineCount; i++) {
-        effects.push({
-          type: "speedLine",
-          position: new PositionVO(
-            interpolatedStep.position.x + (Math.random() - 0.5) * 100,
-            interpolatedStep.position.y + (Math.random() - 0.5) * 100
-          ),
-          intensity: interpolatedStep.speed / 100,
-          duration: 200,
-          color: "#FFFFFF", // White speed lines
-        });
+        effects.push(
+          AnimationEffectVO.create({
+            type: "speedLine",
+            position: {
+              x: interpolatedStep.position.x + (Math.random() - 0.5) * 100,
+              y: interpolatedStep.position.y + (Math.random() - 0.5) * 100,
+            },
+            intensity: interpolatedStep.speed / 100,
+            duration: 200,
+            color: "#FFFFFF", // White speed lines
+            size: 1,
+            opacity: 0.8,
+          })
+        );
       }
     }
 
     // Generate dust particles at low speeds
     if (interpolatedStep.speed > 5 && interpolatedStep.speed < 30) {
-      effects.push({
-        type: "dust",
-        position: new PositionVO(
-          interpolatedStep.position.x + (Math.random() - 0.5) * 30,
-          interpolatedStep.position.y + (Math.random() - 0.5) * 30
-        ),
-        intensity: 0.5,
-        duration: 1500,
-        color: "#8B4513", // Brown dust
-      });
+      effects.push(
+        AnimationEffectVO.create({
+          type: "dust",
+          position: {
+            x: interpolatedStep.position.x + (Math.random() - 0.5) * 30,
+            y: interpolatedStep.position.y + (Math.random() - 0.5) * 30,
+          },
+          intensity: 0.5,
+          duration: 1500,
+          color: "#8B4513", // Brown dust
+          size: 1,
+          opacity: 0.6,
+        })
+      );
     }
 
     return effects;

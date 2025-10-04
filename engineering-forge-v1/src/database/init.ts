@@ -5,8 +5,6 @@
  * and sets up initial data if needed.
  */
 
-import { Course } from "../domains/gaming/domain/entities/Lesson";
-import { User } from "../domains/gaming/domain/entities/User";
 import { databaseService } from "../domains/gaming/infrastructure/services/databaseService";
 
 // Initial data setup
@@ -18,8 +16,8 @@ export const initializeDatabase = async (): Promise<void> => {
     await databaseService.initialize();
 
     // Check if we need to seed initial data
-    const userCount = await User.countDocuments();
-    const courseCount = await Course.countDocuments();
+    const userCount = await databaseService.getUserCount();
+    const courseCount = await databaseService.getCourseCount();
 
     if (userCount === 0 && courseCount === 0) {
       console.log("📦 Seeding initial data...");

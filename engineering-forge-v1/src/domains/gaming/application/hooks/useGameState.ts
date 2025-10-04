@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
-import { usePerformanceMonitor } from '../../../../hooks/usePerformanceMonitor';
-import { GameState } from '../../domain/value-objects/GameState';
+import { useEffect, useState } from "react";
+import { usePerformanceMonitor } from "../../../../hooks/usePerformanceMonitor";
+import { GameState } from "../../domain/value-objects/GameState";
 
 export function useGameState(): GameState {
-  const [gameState, setGameState] = useState<GameState>(() => GameState.createDefault('user-001'));
+  const [gameState, setGameState] = useState<GameState>(() =>
+    GameState.createDefault("user-001")
+  );
 
   // Performance monitoring
   const { isLowPerformance } = usePerformanceMonitor({
@@ -13,12 +15,12 @@ export function useGameState(): GameState {
       if (metrics.fps < 30) {
         console.warn(`Low FPS detected: ${metrics.fps}fps`);
       }
-    }
+    },
   });
 
   // Update performance state
   useEffect(() => {
-    setGameState(prev => {
+    setGameState((prev) => {
       const newState = prev.setLowPerformance(isLowPerformance);
       return newState;
     });

@@ -14,9 +14,9 @@ export interface AnimationEffectProps {
   readonly color: string;
   readonly intensity: number;
   readonly duration: number;
-  readonly size: number;
+  readonly size?: number;
   readonly velocity?: { x: number; y: number };
-  readonly opacity: number;
+  readonly opacity?: number;
 }
 
 export class AnimationEffect extends ValueObject<AnimationEffectProps> {
@@ -50,11 +50,14 @@ export class AnimationEffect extends ValueObject<AnimationEffectProps> {
       throw new Error("Effect duration must be positive");
     }
 
-    if (props.size <= 0) {
+    if (props.size !== undefined && props.size <= 0) {
       throw new Error("Effect size must be positive");
     }
 
-    if (props.opacity < 0 || props.opacity > 1) {
+    if (
+      props.opacity !== undefined &&
+      (props.opacity < 0 || props.opacity > 1)
+    ) {
       throw new Error("Effect opacity must be between 0 and 1");
     }
   }
@@ -80,7 +83,7 @@ export class AnimationEffect extends ValueObject<AnimationEffectProps> {
   }
 
   get size(): number {
-    return this.props.size;
+    return this.props.size || 1;
   }
 
   get velocity(): { x: number; y: number } | undefined {
@@ -88,7 +91,7 @@ export class AnimationEffect extends ValueObject<AnimationEffectProps> {
   }
 
   get opacity(): number {
-    return this.props.opacity;
+    return this.props.opacity || 1;
   }
 
   /**

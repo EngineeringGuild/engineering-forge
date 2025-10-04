@@ -6,15 +6,30 @@
  */
 
 // Component Types
-export type ComponentType = 'engine' | 'chassis' | 'wheels' | 'suspension' | 'brakes' | 'transmission';
-export type ComponentCategory = 'mechanical' | 'electrical' | 'structural' | 'aerodynamic';
-export type ComponentRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type ComponentType =
+  | "engine"
+  | "chassis"
+  | "wheels"
+  | "suspension"
+  | "brakes"
+  | "transmission";
+export type ComponentCategory =
+  | "mechanical"
+  | "electrical"
+  | "structural"
+  | "aerodynamic";
+export type ComponentRarity =
+  | "common"
+  | "uncommon"
+  | "rare"
+  | "epic"
+  | "legendary";
 
-// Position and Size
-export interface Position {
-  x: number;
-  y: number;
-}
+// Import PositionVO from domain
+import { PositionVO } from "../domains/gaming/domain/value-objects/Position";
+
+// Re-export for backward compatibility
+export type Position = PositionVO;
 
 export interface Size {
   width: number;
@@ -23,12 +38,12 @@ export interface Size {
 
 // Component Properties
 export interface ComponentProperties {
-  power: number;        // Engine power in HP
-  weight: number;       // Weight in kg
-  efficiency: number;   // Efficiency rating 0-100
-  durability: number;   // Durability rating 0-100
-  cost: number;         // Cost in credits
-  unlockLevel: number;  // Required level to unlock
+  power: number; // Engine power in HP
+  weight: number; // Weight in kg
+  efficiency: number; // Efficiency rating 0-100
+  durability: number; // Durability rating 0-100
+  cost: number; // Cost in credits
+  unlockLevel: number; // Required level to unlock
 }
 
 // Component Interface
@@ -48,8 +63,8 @@ export interface Component {
 }
 
 // Game Session
-export type SessionStatus = 'active' | 'paused' | 'completed' | 'abandoned';
-export type GamePhase = 'planning' | 'building' | 'testing' | 'optimizing';
+export type SessionStatus = "active" | "paused" | "completed" | "abandoned";
+export type GamePhase = "planning" | "building" | "testing" | "optimizing";
 
 export interface GameSession {
   id: string;
@@ -67,20 +82,28 @@ export interface GameSession {
 
 // Performance Metrics
 export interface PerformanceMetrics {
-  acceleration: number;    // 0-100 km/h in seconds
-  topSpeed: number;        // km/h
-  handling: number;        // 0-100 rating
-  fuelEfficiency: number;  // km/l
-  weight: number;          // kg
-  power: number;           // HP
-  torque: number;          // Nm
-  overall: number;         // Overall rating 0-100
+  acceleration: number; // 0-100 km/h in seconds
+  topSpeed: number; // km/h
+  handling: number; // 0-100 rating
+  fuelEfficiency: number; // km/l
+  weight: number; // kg
+  power: number; // HP
+  torque: number; // Nm
+  overall: number; // Overall rating 0-100
 }
 
 // Project Types
-export type ProjectType = 'car' | 'bridge' | 'circuit' | 'structure';
-export type EngineeringCategory = 'automotive' | 'civil' | 'electrical' | 'mechanical';
-export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ProjectType = "car" | "bridge" | "circuit" | "structure";
+export type EngineeringCategory =
+  | "automotive"
+  | "civil"
+  | "electrical"
+  | "mechanical";
+export type DifficultyLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "expert";
 
 export interface ProjectObjective {
   id: string;
@@ -93,7 +116,7 @@ export interface ProjectObjective {
 
 export interface ProjectConstraint {
   id: string;
-  type: 'budget' | 'weight' | 'size' | 'time';
+  type: "budget" | "weight" | "size" | "time";
   value: number;
   description: string;
 }
@@ -118,9 +141,9 @@ export interface Project {
 
 // Drag and Drop Types
 export interface DragItem {
-  type: 'component';
+  type: "component";
   component: Component;
-  source: 'palette' | 'workspace';
+  source: "palette" | "workspace";
 }
 
 export interface DropResult {
@@ -174,15 +197,30 @@ export interface CompatibilityResult {
 
 // Game Events
 export interface GameEvent {
-  type: 'component_added' | 'component_removed' | 'component_moved' | 'project_completed' | 'achievement_unlocked';
+  type:
+    | "component_added"
+    | "component_removed"
+    | "component_moved"
+    | "project_completed"
+    | "achievement_unlocked";
   timestamp: Date;
   data: any;
 }
 
 // Achievement Types
-export type AchievementType = 'completion' | 'performance' | 'speed' | 'efficiency' | 'innovation';
-export type AchievementCategory = 'builder' | 'engineer' | 'speedster' | 'perfectionist' | 'explorer';
-export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type AchievementType =
+  | "completion"
+  | "performance"
+  | "speed"
+  | "efficiency"
+  | "innovation";
+export type AchievementCategory =
+  | "builder"
+  | "engineer"
+  | "speedster"
+  | "perfectionist"
+  | "explorer";
+export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
 
 export interface AchievementRequirement {
   type: string;
@@ -232,22 +270,22 @@ export interface GameState {
 
 // Action Types for State Management
 export type GameAction =
-  | { type: 'SET_SESSION'; payload: GameSession }
-  | { type: 'SET_PROJECT'; payload: Project }
-  | { type: 'ADD_COMPONENT'; payload: Component }
-  | { type: 'REMOVE_COMPONENT'; payload: string }
-  | { type: 'UPDATE_COMPONENT'; payload: Component }
-  | { type: 'SELECT_COMPONENT'; payload: string | null }
-  | { type: 'SET_WORKSPACE_GRID'; payload: WorkspaceGrid }
-  | { type: 'SET_ZOOM'; payload: number }
-  | { type: 'SET_PAN'; payload: Position }
-  | { type: 'SET_PALETTE_CATEGORY'; payload: ComponentCategory }
-  | { type: 'SET_SEARCH_QUERY'; payload: string }
-  | { type: 'UPDATE_PERFORMANCE'; payload: PerformanceMetrics }
-  | { type: 'UNLOCK_ACHIEVEMENT'; payload: Achievement }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'RESET_GAME' };
+  | { type: "SET_SESSION"; payload: GameSession }
+  | { type: "SET_PROJECT"; payload: Project }
+  | { type: "ADD_COMPONENT"; payload: Component }
+  | { type: "REMOVE_COMPONENT"; payload: string }
+  | { type: "UPDATE_COMPONENT"; payload: Component }
+  | { type: "SELECT_COMPONENT"; payload: string | null }
+  | { type: "SET_WORKSPACE_GRID"; payload: WorkspaceGrid }
+  | { type: "SET_ZOOM"; payload: number }
+  | { type: "SET_PAN"; payload: Position }
+  | { type: "SET_PALETTE_CATEGORY"; payload: ComponentCategory }
+  | { type: "SET_SEARCH_QUERY"; payload: string }
+  | { type: "UPDATE_PERFORMANCE"; payload: PerformanceMetrics }
+  | { type: "UNLOCK_ACHIEVEMENT"; payload: Achievement }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "RESET_GAME" };
 
 // Physics Calculation Types
 export interface PhysicsInputs {

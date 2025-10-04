@@ -8,6 +8,7 @@ import {
 } from "../performance/PerformanceCalculator";
 import { ForceCalculator, ForceResult } from "../physics/ForceCalculator";
 import { PhysicsEngine, PhysicsState } from "../physics/PhysicsEngine";
+import { CarPropertiesCalculator } from "../utils/CarPropertiesCalculator";
 
 /**
  * Simulation Configuration Interface
@@ -91,7 +92,8 @@ export class SimulationRunner {
     const steps: SimulationStepData[] = [];
 
     // Calculate car properties
-    const carProperties = this.calculateCarProperties(components);
+    const carProperties =
+      CarPropertiesCalculator.calculateCarProperties(components);
 
     console.log(
       `📊 Car properties - Weight: ${carProperties.weight}kg, Power: ${carProperties.power}hp`
@@ -103,8 +105,8 @@ export class SimulationRunner {
     while (this.shouldContinueSimulation(physicsState)) {
       stepCount++;
 
-      // Debug log every 100 steps
-      if (stepCount % 100 === 0) {
+      // Debug log every 50 steps (less frequent)
+      if (stepCount % 50 === 0) {
         console.log(
           `🔄 Simulation step ${stepCount}: distance=${physicsState.distance.toFixed(
             1
@@ -160,8 +162,12 @@ export class SimulationRunner {
 
       steps.push(stepData);
 
-      // Update state for next iteration
-      Object.assign(physicsState, newPhysicsState);
+      // Update state for next iteration (immutable update)
+      physicsState.position = newPhysicsState.position;
+      physicsState.velocity = newPhysicsState.velocity;
+      physicsState.acceleration = newPhysicsState.acceleration;
+      physicsState.time = newPhysicsState.time;
+      physicsState.distance = newPhysicsState.distance;
 
       // Safety check to prevent infinite loops
       if (steps.length > 300) {
@@ -209,39 +215,6 @@ export class SimulationRunner {
         )}`
       );
     }
-  }
-
-  /**
-   * Calculate car properties from components
-   * @param components - Car components
-   * @returns Car properties object
-   */
-  private calculateCarProperties(components: Component[]): {
-    power: number;
-    weight: number;
-    efficiency: number;
-  } {
-    let totalPower = 0;
-    let totalWeight = 0;
-    let totalEfficiency = 0;
-    let componentCount = 0;
-
-    components.forEach((component) => {
-      totalPower += component.properties.power || 0;
-      totalWeight += component.properties.weight || 0;
-      totalEfficiency += component.properties.efficiency || 0;
-      componentCount++;
-    });
-
-    // Ensure minimum values for realistic simulation
-    totalWeight = Math.max(totalWeight, 100); // Minimum 100kg
-    totalPower = Math.max(totalPower, 10); // Minimum 10hp
-
-    return {
-      power: totalPower,
-      weight: totalWeight,
-      efficiency: componentCount > 0 ? totalEfficiency / componentCount : 50,
-    };
   }
 
   /**

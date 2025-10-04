@@ -1,15 +1,23 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/aggregates/ProjectAggregate.ts
 
-import { BaseEntity } from '../../../../shared/domain/BaseEntity';
-import { Component } from '../entities/Component';
-import { ComponentAddedEvent } from '../events/ComponentAddedEvent';
-import { ComponentRemovedEvent } from '../events/ComponentRemovedEvent';
-import { ProjectCompletedEvent } from '../events/ProjectCompletedEvent';
-import { PerformanceMetrics } from '../value-objects/PerformanceMetrics';
+import { BaseEntity } from "../../../../shared/domain/BaseEntity";
+import { Component } from "../entities/Component";
+import { ComponentAddedEvent } from "../events/ComponentAddedEvent";
+import { ComponentRemovedEvent } from "../events/ComponentRemovedEvent";
+import { ProjectCompletedEvent } from "../events/ProjectCompletedEvent";
+import { PerformanceMetrics } from "../value-objects/PerformanceMetrics";
 
-export type ProjectType = 'car' | 'bridge' | 'circuit' | 'structure';
-export type EngineeringCategory = 'automotive' | 'civil' | 'electrical' | 'mechanical';
-export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ProjectType = "car" | "bridge" | "circuit" | "structure";
+export type EngineeringCategory =
+  | "automotive"
+  | "civil"
+  | "electrical"
+  | "mechanical";
+export type DifficultyLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "expert";
 
 export interface ProjectObjective {
   id: string;
@@ -22,7 +30,7 @@ export interface ProjectObjective {
 
 export interface ProjectConstraint {
   id: string;
-  type: 'budget' | 'weight' | 'size' | 'time';
+  type: "budget" | "weight" | "size" | "time";
   value: number;
   description: string;
 }
@@ -142,7 +150,7 @@ export class ProjectAggregate extends BaseEntity<string> {
   }
 
   public removeComponent(componentId: string): void {
-    const index = this._components.findIndex(c => c.id === componentId);
+    const index = this._components.findIndex((c) => c.id === componentId);
     if (index === -1) {
       throw new Error(`Component with id ${componentId} not found`);
     }
@@ -154,7 +162,7 @@ export class ProjectAggregate extends BaseEntity<string> {
   }
 
   public updateComponent(component: Component): void {
-    const index = this._components.findIndex(c => c.id === component.id);
+    const index = this._components.findIndex((c) => c.id === component.id);
     if (index === -1) {
       throw new Error(`Component with id ${component.id} not found`);
     }
@@ -164,14 +172,18 @@ export class ProjectAggregate extends BaseEntity<string> {
   }
 
   public getComponent(componentId: string): Component | undefined {
-    return this._components.find(c => c.id === componentId);
+    return this._components.find((c) => c.id === componentId);
   }
 
   public validateComponentAddition(component: Component): void {
     // Check if component type already exists
-    const existingComponent = this._components.find(c => c.type === component.type);
+    const existingComponent = this._components.find(
+      (c) => c.type === component.type
+    );
     if (existingComponent) {
-      throw new Error(`Component of type ${component.type} already exists in project`);
+      throw new Error(
+        `Component of type ${component.type} already exists in project`
+      );
     }
 
     // Check constraints
@@ -183,7 +195,7 @@ export class ProjectAggregate extends BaseEntity<string> {
 
   private validateConstraints(component: Component): void {
     // Check budget constraint
-    const budgetConstraint = this._constraints.find(c => c.type === 'budget');
+    const budgetConstraint = this._constraints.find((c) => c.type === "budget");
     if (budgetConstraint) {
       const totalCost = this.getTotalCost() + component.properties.cost;
       if (totalCost > budgetConstraint.value) {
@@ -194,7 +206,7 @@ export class ProjectAggregate extends BaseEntity<string> {
     }
 
     // Check weight constraint
-    const weightConstraint = this._constraints.find(c => c.type === 'weight');
+    const weightConstraint = this._constraints.find((c) => c.type === "weight");
     if (weightConstraint) {
       const totalWeight = this.getTotalWeight() + component.properties.weight;
       if (totalWeight > weightConstraint.value) {
@@ -216,15 +228,24 @@ export class ProjectAggregate extends BaseEntity<string> {
   }
 
   public getTotalCost(): number {
-    return this._components.reduce((total, component) => total + component.properties.cost, 0);
+    return this._components.reduce(
+      (total, component) => total + component.properties.cost,
+      0
+    );
   }
 
   public getTotalWeight(): number {
-    return this._components.reduce((total, component) => total + component.properties.weight, 0);
+    return this._components.reduce(
+      (total, component) => total + component.properties.weight,
+      0
+    );
   }
 
   public getTotalPower(): number {
-    return this._components.reduce((total, component) => total + component.properties.power, 0);
+    return this._components.reduce(
+      (total, component) => total + component.properties.power,
+      0
+    );
   }
 
   public calculatePerformance(): PerformanceMetrics {
@@ -240,7 +261,7 @@ export class ProjectAggregate extends BaseEntity<string> {
 
     const overall = (acceleration + topSpeed + handling + fuelEfficiency) / 4;
 
-    return PerformanceMetrics.create({
+    return new PerformanceMetrics({
       acceleration,
       topSpeed,
       handling,
@@ -248,13 +269,13 @@ export class ProjectAggregate extends BaseEntity<string> {
       weight: totalWeight,
       power: totalPower,
       torque: totalPower * 0.7,
-      overall: Math.min(100, overall)
+      overall: Math.min(100, overall),
     });
   }
 
   public completeProject(completionTime: number): void {
     if (this._isCompleted) {
-      throw new Error('Project is already completed');
+      throw new Error("Project is already completed");
     }
 
     this._isCompleted = true;
@@ -262,7 +283,9 @@ export class ProjectAggregate extends BaseEntity<string> {
     this._finalScore = this.calculateScore();
     this.updateTimestamp();
 
-    this._domainEvents.push(new ProjectCompletedEvent(this.id, this._finalScore, completionTime));
+    this._domainEvents.push(
+      new ProjectCompletedEvent(this.id, this._finalScore, completionTime)
+    );
   }
 
   private calculateScore(): number {
@@ -270,11 +293,15 @@ export class ProjectAggregate extends BaseEntity<string> {
     const objectiveScore = this.calculateObjectiveScore();
     const constraintScore = this.calculateConstraintScore();
 
-    return Math.round(performance.overall * 0.5 + objectiveScore * 0.3 + constraintScore * 0.2);
+    return Math.round(
+      performance.overall * 0.5 + objectiveScore * 0.3 + constraintScore * 0.2
+    );
   }
 
   private calculateObjectiveScore(): number {
-    const completedObjectives = this._objectives.filter(obj => obj.isCompleted).length;
+    const completedObjectives = this._objectives.filter(
+      (obj) => obj.isCompleted
+    ).length;
     return (completedObjectives / this._objectives.length) * 100;
   }
 
@@ -284,13 +311,13 @@ export class ProjectAggregate extends BaseEntity<string> {
     // Penalize for exceeding constraints
     for (const constraint of this._constraints) {
       switch (constraint.type) {
-        case 'budget':
+        case "budget":
           const totalCost = this.getTotalCost();
           if (totalCost > constraint.value) {
             score -= ((totalCost - constraint.value) / constraint.value) * 50;
           }
           break;
-        case 'weight':
+        case "weight":
           const totalWeight = this.getTotalWeight();
           if (totalWeight > constraint.value) {
             score -= ((totalWeight - constraint.value) / constraint.value) * 50;

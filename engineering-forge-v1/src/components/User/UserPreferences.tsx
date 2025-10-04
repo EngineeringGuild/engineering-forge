@@ -37,8 +37,8 @@ export const UserPreferences: React.FC<UserPreferencesProps> = ({
   useEffect(() => {
     if (user) {
       setFormData({
-        language: user.preferences.language,
-        theme: user.preferences.theme,
+        language: user.preferences.language as 'en' | 'pt' | 'es' | 'fr',
+        theme: user.preferences.theme as 'light' | 'dark',
         emailNotifications: user.preferences.notifications.email,
         pushNotifications: user.preferences.notifications.push,
         inAppNotifications: user.preferences.notifications.inApp
@@ -139,8 +139,8 @@ export const UserPreferences: React.FC<UserPreferencesProps> = ({
   const handleReset = () => {
     if (user) {
       setFormData({
-        language: user.preferences.language,
-        theme: user.preferences.theme,
+        language: user.preferences.language as 'en' | 'pt' | 'es' | 'fr',
+        theme: user.preferences.theme as 'light' | 'dark',
         emailNotifications: user.preferences.notifications.email,
         pushNotifications: user.preferences.notifications.push,
         inAppNotifications: user.preferences.notifications.inApp

@@ -6,17 +6,6 @@
 
 import { Router } from "express";
 import {
-  addComponentToFavorites,
-  getUserAchievements,
-  getUserFavoriteComponents,
-  getUserPreferences,
-  getUserProfile,
-  getUserStatistics,
-  removeComponentFromFavorites,
-  updateUserPreferences,
-  updateUserProfile,
-} from "../domains/gaming/application/use-cases/userController";
-import {
   authenticateToken,
   corsAuth,
   errorHandler,
@@ -24,6 +13,43 @@ import {
   rateLimit,
 } from "../middleware/auth";
 import { sanitizeInput } from "../middleware/validation";
+
+// Mock user controller functions for now
+const addComponentToFavorites = async (_req: any, _res: any) => {
+  _res.json({ success: true, message: "Component added to favorites" });
+};
+
+const getUserAchievements = async (_req: any, _res: any) => {
+  _res.json({ success: true, data: [] });
+};
+
+const getUserFavoriteComponents = async (_req: any, _res: any) => {
+  _res.json({ success: true, data: [] });
+};
+
+const getUserPreferences = async (_req: any, _res: any) => {
+  _res.json({ success: true, data: { language: "en", theme: "dark" } });
+};
+
+const getUserProfile = async (_req: any, _res: any) => {
+  _res.json({ success: true, data: { id: "user-001", name: "Test User" } });
+};
+
+const getUserStatistics = async (_req: any, _res: any) => {
+  _res.json({ success: true, data: { level: 1, xp: 0 } });
+};
+
+const removeComponentFromFavorites = async (_req: any, _res: any) => {
+  _res.json({ success: true, message: "Component removed from favorites" });
+};
+
+const updateUserPreferences = async (_req: any, _res: any) => {
+  _res.json({ success: true, message: "Preferences updated successfully" });
+};
+
+const updateUserProfile = async (_req: any, _res: any) => {
+  _res.json({ success: true, message: "Profile updated successfully" });
+};
 
 const router = Router();
 

@@ -2,14 +2,14 @@
 
 import { ValueObject } from "../../../../shared/domain/ValueObject";
 import { Component } from "../entities/Component";
-import { Position, PositionVO } from "./Position";
+import { PositionVO } from "./Position";
 
 export interface DragStateProps {
   readonly isDragging: boolean;
   readonly draggedComponent: Component | null;
-  readonly dragOffset: Position;
-  readonly startPosition: Position;
-  readonly currentPosition: Position;
+  readonly dragOffset: PositionVO;
+  readonly startPosition: PositionVO;
+  readonly currentPosition: PositionVO;
   readonly snapToGrid: boolean;
   readonly gridSize: number;
 }
@@ -34,15 +34,15 @@ export class DragState extends ValueObject<DragStateProps> {
     return this.props.draggedComponent;
   }
 
-  get dragOffset(): Position {
+  get dragOffset(): PositionVO {
     return this.props.dragOffset;
   }
 
-  get startPosition(): Position {
+  get startPosition(): PositionVO {
     return this.props.startPosition;
   }
 
-  get currentPosition(): Position {
+  get currentPosition(): PositionVO {
     return this.props.currentPosition;
   }
 
@@ -59,8 +59,8 @@ export class DragState extends ValueObject<DragStateProps> {
    */
   startDrag(
     component: Component,
-    startPosition: Position,
-    dragOffset: Position
+    startPosition: PositionVO,
+    dragOffset: PositionVO
   ): DragState {
     return new DragState({
       isDragging: true,
@@ -76,7 +76,7 @@ export class DragState extends ValueObject<DragStateProps> {
   /**
    * Update drag position
    */
-  updatePosition(position: Position): DragState {
+  updatePosition(position: PositionVO): DragState {
     if (!this.props.isDragging) return this;
 
     const snappedPosition = this.props.snapToGrid
@@ -133,19 +133,14 @@ export class DragState extends ValueObject<DragStateProps> {
   /**
    * Snap position to grid
    */
-  private snapToGridPosition(position: Position): Position {
-    const snappedX =
-      Math.round(position.x / this.props.gridSize) * this.props.gridSize;
-    const snappedY =
-      Math.round(position.y / this.props.gridSize) * this.props.gridSize;
-
-    return new PositionVO(snappedX, snappedY);
+  private snapToGridPosition(position: PositionVO): PositionVO {
+    return position.snapToGrid(this.props.gridSize);
   }
 
   /**
    * Get final position for component placement
    */
-  getFinalPosition(): Position {
+  getFinalPosition(): PositionVO {
     return this.props.snapToGrid
       ? this.snapToGridPosition(this.props.currentPosition)
       : this.props.currentPosition;

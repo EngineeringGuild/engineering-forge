@@ -1,8 +1,8 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/entities/SimulationResult.ts
 
-import { BaseEntity } from '../../../../shared/domain/BaseEntity';
-import { PerformanceMetrics } from '../value-objects/PerformanceMetrics';
-import { Position } from '../value-objects/Position';
+import { BaseEntity } from "../../../../shared/domain/BaseEntity";
+import { PerformanceMetrics } from "../value-objects/PerformanceMetrics";
+import { PositionVO } from "../value-objects/Position";
 
 /**
  * Simulation Step Props Interface
@@ -10,7 +10,7 @@ import { Position } from '../value-objects/Position';
  */
 export interface SimulationStepProps {
   timestamp: number; // in seconds
-  position: Position;
+  position: PositionVO;
   speed: number; // in km/h
   acceleration: number; // in m/s²
   performance: PerformanceMetrics;
@@ -44,7 +44,7 @@ export interface SimulationResultProps {
  */
 export class SimulationStep extends BaseEntity<string> {
   private _timestamp: number;
-  private _position: Position;
+  private _position: PositionVO;
   private _speed: number;
   private _acceleration: number;
   private _performance: PerformanceMetrics;
@@ -68,13 +68,13 @@ export class SimulationStep extends BaseEntity<string> {
    */
   private validateProps(props: SimulationStepProps): void {
     if (props.timestamp < 0) {
-      throw new Error('Timestamp must be non-negative');
+      throw new Error("Timestamp must be non-negative");
     }
     if (props.speed < 0) {
-      throw new Error('Speed must be non-negative');
+      throw new Error("Speed must be non-negative");
     }
     if (props.performance.overall < 0 || props.performance.overall > 100) {
-      throw new Error('Performance overall must be between 0 and 100');
+      throw new Error("Performance overall must be between 0 and 100");
     }
   }
 
@@ -83,7 +83,7 @@ export class SimulationStep extends BaseEntity<string> {
     return this._timestamp;
   }
 
-  get position(): Position {
+  get position(): PositionVO {
     return this._position;
   }
 
@@ -109,7 +109,7 @@ export class SimulationStep extends BaseEntity<string> {
       position: props.position ?? this._position,
       speed: props.speed ?? this._speed,
       acceleration: props.acceleration ?? this._acceleration,
-      performance: props.performance ?? this._performance
+      performance: props.performance ?? this._performance,
     };
 
     this.validateProps(updatedProps);
@@ -126,16 +126,16 @@ export class SimulationStep extends BaseEntity<string> {
    * @param unit - Target unit ('kmh', 'mph', 'ms')
    * @returns Speed in specified unit
    */
-  getSpeedInUnit(unit: 'kmh' | 'mph' | 'ms'): number {
+  getSpeedInUnit(unit: "kmh" | "mph" | "ms"): number {
     switch (unit) {
-      case 'kmh':
+      case "kmh":
         return this._speed;
-      case 'mph':
+      case "mph":
         return this._speed * 0.621371;
-      case 'ms':
+      case "ms":
         return this._speed / 3.6;
       default:
-        throw new Error('Invalid speed unit');
+        throw new Error("Invalid speed unit");
     }
   }
 
@@ -153,7 +153,7 @@ export class SimulationStep extends BaseEntity<string> {
    * @param previousPosition - Previous position
    * @returns Distance in meters
    */
-  calculateDistanceFrom(previousPosition: Position): number {
+  calculateDistanceFrom(previousPosition: PositionVO): number {
     const dx = this._position.x - previousPosition.x;
     const dy = this._position.y - previousPosition.y;
     return Math.sqrt(dx * dx + dy * dy);
@@ -207,25 +207,25 @@ export class SimulationResult extends BaseEntity<string> {
    */
   private validateProps(props: SimulationResultProps): void {
     if (props.duration <= 0) {
-      throw new Error('Duration must be positive');
+      throw new Error("Duration must be positive");
     }
     if (props.distance < 0) {
-      throw new Error('Distance must be non-negative');
+      throw new Error("Distance must be non-negative");
     }
     if (props.maxSpeed < 0) {
-      throw new Error('Max speed must be non-negative');
+      throw new Error("Max speed must be non-negative");
     }
     if (props.averageSpeed < 0) {
-      throw new Error('Average speed must be non-negative');
+      throw new Error("Average speed must be non-negative");
     }
     if (props.score < 0 || props.score > 100) {
-      throw new Error('Score must be between 0 and 100');
+      throw new Error("Score must be between 0 and 100");
     }
     if (props.startTime >= props.endTime) {
-      throw new Error('Start time must be before end time');
+      throw new Error("Start time must be before end time");
     }
     if (!props.userId || props.userId.trim().length === 0) {
-      throw new Error('User ID is required');
+      throw new Error("User ID is required");
     }
   }
 
@@ -284,18 +284,18 @@ export class SimulationResult extends BaseEntity<string> {
    */
   getGrade(): string {
     if (this._score >= 90) {
-return 'A';
-}
+      return "A";
+    }
     if (this._score >= 80) {
-return 'B';
-}
+      return "B";
+    }
     if (this._score >= 70) {
-return 'C';
-}
+      return "C";
+    }
     if (this._score >= 60) {
-return 'D';
-}
-    return 'F';
+      return "D";
+    }
+    return "F";
   }
 
   /**
@@ -304,18 +304,18 @@ return 'D';
    */
   getPerformanceRating(): string {
     if (this._score >= 90) {
-return 'Excellent';
-}
+      return "Excellent";
+    }
     if (this._score >= 80) {
-return 'Good';
-}
+      return "Good";
+    }
     if (this._score >= 70) {
-return 'Average';
-}
+      return "Average";
+    }
     if (this._score >= 60) {
-return 'Below Average';
-}
-    return 'Poor';
+      return "Below Average";
+    }
+    return "Poor";
   }
 
   /**
@@ -337,7 +337,7 @@ return 'Below Average';
       distancePerSecond,
       speedEfficiency: Math.min(1, speedEfficiency),
       accelerationEfficiency: Math.min(1, accelerationEfficiency),
-      overallEfficiency: Math.min(1, overallEfficiency)
+      overallEfficiency: Math.min(1, overallEfficiency),
     };
   }
 
@@ -358,13 +358,18 @@ return 'Below Average';
         averageTimePerStep: 0,
         maxAcceleration: 0,
         minSpeed: 0,
-        totalAcceleration: 0
+        totalAcceleration: 0,
       };
     }
 
-    const maxAcceleration = Math.max(...this._simulationSteps.map(s => s.acceleration));
-    const minSpeed = Math.min(...this._simulationSteps.map(s => s.speed));
-    const totalAcceleration = this._simulationSteps.reduce((sum, s) => sum + s.acceleration, 0);
+    const maxAcceleration = Math.max(
+      ...this._simulationSteps.map((s) => s.acceleration)
+    );
+    const minSpeed = Math.min(...this._simulationSteps.map((s) => s.speed));
+    const totalAcceleration = this._simulationSteps.reduce(
+      (sum, s) => sum + s.acceleration,
+      0
+    );
     const averageTimePerStep = this._duration / this._simulationSteps.length;
 
     return {
@@ -372,7 +377,7 @@ return 'Below Average';
       averageTimePerStep,
       maxAcceleration,
       minSpeed,
-      totalAcceleration
+      totalAcceleration,
     };
   }
 
@@ -384,7 +389,7 @@ return 'Below Average';
    */
   getStepsInTimeRange(startTime: number, endTime: number): SimulationStep[] {
     return this._simulationSteps.filter(
-      step => step.timestamp >= startTime && step.timestamp <= endTime
+      (step) => step.timestamp >= startTime && step.timestamp <= endTime
     );
   }
 
@@ -394,9 +399,13 @@ return 'Below Average';
    * @param endDistance - End distance in meters
    * @returns Filtered simulation steps
    */
-  getStepsInDistanceRange(startDistance: number, endDistance: number): SimulationStep[] {
+  getStepsInDistanceRange(
+    startDistance: number,
+    endDistance: number
+  ): SimulationStep[] {
     return this._simulationSteps.filter(
-      step => step.position.x >= startDistance && step.position.x <= endDistance
+      (step) =>
+        step.position.x >= startDistance && step.position.x <= endDistance
     );
   }
 
@@ -416,27 +425,31 @@ return 'Below Average';
     const recommendations: string[] = [];
 
     if (this._score < 60) {
-      recommendations.push('Overall performance needs significant improvement');
+      recommendations.push("Overall performance needs significant improvement");
     }
 
     if (this._maxSpeed < 50) {
-      recommendations.push('Consider upgrading engine for better top speed');
+      recommendations.push("Consider upgrading engine for better top speed");
     }
 
-    if (this._finalPerformance.acceleration < 30) {
-      recommendations.push('Improve acceleration by reducing weight or increasing power');
+    if (this._finalPerformance.acceleration > 10) {
+      recommendations.push(
+        "Improve acceleration by reducing weight or increasing power"
+      );
     }
 
     if (this._finalPerformance.handling < 40) {
-      recommendations.push('Upgrade suspension and tires for better handling');
+      recommendations.push("Upgrade suspension and tires for better handling");
     }
 
     if (this._finalPerformance.fuelEfficiency < 5) {
-      recommendations.push('Optimize components for better fuel efficiency');
+      recommendations.push("Optimize components for better fuel efficiency");
     }
 
     if (this._distance < 500) {
-      recommendations.push('Increase power or reduce weight to achieve better distance');
+      recommendations.push(
+        "Increase power or reduce weight to achieve better distance"
+      );
     }
 
     return recommendations;
@@ -458,16 +471,16 @@ return 'Below Average';
       finalPerformance: this._finalPerformance,
       score: this._score,
       passed: this._passed,
-      simulationSteps: this._simulationSteps.map(step => ({
+      simulationSteps: this._simulationSteps.map((step) => ({
         id: step.id,
         timestamp: step.timestamp,
         position: { x: step.position.x, y: step.position.y },
         speed: step.speed,
         acceleration: step.acceleration,
-        performance: step.performance
+        performance: step.performance,
       })),
       userId: this._userId,
-      projectId: this._projectId
+      projectId: this._projectId,
     });
   }
 }

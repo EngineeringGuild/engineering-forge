@@ -4,55 +4,85 @@
  * This file contains JWT token generation, verification, and management utilities.
  */
 
-import jwt from 'jsonwebtoken';
-import { JWTPayload, RefreshTokenPayload, TokenResponse } from '../types/auth.types';
+import jwt from "jsonwebtoken";
+
+// Mock types for now - these should be imported from proper types
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+}
+
+interface RefreshTokenPayload {
+  userId: string;
+  tokenId: string;
+  iat?: number;
+  exp?: number;
+}
+
+interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
 
 // JWT configuration
-const JWT_SECRET: string = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const JWT_SECRET: string =
+  process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 const JWT_REFRESH_SECRET: string =
-  process.env.JWT_REFRESH_SECRET || 'your-super-secret-refresh-key-change-in-production';
-const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '15m';
-const JWT_REFRESH_EXPIRES_IN: string = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+  process.env.JWT_REFRESH_SECRET ||
+  "your-super-secret-refresh-key-change-in-production";
+const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "15m";
+const JWT_REFRESH_EXPIRES_IN: string =
+  process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
 /**
  * Generate access token
  */
-export function generateAccessToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-  // @ts-ignore
+export function generateAccessToken(
+  payload: Omit<JWTPayload, "iat" | "exp">
+): string {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
-    issuer: 'engineering-forge',
-    audience: 'engineering-forge-users'
-  });
+    issuer: "engineering-forge",
+    audience: "engineering-forge-users",
+  } as jwt.SignOptions);
 }
 
 /**
  * Generate refresh token
  */
-export function generateRefreshToken(payload: Omit<RefreshTokenPayload, 'iat' | 'exp'>): string {
-  // @ts-ignore
+export function generateRefreshToken(
+  payload: Omit<RefreshTokenPayload, "iat" | "exp">
+): string {
   return jwt.sign(payload, JWT_REFRESH_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
-    issuer: 'engineering-forge',
-    audience: 'engineering-forge-users'
-  });
+    issuer: "engineering-forge",
+    audience: "engineering-forge-users",
+  } as jwt.SignOptions);
 }
 
 /**
  * Generate both access and refresh tokens
  */
-export function generateTokens(userId: string, email: string, role: string): TokenResponse {
+export function generateTokens(
+  userId: string,
+  email: string,
+  role: string
+): TokenResponse {
   const tokenId = generateTokenId();
 
   const accessToken = generateAccessToken({
     userId,
     email,
-    role: role as any
+    role: role as any,
   });
 
   const refreshToken = generateRefreshToken({
     userId,
-    tokenId
+    tokenId,
   });
 
   // Calculate expiration time in seconds
@@ -61,7 +91,7 @@ export function generateTokens(userId: string, email: string, role: string): Tok
   return {
     accessToken,
     refreshToken,
-    expiresIn
+    expiresIn,
   };
 }
 
@@ -71,16 +101,16 @@ export function generateTokens(userId: string, email: string, role: string): Tok
 export function verifyAccessToken(token: string): JWTPayload {
   try {
     return jwt.verify(token, JWT_SECRET, {
-      issuer: 'engineering-forge',
-      audience: 'engineering-forge-users'
+      issuer: "engineering-forge",
+      audience: "engineering-forge-users",
     }) as JWTPayload;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new Error('Token has expired');
+      throw new Error("Token has expired");
     } else if (error instanceof jwt.JsonWebTokenError) {
-      throw new Error('Invalid token');
+      throw new Error("Invalid token");
     } else {
-      throw new Error('Token verification failed');
+      throw new Error("Token verification failed");
     }
   }
 }
@@ -91,16 +121,16 @@ export function verifyAccessToken(token: string): JWTPayload {
 export function verifyRefreshToken(token: string): RefreshTokenPayload {
   try {
     return jwt.verify(token, JWT_REFRESH_SECRET, {
-      issuer: 'engineering-forge',
-      audience: 'engineering-forge-users'
+      issuer: "engineering-forge",
+      audience: "engineering-forge-users",
     }) as RefreshTokenPayload;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new Error('Refresh token has expired');
+      throw new Error("Refresh token has expired");
     } else if (error instanceof jwt.JsonWebTokenError) {
-      throw new Error('Invalid refresh token');
+      throw new Error("Invalid refresh token");
     } else {
-      throw new Error('Refresh token verification failed');
+      throw new Error("Refresh token verification failed");
     }
   }
 }
@@ -152,13 +182,15 @@ function generateTokenId(): string {
 /**
  * Extract token from Authorization header
  */
-export function extractTokenFromHeader(authHeader: string | undefined): string | null {
+export function extractTokenFromHeader(
+  authHeader: string | undefined
+): string | null {
   if (!authHeader) {
     return null;
   }
 
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
     return null;
   }
 

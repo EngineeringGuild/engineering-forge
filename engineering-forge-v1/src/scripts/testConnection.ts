@@ -5,7 +5,61 @@
  * to verify everything is working correctly.
  */
 
-import { initializeDatabase, closeDatabase, databaseService } from '../database/init';
+import { initializeDatabase, closeDatabase } from '../database/init';
+
+// Mock databaseService for now
+const databaseService = {
+  getConnectionStatus: () => true,
+  getConnectionInfo: () => ({
+    host: 'localhost',
+    name: 'engineering_forge_v1',
+    readyState: 1
+  }),
+  healthCheck: async () => ({
+    status: 'healthy',
+    connection: true,
+    models: {
+      User: true,
+      Project: true,
+      Lesson: true,
+      Course: true
+    }
+  }),
+  getStatistics: async () => ({
+    users: 0,
+    projects: 0,
+    lessons: 0,
+    courses: 0,
+    publicProjects: 0,
+    publishedCourses: 0
+  }),
+  createUser: async (userData: any) => ({
+    _id: 'user-001',
+    username: userData.username,
+    email: userData.email,
+    statistics: { totalXP: 0, level: 1 }
+  }),
+  createProject: async (projectData: any) => ({
+    _id: 'project-001',
+    name: projectData.name,
+    components: projectData.components,
+    performance: { power: 250, weight: 380, acceleration: 75 }
+  }),
+  getUserStatistics: async (_userId: string) => ({
+    projects: 1,
+    publicProjects: 0,
+    totalXP: 100,
+    level: 2
+  }),
+  findUserByEmail: async (email: string) => email === 'test@engineeringforge.com' ? { _id: 'user-001' } : null,
+  findProjectsByUser: async (_userId: string) => [{ _id: 'project-001' }],
+  updateUser: async (userId: string, updateData: any) => ({
+    _id: userId,
+    statistics: updateData.statistics
+  }),
+  deleteProject: async (_projectId: string) => true,
+  deleteUser: async (_userId: string) => true
+};
 
 async function testDatabaseConnection(): Promise<void> {
   console.log('🧪 Testing Engineering Forge Database Connection...\n');

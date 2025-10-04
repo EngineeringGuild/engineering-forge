@@ -3,11 +3,11 @@
 import { ValueObject } from "../../../../shared/domain/ValueObject";
 import { AnimationEffect } from "./AnimationEffect";
 import { PerformanceMetrics } from "./PerformanceMetrics";
-import { Position } from "./Position";
+import { PositionVO } from "./Position";
 
 export interface SimulationStepDataProps {
   readonly timestamp: number;
-  readonly position: Position;
+  readonly position: PositionVO;
   readonly speed: number;
   readonly acceleration: number;
   readonly performance: PerformanceMetrics;
@@ -49,7 +49,7 @@ export class SimulationStepData extends ValueObject<SimulationStepDataProps> {
     return this.props.timestamp;
   }
 
-  get position(): Position {
+  get position(): PositionVO {
     return this.props.position;
   }
 

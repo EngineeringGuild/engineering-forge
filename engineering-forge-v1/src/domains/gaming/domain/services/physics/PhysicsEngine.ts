@@ -172,7 +172,7 @@ export class PhysicsEngine {
    * @returns Initial physics state
    */
   createInitialState(
-    initialPosition: PositionVO = new PositionVO(0, 0)
+    initialPosition: PositionVO = PositionVO.zero()
   ): PhysicsState {
     return {
       position: initialPosition,

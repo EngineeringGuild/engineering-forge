@@ -134,7 +134,7 @@ export class ComponentFilter extends ValueObject<ComponentFilterProps> {
           comparison = a.name.localeCompare(b.name);
           break;
         case "rarity":
-          const rarityOrder = { common: 0, rare: 1, epic: 2, legendary: 3 };
+          const rarityOrder = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4 };
           comparison = rarityOrder[a.rarity] - rarityOrder[b.rarity];
           break;
         case "level":

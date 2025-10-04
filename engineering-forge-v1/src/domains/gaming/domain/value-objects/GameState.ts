@@ -1,11 +1,11 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/value-objects/GameState.ts
 
-import { ValueObject } from '../../../../shared/domain/ValueObject';
-import { Achievement } from '../entities/Achievement';
-import { Component } from '../entities/Component';
-import { TestResult } from '../entities/TestResult';
-import { PerformanceMetrics } from './PerformanceMetrics';
-import { Position } from './Position';
+import { ValueObject } from "../../../../shared/domain/ValueObject";
+import { Achievement } from "../entities/Achievement";
+import { Component } from "../entities/Component";
+import { TestResult } from "../entities/TestResult";
+import { PerformanceMetrics } from "./PerformanceMetrics";
+import { PositionVO } from "./Position";
 
 export interface GameStateProps {
   readonly isPlaying: boolean;
@@ -28,7 +28,7 @@ export interface GameStateProps {
   readonly showProgressPanel: boolean;
   readonly showSaveLoadPanel: boolean;
   readonly showAchievementNotification: boolean;
-  readonly activeTab: 'build' | 'test' | 'performance' | 'achievements';
+  readonly activeTab: "build" | "test" | "performance" | "achievements";
 }
 
 export class GameState extends ValueObject<GameStateProps> {
@@ -59,25 +59,25 @@ export class GameState extends ValueObject<GameStateProps> {
       showProgressPanel: false,
       showSaveLoadPanel: false,
       showAchievementNotification: false,
-      activeTab: 'build'
+      activeTab: "build",
     });
   }
 
   private static validateGameState(props: GameStateProps): void {
     if (props.score < 0) {
-      throw new Error('Score must be non-negative');
+      throw new Error("Score must be non-negative");
     }
 
     if (props.level < 1) {
-      throw new Error('Level must be at least 1');
+      throw new Error("Level must be at least 1");
     }
 
     if (props.gridSize <= 0) {
-      throw new Error('Grid size must be positive');
+      throw new Error("Grid size must be positive");
     }
 
-    if (!props.userId || props.userId.trim() === '') {
-      throw new Error('User ID is required');
+    if (!props.userId || props.userId.trim() === "") {
+      throw new Error("User ID is required");
     }
   }
 
@@ -161,7 +161,7 @@ export class GameState extends ValueObject<GameStateProps> {
     return this.props.showAchievementNotification;
   }
 
-  get activeTab(): 'build' | 'test' | 'performance' | 'achievements' {
+  get activeTab(): "build" | "test" | "performance" | "achievements" {
     return this.props.activeTab;
   }
 
@@ -187,13 +187,17 @@ export class GameState extends ValueObject<GameStateProps> {
   }
 
   public removeComponent(componentId: string): GameState {
-    const newComponents = this.props.workspaceComponents.filter(c => c.id !== componentId);
+    const newComponents = this.props.workspaceComponents.filter(
+      (c) => c.id !== componentId
+    );
     const newSelectedId =
-      this.props.selectedComponentId === componentId ? null : this.props.selectedComponentId;
+      this.props.selectedComponentId === componentId
+        ? null
+        : this.props.selectedComponentId;
     return new GameState({
       ...this.props,
       workspaceComponents: newComponents,
-      selectedComponentId: newSelectedId
+      selectedComponentId: newSelectedId,
     });
   }
 
@@ -201,8 +205,8 @@ export class GameState extends ValueObject<GameStateProps> {
     return new GameState({ ...this.props, selectedComponentId: componentId });
   }
 
-  public moveComponent(componentId: string, position: Position): GameState {
-    const newComponents = this.props.workspaceComponents.map(comp => {
+  public moveComponent(componentId: string, position: PositionVO): GameState {
+    const newComponents = this.props.workspaceComponents.map((comp) => {
       if (comp.id === componentId) {
         comp.moveTo(position);
         return comp;
@@ -213,10 +217,6 @@ export class GameState extends ValueObject<GameStateProps> {
   }
 
   public updateGridSize(gridSize: number): GameState {
-    return new GameState({ ...this.props, gridSize });
-  }
-
-  public setGridSize(gridSize: number): GameState {
     return new GameState({ ...this.props, gridSize });
   }
 
@@ -245,17 +245,16 @@ export class GameState extends ValueObject<GameStateProps> {
     return new GameState({ ...this.props, isLowPerformance });
   }
 
-  public setLowPerformance(isLowPerformance: boolean): GameState {
-    return new GameState({ ...this.props, isLowPerformance });
-  }
-
   public addAchievement(achievement: Achievement): GameState {
     const newAchievements = [...this.props.achievements, achievement];
-    const newUnlockedAchievements = [...this.props.newlyUnlockedAchievements, achievement];
+    const newUnlockedAchievements = [
+      ...this.props.newlyUnlockedAchievements,
+      achievement,
+    ];
     return new GameState({
       ...this.props,
       achievements: newAchievements,
-      newlyUnlockedAchievements: newUnlockedAchievements
+      newlyUnlockedAchievements: newUnlockedAchievements,
     });
   }
 
@@ -276,25 +275,36 @@ export class GameState extends ValueObject<GameStateProps> {
   }
 
   public toggleSettings(): GameState {
-    return new GameState({ ...this.props, showSettings: !this.props.showSettings });
+    return new GameState({
+      ...this.props,
+      showSettings: !this.props.showSettings,
+    });
   }
 
   public toggleProgressPanel(): GameState {
-    return new GameState({ ...this.props, showProgressPanel: !this.props.showProgressPanel });
+    return new GameState({
+      ...this.props,
+      showProgressPanel: !this.props.showProgressPanel,
+    });
   }
 
   public toggleSaveLoadPanel(): GameState {
-    return new GameState({ ...this.props, showSaveLoadPanel: !this.props.showSaveLoadPanel });
+    return new GameState({
+      ...this.props,
+      showSaveLoadPanel: !this.props.showSaveLoadPanel,
+    });
   }
 
   public toggleAchievementNotification(): GameState {
     return new GameState({
       ...this.props,
-      showAchievementNotification: !this.props.showAchievementNotification
+      showAchievementNotification: !this.props.showAchievementNotification,
     });
   }
 
-  public updateActiveTab(activeTab: 'build' | 'test' | 'performance' | 'achievements'): GameState {
+  public updateActiveTab(
+    activeTab: "build" | "test" | "performance" | "achievements"
+  ): GameState {
     return new GameState({ ...this.props, activeTab });
   }
 
@@ -316,7 +326,7 @@ export class GameState extends ValueObject<GameStateProps> {
       showProgressPanel: false,
       showSaveLoadPanel: false,
       showAchievementNotification: false,
-      activeTab: 'build'
+      activeTab: "build",
     });
   }
 
@@ -325,7 +335,7 @@ export class GameState extends ValueObject<GameStateProps> {
   }
 
   public getComponentCountByType(type: string): number {
-    return this.props.workspaceComponents.filter(c => c.type === type).length;
+    return this.props.workspaceComponents.filter((c) => c.type === type).length;
   }
 
   public getTotalWeight(): number {
@@ -354,10 +364,30 @@ export class GameState extends ValueObject<GameStateProps> {
   }
 
   public getUnlockedAchievementCount(): number {
-    return this.props.achievements.filter(a => a.isUnlocked).length;
+    return this.props.achievements.filter((a) => a.isUnlocked).length;
   }
 
   public getNewlyUnlockedAchievementCount(): number {
     return this.props.newlyUnlockedAchievements.length;
+  }
+
+  /**
+   * Set low performance mode
+   */
+  public setLowPerformance(isLowPerformance: boolean): GameState {
+    return new GameState({
+      ...this.props,
+      isLowPerformance,
+    });
+  }
+
+  /**
+   * Set grid size
+   */
+  public setGridSize(gridSize: number): GameState {
+    return new GameState({
+      ...this.props,
+      gridSize,
+    });
   }
 }

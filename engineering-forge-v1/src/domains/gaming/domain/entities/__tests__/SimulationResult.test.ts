@@ -1,18 +1,18 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/entities/__tests__/SimulationResult.test.ts
 
-import { PerformanceMetrics } from '../../value-objects/PerformanceMetrics';
-import { Position, PositionVO } from '../../value-objects/Position';
-import { SimulationResult, SimulationStep } from '../SimulationResult';
+import { PerformanceMetrics } from "../../value-objects/PerformanceMetrics";
+import { PositionVO } from "../../value-objects/Position";
+import { SimulationResult, SimulationStep } from "../SimulationResult";
 
-describe('SimulationResult', () => {
+describe("SimulationResult", () => {
   let mockPerformanceMetrics: PerformanceMetrics;
   let mockSimulationSteps: SimulationStep[];
   let startTime: Date;
   let endTime: Date;
 
   beforeEach(() => {
-    startTime = new Date('2025-01-30T10:00:00Z');
-    endTime = new Date('2025-01-30T10:01:00Z');
+    startTime = new Date("2025-01-30T10:00:00Z");
+    endTime = new Date("2025-01-30T10:01:00Z");
 
     mockPerformanceMetrics = new PerformanceMetrics({
       acceleration: 75,
@@ -22,38 +22,38 @@ describe('SimulationResult', () => {
       weight: 1300,
       power: 150,
       torque: 200,
-      overall: 85
+      overall: 85,
     });
 
     // Create mock simulation steps
     mockSimulationSteps = [
-      new SimulationStep('step-1', {
+      new SimulationStep("step-1", {
         timestamp: 0,
         position: new PositionVO(0, 0),
         speed: 0,
         acceleration: 2.5,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       }),
-      new SimulationStep('step-2', {
+      new SimulationStep("step-2", {
         timestamp: 5,
         position: new PositionVO(50, 0),
         speed: 25,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       }),
-      new SimulationStep('step-3', {
+      new SimulationStep("step-3", {
         timestamp: 10,
         position: new PositionVO(200, 0),
         speed: 60,
         acceleration: 1.5,
-        performance: mockPerformanceMetrics
-      })
+        performance: mockPerformanceMetrics,
+      }),
     ];
   });
 
-  describe('constructor', () => {
-    it('should create SimulationResult with valid props', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("constructor", () => {
+    it("should create SimulationResult with valid props", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -64,10 +64,10 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.id).toBe('sim-1');
+      expect(result.id).toBe("sim-1");
       expect(result.startTime).toBe(startTime);
       expect(result.endTime).toBe(endTime);
       expect(result.duration).toBe(60);
@@ -78,12 +78,12 @@ describe('SimulationResult', () => {
       expect(result.score).toBe(85);
       expect(result.passed).toBe(true);
       expect(result.simulationSteps).toEqual(mockSimulationSteps);
-      expect(result.userId).toBe('user-001');
+      expect(result.userId).toBe("user-001");
     });
 
-    it('should throw error for invalid duration', () => {
+    it("should throw error for invalid duration", () => {
       expect(() => {
-        new SimulationResult('sim-1', {
+        new SimulationResult("sim-1", {
           startTime,
           endTime,
           duration: -10, // Invalid negative duration
@@ -94,14 +94,14 @@ describe('SimulationResult', () => {
           score: 85,
           passed: true,
           simulationSteps: mockSimulationSteps,
-          userId: 'user-001'
+          userId: "user-001",
         });
-      }).toThrow('Duration must be positive');
+      }).toThrow("Duration must be positive");
     });
 
-    it('should throw error for negative distance', () => {
+    it("should throw error for negative distance", () => {
       expect(() => {
-        new SimulationResult('sim-1', {
+        new SimulationResult("sim-1", {
           startTime,
           endTime,
           duration: 60,
@@ -112,14 +112,14 @@ describe('SimulationResult', () => {
           score: 85,
           passed: true,
           simulationSteps: mockSimulationSteps,
-          userId: 'user-001'
+          userId: "user-001",
         });
-      }).toThrow('Distance must be non-negative');
+      }).toThrow("Distance must be non-negative");
     });
 
-    it('should throw error for negative speeds', () => {
+    it("should throw error for negative speeds", () => {
       expect(() => {
-        new SimulationResult('sim-1', {
+        new SimulationResult("sim-1", {
           startTime,
           endTime,
           duration: 60,
@@ -130,14 +130,14 @@ describe('SimulationResult', () => {
           score: 85,
           passed: true,
           simulationSteps: mockSimulationSteps,
-          userId: 'user-001'
+          userId: "user-001",
         });
-      }).toThrow('Max speed must be non-negative');
+      }).toThrow("Max speed must be non-negative");
     });
 
-    it('should throw error for invalid score range', () => {
+    it("should throw error for invalid score range", () => {
       expect(() => {
-        new SimulationResult('sim-1', {
+        new SimulationResult("sim-1", {
           startTime,
           endTime,
           duration: 60,
@@ -148,16 +148,16 @@ describe('SimulationResult', () => {
           score: 150, // Invalid score > 100
           passed: true,
           simulationSteps: mockSimulationSteps,
-          userId: 'user-001'
+          userId: "user-001",
         });
-      }).toThrow('Score must be between 0 and 100');
+      }).toThrow("Score must be between 0 and 100");
     });
 
-    it('should throw error for invalid time order', () => {
-      const invalidEndTime = new Date('2025-01-30T09:59:00Z'); // Before start time
+    it("should throw error for invalid time order", () => {
+      const invalidEndTime = new Date("2025-01-30T09:59:00Z"); // Before start time
 
       expect(() => {
-        new SimulationResult('sim-1', {
+        new SimulationResult("sim-1", {
           startTime,
           endTime: invalidEndTime,
           duration: 60,
@@ -168,14 +168,14 @@ describe('SimulationResult', () => {
           score: 85,
           passed: true,
           simulationSteps: mockSimulationSteps,
-          userId: 'user-001'
+          userId: "user-001",
         });
-      }).toThrow('Start time must be before end time');
+      }).toThrow("Start time must be before end time");
     });
 
-    it('should throw error for empty userId', () => {
+    it("should throw error for empty userId", () => {
       expect(() => {
-        new SimulationResult('sim-1', {
+        new SimulationResult("sim-1", {
           startTime,
           endTime,
           duration: 60,
@@ -186,15 +186,15 @@ describe('SimulationResult', () => {
           score: 85,
           passed: true,
           simulationSteps: mockSimulationSteps,
-          userId: '' // Empty userId
+          userId: "", // Empty userId
         });
-      }).toThrow('User ID is required');
+      }).toThrow("User ID is required");
     });
   });
 
-  describe('getGrade', () => {
-    it('should return correct grade for score 95', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("getGrade", () => {
+    it("should return correct grade for score 95", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -205,14 +205,14 @@ describe('SimulationResult', () => {
         score: 95,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getGrade()).toBe('A');
+      expect(result.getGrade()).toBe("A");
     });
 
-    it('should return correct grade for score 85', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return correct grade for score 85", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -223,14 +223,14 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getGrade()).toBe('B');
+      expect(result.getGrade()).toBe("B");
     });
 
-    it('should return correct grade for score 75', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return correct grade for score 75", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -241,14 +241,14 @@ describe('SimulationResult', () => {
         score: 75,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getGrade()).toBe('C');
+      expect(result.getGrade()).toBe("C");
     });
 
-    it('should return correct grade for score 65', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return correct grade for score 65", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -259,14 +259,14 @@ describe('SimulationResult', () => {
         score: 65,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getGrade()).toBe('D');
+      expect(result.getGrade()).toBe("D");
     });
 
-    it('should return correct grade for score 45', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return correct grade for score 45", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -277,16 +277,16 @@ describe('SimulationResult', () => {
         score: 45,
         passed: false,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getGrade()).toBe('F');
+      expect(result.getGrade()).toBe("F");
     });
   });
 
-  describe('getPerformanceRating', () => {
-    it('should return correct rating for excellent score', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("getPerformanceRating", () => {
+    it("should return correct rating for excellent score", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -297,14 +297,14 @@ describe('SimulationResult', () => {
         score: 95,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getPerformanceRating()).toBe('Excellent');
+      expect(result.getPerformanceRating()).toBe("Excellent");
     });
 
-    it('should return correct rating for poor score', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return correct rating for poor score", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -315,16 +315,16 @@ describe('SimulationResult', () => {
         score: 45,
         passed: false,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
-      expect(result.getPerformanceRating()).toBe('Poor');
+      expect(result.getPerformanceRating()).toBe("Poor");
     });
   });
 
-  describe('getEfficiencyMetrics', () => {
-    it('should calculate efficiency metrics correctly', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("getEfficiencyMetrics", () => {
+    it("should calculate efficiency metrics correctly", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -335,7 +335,7 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const efficiency = result.getEfficiencyMetrics();
@@ -347,9 +347,9 @@ describe('SimulationResult', () => {
     });
   });
 
-  describe('getStatistics', () => {
-    it('should calculate statistics correctly', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("getStatistics", () => {
+    it("should calculate statistics correctly", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -360,7 +360,7 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const stats = result.getStatistics();
@@ -372,8 +372,8 @@ describe('SimulationResult', () => {
       expect(stats.totalAcceleration).toBe(6.0);
     });
 
-    it('should handle empty simulation steps', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should handle empty simulation steps", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -384,7 +384,7 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: [],
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const stats = result.getStatistics();
@@ -397,9 +397,9 @@ describe('SimulationResult', () => {
     });
   });
 
-  describe('getStepsInTimeRange', () => {
-    it('should filter steps by time range correctly', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("getStepsInTimeRange", () => {
+    it("should filter steps by time range correctly", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -410,7 +410,7 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const stepsInRange = result.getStepsInTimeRange(2, 8);
@@ -420,9 +420,9 @@ describe('SimulationResult', () => {
     });
   });
 
-  describe('getStepsInDistanceRange', () => {
-    it('should filter steps by distance range correctly', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("getStepsInDistanceRange", () => {
+    it("should filter steps by distance range correctly", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -433,7 +433,7 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const stepsInRange = result.getStepsInDistanceRange(30, 150);
@@ -443,9 +443,9 @@ describe('SimulationResult', () => {
     });
   });
 
-  describe('isSuccessful', () => {
-    it('should return true for successful simulation', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("isSuccessful", () => {
+    it("should return true for successful simulation", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -456,14 +456,14 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       expect(result.isSuccessful()).toBe(true);
     });
 
-    it('should return false for failed simulation', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return false for failed simulation", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -474,14 +474,14 @@ describe('SimulationResult', () => {
         score: 45,
         passed: false,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       expect(result.isSuccessful()).toBe(false);
     });
 
-    it('should return false for zero distance', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should return false for zero distance", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -492,15 +492,15 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       expect(result.isSuccessful()).toBe(false);
     });
   });
 
-  describe('getImprovementRecommendations', () => {
-    it('should provide recommendations for poor performance', () => {
+  describe("getImprovementRecommendations", () => {
+    it("should provide recommendations for poor performance", () => {
       const poorPerformance = new PerformanceMetrics({
         acceleration: 20,
         topSpeed: 30,
@@ -509,10 +509,10 @@ describe('SimulationResult', () => {
         weight: 1300,
         power: 50,
         torque: 80,
-        overall: 25
+        overall: 25,
       });
 
-      const result = new SimulationResult('sim-1', {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -523,21 +523,25 @@ describe('SimulationResult', () => {
         score: 25,
         passed: false,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const recommendations = result.getImprovementRecommendations();
 
       expect(recommendations.length).toBeGreaterThan(0);
-      expect(recommendations).toContain('Overall performance needs significant improvement');
-      expect(recommendations).toContain('Consider upgrading engine for better top speed');
       expect(recommendations).toContain(
-        'Improve acceleration by reducing weight or increasing power'
+        "Overall performance needs significant improvement"
+      );
+      expect(recommendations).toContain(
+        "Consider upgrading engine for better top speed"
+      );
+      expect(recommendations).toContain(
+        "Improve acceleration by reducing weight or increasing power"
       );
     });
 
-    it('should provide minimal recommendations for good performance', () => {
-      const result = new SimulationResult('sim-1', {
+    it("should provide minimal recommendations for good performance", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -548,7 +552,7 @@ describe('SimulationResult', () => {
         score: 95,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001'
+        userId: "user-001",
       });
 
       const recommendations = result.getImprovementRecommendations();
@@ -557,9 +561,9 @@ describe('SimulationResult', () => {
     });
   });
 
-  describe('toJSON', () => {
-    it('should serialize to JSON correctly', () => {
-      const result = new SimulationResult('sim-1', {
+  describe("toJSON", () => {
+    it("should serialize to JSON correctly", () => {
+      const result = new SimulationResult("sim-1", {
         startTime,
         endTime,
         duration: 60,
@@ -570,14 +574,14 @@ describe('SimulationResult', () => {
         score: 85,
         passed: true,
         simulationSteps: mockSimulationSteps,
-        userId: 'user-001',
-        projectId: 'project-1'
+        userId: "user-001",
+        projectId: "project-1",
       });
 
       const json = result.toJSON();
       const parsed = JSON.parse(json);
 
-      expect(parsed.id).toBe('sim-1');
+      expect(parsed.id).toBe("sim-1");
       expect(parsed.startTime).toBe(startTime.toISOString());
       expect(parsed.endTime).toBe(endTime.toISOString());
       expect(parsed.duration).toBe(60);
@@ -586,16 +590,16 @@ describe('SimulationResult', () => {
       expect(parsed.averageSpeed).toBe(60);
       expect(parsed.score).toBe(85);
       expect(parsed.passed).toBe(true);
-      expect(parsed.userId).toBe('user-001');
-      expect(parsed.projectId).toBe('project-1');
+      expect(parsed.userId).toBe("user-001");
+      expect(parsed.projectId).toBe("project-1");
       expect(parsed.simulationSteps).toHaveLength(3);
     });
   });
 });
 
-describe('SimulationStep', () => {
+describe("SimulationStep", () => {
   let mockPerformanceMetrics: PerformanceMetrics;
-  let mockPosition: Position;
+  let mockPosition: PositionVO;
 
   beforeEach(() => {
     mockPerformanceMetrics = new PerformanceMetrics({
@@ -606,23 +610,23 @@ describe('SimulationStep', () => {
       weight: 1300,
       power: 150,
       torque: 200,
-      overall: 85
+      overall: 85,
     });
 
     mockPosition = new PositionVO(100, 50);
   });
 
-  describe('constructor', () => {
-    it('should create SimulationStep with valid props', () => {
-      const step = new SimulationStep('step-1', {
+  describe("constructor", () => {
+    it("should create SimulationStep with valid props", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10.5,
         position: mockPosition,
         speed: 60,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
-      expect(step.id).toBe('step-1');
+      expect(step.id).toBe("step-1");
       expect(step.timestamp).toBe(10.5);
       expect(step.position).toBe(mockPosition);
       expect(step.speed).toBe(60);
@@ -630,31 +634,31 @@ describe('SimulationStep', () => {
       expect(step.performance).toBe(mockPerformanceMetrics);
     });
 
-    it('should throw error for negative timestamp', () => {
+    it("should throw error for negative timestamp", () => {
       expect(() => {
-        new SimulationStep('step-1', {
+        new SimulationStep("step-1", {
           timestamp: -5,
           position: mockPosition,
           speed: 60,
           acceleration: 2.0,
-          performance: mockPerformanceMetrics
+          performance: mockPerformanceMetrics,
         });
-      }).toThrow('Timestamp must be non-negative');
+      }).toThrow("Timestamp must be non-negative");
     });
 
-    it('should throw error for negative speed', () => {
+    it("should throw error for negative speed", () => {
       expect(() => {
-        new SimulationStep('step-1', {
+        new SimulationStep("step-1", {
           timestamp: 10,
           position: mockPosition,
           speed: -10,
           acceleration: 2.0,
-          performance: mockPerformanceMetrics
+          performance: mockPerformanceMetrics,
         });
-      }).toThrow('Speed must be non-negative');
+      }).toThrow("Speed must be non-negative");
     });
 
-    it('should throw error for invalid performance overall', () => {
+    it("should throw error for invalid performance overall", () => {
       const invalidPerformance = new PerformanceMetrics({
         acceleration: 75,
         topSpeed: 120,
@@ -663,29 +667,29 @@ describe('SimulationStep', () => {
         weight: 1300,
         power: 150,
         torque: 200,
-        overall: 150 // Invalid > 100
+        overall: 150, // Invalid > 100
       });
 
       expect(() => {
-        new SimulationStep('step-1', {
+        new SimulationStep("step-1", {
           timestamp: 10,
           position: mockPosition,
           speed: 60,
           acceleration: 2.0,
-          performance: invalidPerformance
+          performance: invalidPerformance,
         });
-      }).toThrow('Performance overall must be between 0 and 100');
+      }).toThrow("Performance overall must be between 0 and 100");
     });
   });
 
-  describe('updateStep', () => {
-    it('should update step properties correctly', () => {
-      const step = new SimulationStep('step-1', {
+  describe("updateStep", () => {
+    it("should update step properties correctly", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10,
         position: mockPosition,
         speed: 60,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
       const newPosition = new PositionVO(200, 100);
@@ -697,7 +701,7 @@ describe('SimulationStep', () => {
         weight: 1300,
         power: 150,
         torque: 200,
-        overall: 90
+        overall: 90,
       });
 
       step.updateStep({
@@ -705,7 +709,7 @@ describe('SimulationStep', () => {
         position: newPosition,
         speed: 80,
         acceleration: 1.5,
-        performance: newPerformance
+        performance: newPerformance,
       });
 
       expect(step.timestamp).toBe(15);
@@ -716,70 +720,70 @@ describe('SimulationStep', () => {
     });
   });
 
-  describe('getSpeedInUnit', () => {
-    it('should convert speed to different units correctly', () => {
-      const step = new SimulationStep('step-1', {
+  describe("getSpeedInUnit", () => {
+    it("should convert speed to different units correctly", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10,
         position: mockPosition,
         speed: 100, // km/h
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
-      expect(step.getSpeedInUnit('kmh')).toBe(100);
-      expect(step.getSpeedInUnit('mph')).toBeCloseTo(62.1371, 2);
-      expect(step.getSpeedInUnit('ms')).toBeCloseTo(27.7778, 2);
+      expect(step.getSpeedInUnit("kmh")).toBe(100);
+      expect(step.getSpeedInUnit("mph")).toBeCloseTo(62.1371, 2);
+      expect(step.getSpeedInUnit("ms")).toBeCloseTo(27.7778, 2);
     });
 
-    it('should throw error for invalid unit', () => {
-      const step = new SimulationStep('step-1', {
+    it("should throw error for invalid unit", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10,
         position: mockPosition,
         speed: 100,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
       expect(() => {
-        step.getSpeedInUnit('invalid' as any);
-      }).toThrow('Invalid speed unit');
+        step.getSpeedInUnit("invalid" as any);
+      }).toThrow("Invalid speed unit");
     });
   });
 
-  describe('isNewMaxSpeed', () => {
-    it('should return true for new maximum speed', () => {
-      const step = new SimulationStep('step-1', {
+  describe("isNewMaxSpeed", () => {
+    it("should return true for new maximum speed", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10,
         position: mockPosition,
         speed: 120,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
       expect(step.isNewMaxSpeed(100)).toBe(true);
     });
 
-    it('should return false for not new maximum speed', () => {
-      const step = new SimulationStep('step-1', {
+    it("should return false for not new maximum speed", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10,
         position: mockPosition,
         speed: 80,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
       expect(step.isNewMaxSpeed(100)).toBe(false);
     });
   });
 
-  describe('calculateDistanceFrom', () => {
-    it('should calculate distance correctly', () => {
-      const step = new SimulationStep('step-1', {
+  describe("calculateDistanceFrom", () => {
+    it("should calculate distance correctly", () => {
+      const step = new SimulationStep("step-1", {
         timestamp: 10,
         position: new PositionVO(300, 400),
         speed: 60,
         acceleration: 2.0,
-        performance: mockPerformanceMetrics
+        performance: mockPerformanceMetrics,
       });
 
       const previousPosition = new PositionVO(0, 0);

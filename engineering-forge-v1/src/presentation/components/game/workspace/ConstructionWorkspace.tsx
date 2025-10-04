@@ -2,16 +2,13 @@
 
 import React, { useCallback, useRef, useState } from "react";
 import { Component } from "../../../../domains/gaming/domain/entities/Component";
-import {
-  Position,
-  PositionVO,
-} from "../../../../domains/gaming/domain/value-objects/Position";
+import { PositionVO } from "../../../../domains/gaming/domain/value-objects/Position";
 import { useGameSounds } from "../../../../hooks/useAudio";
 import { GlassCard } from "../../ui/GlassCard";
 
 interface ConstructionWorkspaceProps {
   components: Component[];
-  onComponentMove: (componentId: string, position: Position) => void;
+  onComponentMove: (componentId: string, position: PositionVO) => void;
   onComponentSelect: (componentId: string | null) => void;
   onComponentRemove?: (componentId: string) => void;
   selectedComponentId?: string;
@@ -31,20 +28,17 @@ export const ConstructionWorkspace: React.FC<ConstructionWorkspaceProps> = ({
   const [draggedComponent, setDraggedComponent] = useState<Component | null>(
     null
   );
-  const [dragOffset, setDragOffset] = useState<Position>(new PositionVO(0, 0));
+  const [dragOffset, setDragOffset] = useState<PositionVO>(PositionVO.zero());
   const workspaceRef = useRef<HTMLDivElement>(null);
   const { playComponentSelect, playComponentPlace } = useGameSounds();
 
   const snapToGridPosition = useCallback(
-    (position: Position): Position => {
+    (position: PositionVO): PositionVO => {
       if (!snapToGrid) {
         return position;
       }
 
-      const snappedX = Math.round(position.x / gridSize) * gridSize;
-      const snappedY = Math.round(position.y / gridSize) * gridSize;
-
-      return new PositionVO(snappedX, snappedY);
+      return position.snapToGrid(gridSize);
     },
     [gridSize, snapToGrid]
   );

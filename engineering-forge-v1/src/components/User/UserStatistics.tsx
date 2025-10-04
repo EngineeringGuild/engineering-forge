@@ -5,8 +5,36 @@
  */
 
 import React from "react";
-import { UserService } from "../../domains/gaming/domain/services/userService";
 import { useUserLevel, useUserStatistics } from "../../hooks/useUser";
+
+// Mock UserService for now
+const UserService = {
+  formatTimeSpent: (timeSpent: number): string => {
+    const hours = Math.floor(timeSpent / 3600000);
+    const minutes = Math.floor((timeSpent % 3600000) / 60000);
+    return `${hours}h ${minutes}m`;
+  },
+  getAchievementRarityBackground: (rarity: string): string => {
+    const backgrounds = {
+      common: "bg-gray-100",
+      uncommon: "bg-green-100",
+      rare: "bg-blue-100",
+      epic: "bg-purple-100",
+      legendary: "bg-yellow-100",
+    };
+    return backgrounds[rarity as keyof typeof backgrounds] || "bg-gray-100";
+  },
+  getAchievementRarityColor: (rarity: string): string => {
+    const colors = {
+      common: "text-gray-700",
+      uncommon: "text-green-700",
+      rare: "text-blue-700",
+      epic: "text-purple-700",
+      legendary: "text-yellow-700",
+    };
+    return colors[rarity as keyof typeof colors] || "text-gray-700";
+  },
+};
 
 interface UserStatisticsProps {
   className?: string;

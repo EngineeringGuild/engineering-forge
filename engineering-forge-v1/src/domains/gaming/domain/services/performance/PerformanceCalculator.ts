@@ -2,6 +2,7 @@
 
 import { Component } from "../../entities/Component";
 import { PerformanceMetrics } from "../../value-objects/PerformanceMetrics";
+import { CarPropertiesCalculator } from "../utils/CarPropertiesCalculator";
 
 /**
  * Performance Configuration Interface
@@ -59,7 +60,8 @@ export class PerformanceCalculator {
    * @returns Initial performance metrics
    */
   calculateInitialPerformance(components: Component[]): PerformanceMetrics {
-    const carProperties = this.calculateCarProperties(components);
+    const carProperties =
+      CarPropertiesCalculator.calculateCarProperties(components);
 
     // Calculate derived metrics with better scaling
     const acceleration = this.calculateAcceleration(carProperties);
@@ -67,6 +69,7 @@ export class PerformanceCalculator {
     const handling = this.calculateHandling(carProperties);
     const fuelEfficiency = this.calculateFuelEfficiency(carProperties);
 
+    // Calculate overall score using consistent units (all 0-100)
     const overall = (acceleration + topSpeed + handling + fuelEfficiency) / 4;
 
     console.log(
@@ -76,7 +79,7 @@ export class PerformanceCalculator {
     );
 
     return new PerformanceMetrics({
-      acceleration,
+      acceleration: this.convertAccelerationScoreToSeconds(acceleration), // Convert score to seconds
       topSpeed,
       handling,
       fuelEfficiency,
@@ -111,7 +114,8 @@ export class PerformanceCalculator {
       initialPerformance.acceleration,
       speedFactor
     );
-    const topSpeed = Math.max(initialPerformance.topSpeed, currentSpeed);
+    // Don't update topSpeed during simulation - it's a theoretical maximum
+    const topSpeed = initialPerformance.topSpeed;
     const handling = this.updateHandling(
       initialPerformance.handling,
       speedFactor,
@@ -174,41 +178,16 @@ export class PerformanceCalculator {
   }
 
   /**
-   * Calculate car properties from components
-   * @param components - Car components
-   * @returns Car properties object
+   * Convert acceleration score to seconds (0-100 km/h)
+   * @param accelerationScore - Acceleration score (0-100)
+   * @returns Acceleration time in seconds
    */
-  private calculateCarProperties(components: Component[]): {
-    power: number;
-    weight: number;
-    efficiency: number;
-    powerToWeightRatio: number;
-  } {
-    let totalPower = 0;
-    let totalWeight = 0;
-    let totalEfficiency = 0;
-    let componentCount = 0;
-
-    components.forEach((component) => {
-      totalPower += component.properties.power || 0;
-      totalWeight += component.properties.weight || 0;
-      totalEfficiency += component.properties.efficiency || 0;
-      componentCount++;
-    });
-
-    // Ensure minimum values for realistic simulation
-    totalWeight = Math.max(totalWeight, 100); // Minimum 100kg
-    totalPower = Math.max(totalPower, 10); // Minimum 10hp
-    const averageEfficiency =
-      componentCount > 0 ? totalEfficiency / componentCount : 50;
-    const powerToWeightRatio = totalWeight > 0 ? totalPower / totalWeight : 0;
-
-    return {
-      power: totalPower,
-      weight: totalWeight,
-      efficiency: averageEfficiency,
-      powerToWeightRatio,
-    };
+  private convertAccelerationScoreToSeconds(accelerationScore: number): number {
+    // Convert score (0-100) to realistic acceleration time (2-15 seconds)
+    // Higher score = faster acceleration = lower time
+    const minTime = 2; // 2 seconds for perfect acceleration
+    const maxTime = 15; // 15 seconds for poor acceleration
+    return maxTime - (accelerationScore / 100) * (maxTime - minTime);
   }
 
   /**

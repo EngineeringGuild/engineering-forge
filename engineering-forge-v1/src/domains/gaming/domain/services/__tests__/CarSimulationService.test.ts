@@ -1,10 +1,11 @@
 // File: /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/services/__tests__/CarSimulationService.test.ts
 
-import { Component } from '../../entities/Component';
-import { ComponentProperties } from '../../value-objects/ComponentProperties';
-import { CarSimulationService } from '../CarSimulationService';
+import { Component } from "../../entities/Component";
+import { ComponentProperties } from "../../value-objects/ComponentProperties";
+import { PositionVO } from "../../value-objects/Position";
+import { CarSimulationService } from "../CarSimulationService";
 
-describe('CarSimulationService', () => {
+describe("CarSimulationService", () => {
   let simulationService: CarSimulationService;
   let mockComponents: Component[];
 
@@ -13,74 +14,74 @@ describe('CarSimulationService', () => {
 
     // Create mock components
     mockComponents = [
-      new Component('chassis-1', {
-        name: 'Basic Chassis',
-        type: 'chassis',
-        category: 'structural',
+      new Component("chassis-1", {
+        name: "Basic Chassis",
+        type: "chassis",
+        category: "structural",
         properties: ComponentProperties.create({
           power: 0,
           weight: 1000,
           efficiency: 80,
           durability: 90,
           cost: 100,
-          unlockLevel: 1
+          unlockLevel: 1,
         }),
-        position: { x: 0, y: 0 },
+        position: PositionVO.zero(),
         size: { width: 60, height: 30 },
         rotation: 0,
         isUnlocked: true,
-        rarity: 'common',
-        icon: 'chassis-icon',
-        description: 'Basic chassis for car construction',
-        level: 1
+        rarity: "common",
+        icon: "chassis-icon",
+        description: "Basic chassis for car construction",
+        level: 1,
       }),
-      new Component('engine-1', {
-        name: 'Basic Engine',
-        type: 'engine',
-        category: 'mechanical',
+      new Component("engine-1", {
+        name: "Basic Engine",
+        type: "engine",
+        category: "mechanical",
         properties: ComponentProperties.create({
           power: 150,
           weight: 200,
           efficiency: 70,
           durability: 85,
           cost: 500,
-          unlockLevel: 2
+          unlockLevel: 2,
         }),
-        position: { x: 0, y: 0 },
+        position: PositionVO.zero(),
         size: { width: 40, height: 30 },
         rotation: 0,
         isUnlocked: true,
-        rarity: 'common',
-        icon: 'engine-icon',
-        description: 'Basic engine for car propulsion',
-        level: 1
+        rarity: "common",
+        icon: "engine-icon",
+        description: "Basic engine for car propulsion",
+        level: 1,
       }),
-      new Component('wheels-1', {
-        name: 'Basic Wheels',
-        type: 'wheels',
-        category: 'mechanical',
+      new Component("wheels-1", {
+        name: "Basic Wheels",
+        type: "wheels",
+        category: "mechanical",
         properties: ComponentProperties.create({
           power: 0,
           weight: 100,
           efficiency: 75,
           durability: 80,
           cost: 200,
-          unlockLevel: 1
+          unlockLevel: 1,
         }),
-        position: { x: 0, y: 0 },
+        position: PositionVO.zero(),
         size: { width: 20, height: 20 },
         rotation: 0,
         isUnlocked: true,
-        rarity: 'common',
-        icon: 'wheels-icon',
-        description: 'Basic wheels for car movement',
-        level: 1
-      })
+        rarity: "common",
+        icon: "wheels-icon",
+        description: "Basic wheels for car movement",
+        level: 1,
+      }),
     ];
   });
 
-  describe('runSimulation', () => {
-    it('should run simulation successfully with complete car', async() => {
+  describe("runSimulation", () => {
+    it("should run simulation successfully with complete car", async () => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result).toBeDefined();
@@ -97,28 +98,33 @@ describe('CarSimulationService', () => {
       expect(result.simulationSteps.length).toBeGreaterThan(0);
     });
 
-    it('should throw error when car is incomplete', async() => {
+    it("should throw error when car is incomplete", async () => {
       const incompleteComponents = mockComponents.slice(0, 2); // Missing wheels
 
-      await expect(simulationService.runSimulation(incompleteComponents)).rejects.toThrow(
-        'Car must have chassis, engine, and wheels to run simulation'
+      await expect(
+        simulationService.runSimulation(incompleteComponents)
+      ).rejects.toThrow(
+        "Car must have chassis, engine, and wheels to run simulation"
       );
     });
 
-    it('should throw error when no components provided', async() => {
+    it("should throw error when no components provided", async () => {
       await expect(simulationService.runSimulation([])).rejects.toThrow(
-        'Car must have chassis, engine, and wheels to run simulation'
+        "Car must have chassis, engine, and wheels to run simulation"
       );
     });
 
-    it('should accept custom simulation configuration', async() => {
+    it("should accept custom simulation configuration", async () => {
       const customConfig = {
         trackLength: 500,
         maxSimulationTime: 30,
-        timeStep: 0.05
+        timeStep: 0.05,
       };
 
-      const result = await simulationService.runSimulation(mockComponents, customConfig);
+      const result = await simulationService.runSimulation(
+        mockComponents,
+        customConfig
+      );
 
       expect(result).toBeDefined();
       expect(result.distance).toBeLessThanOrEqual(600); // Allow some tolerance for physics calculations
@@ -126,8 +132,8 @@ describe('CarSimulationService', () => {
     });
   });
 
-  describe('validateComponents', () => {
-    it('should validate complete car successfully', () => {
+  describe("validateComponents", () => {
+    it("should validate complete car successfully", () => {
       // This is tested indirectly through runSimulation, but we can test the validation logic
       expect(() => {
         // Create a private method test by running simulation
@@ -135,17 +141,19 @@ describe('CarSimulationService', () => {
       }).not.toThrow();
     });
 
-    it('should throw error for incomplete car', async() => {
+    it("should throw error for incomplete car", async () => {
       const incompleteComponents = [mockComponents[0]]; // Only chassis
 
-      await expect(simulationService.runSimulation(incompleteComponents)).rejects.toThrow(
-        'Car must have chassis, engine, and wheels to run simulation'
+      await expect(
+        simulationService.runSimulation(incompleteComponents)
+      ).rejects.toThrow(
+        "Car must have chassis, engine, and wheels to run simulation"
       );
     });
   });
 
-  describe('calculateInitialPerformance', () => {
-    it('should calculate performance metrics correctly', async() => {
+  describe("calculateInitialPerformance", () => {
+    it("should calculate performance metrics correctly", async () => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result.finalPerformance).toBeDefined();
@@ -161,15 +169,16 @@ describe('CarSimulationService', () => {
     });
   });
 
-  describe('simulation physics', () => {
-    it('should generate simulation steps with realistic physics', async() => {
+  describe("simulation physics", () => {
+    it("should generate simulation steps with realistic physics", async () => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result.simulationSteps.length).toBeGreaterThan(0);
 
       // Check that speed increases over time (acceleration)
       const firstStep = result.simulationSteps[0];
-      const lastStep = result.simulationSteps[result.simulationSteps.length - 1];
+      const lastStep =
+        result.simulationSteps[result.simulationSteps.length - 1];
 
       expect(firstStep.speed).toBeGreaterThanOrEqual(0);
       expect(lastStep.speed).toBeGreaterThanOrEqual(0);
@@ -179,23 +188,26 @@ describe('CarSimulationService', () => {
 
       // Check that acceleration is calculated
       expect(firstStep.acceleration).toBeDefined();
-      expect(typeof firstStep.acceleration).toBe('number');
+      expect(typeof firstStep.acceleration).toBe("number");
     });
 
-    it('should respect track length limit', async() => {
+    it("should respect track length limit", async () => {
       const shortTrackConfig = {
         trackLength: 100,
-        maxSimulationTime: 10
+        maxSimulationTime: 10,
       };
 
-      const result = await simulationService.runSimulation(mockComponents, shortTrackConfig);
+      const result = await simulationService.runSimulation(
+        mockComponents,
+        shortTrackConfig
+      );
 
       expect(result.distance).toBeLessThanOrEqual(120); // Allow some tolerance for physics calculations
     });
   });
 
-  describe('scoring system', () => {
-    it('should generate score between 0 and 100', async() => {
+  describe("scoring system", () => {
+    it("should generate score between 0 and 100", async () => {
       const result = await simulationService.runSimulation(mockComponents);
 
       expect(result.score).toBeGreaterThanOrEqual(0);
@@ -203,7 +215,7 @@ describe('CarSimulationService', () => {
       expect(Number.isInteger(result.score)).toBe(true);
     });
 
-    it('should set passed status based on score', async() => {
+    it("should set passed status based on score", async () => {
       const result = await simulationService.runSimulation(mockComponents);
 
       if (result.score >= 60) {
@@ -214,50 +226,50 @@ describe('CarSimulationService', () => {
     });
   });
 
-  describe('configuration validation', () => {
-    it('should validate positive track length', () => {
+  describe("configuration validation", () => {
+    it("should validate positive track length", () => {
       const invalidConfig = {
-        trackLength: -100
+        trackLength: -100,
       };
 
       expect(() => {
         simulationService.validateConfig(invalidConfig);
-      }).toThrow('Track length must be positive');
+      }).toThrow("Track length must be positive");
     });
 
-    it('should validate positive simulation time', () => {
+    it("should validate positive simulation time", () => {
       const invalidConfig = {
-        maxSimulationTime: -10
+        maxSimulationTime: -10,
       };
 
       expect(() => {
         simulationService.validateConfig(invalidConfig);
-      }).toThrow('Max simulation time must be positive');
+      }).toThrow("Max simulation time must be positive");
     });
 
-    it('should validate time step range', () => {
+    it("should validate time step range", () => {
       const invalidConfig1 = {
-        timeStep: 0
+        timeStep: 0,
       };
 
       const invalidConfig2 = {
-        timeStep: 2
+        timeStep: 2,
       };
 
       expect(() => {
         simulationService.validateConfig(invalidConfig1);
-      }).toThrow('Time step must be between 0 and 1 seconds');
+      }).toThrow("Time step must be between 0 and 1 seconds");
 
       expect(() => {
         simulationService.validateConfig(invalidConfig2);
-      }).toThrow('Time step must be between 0 and 1 seconds');
+      }).toThrow("Time step must be between 0 and 1 seconds");
     });
 
-    it('should accept valid configuration', () => {
+    it("should accept valid configuration", () => {
       const validConfig = {
         trackLength: 1000,
         maxSimulationTime: 60,
-        timeStep: 0.1
+        timeStep: 0.1,
       };
 
       expect(() => {
@@ -266,8 +278,8 @@ describe('CarSimulationService', () => {
     });
   });
 
-  describe('default configuration', () => {
-    it('should provide default configuration', () => {
+  describe("default configuration", () => {
+    it("should provide default configuration", () => {
       const defaultConfig = simulationService.getDefaultConfig();
 
       expect(defaultConfig.trackLength).toBe(1000);
@@ -279,11 +291,11 @@ describe('CarSimulationService', () => {
     });
   });
 
-  describe('performance with different car configurations', () => {
-    it('should handle high-performance car', async() => {
+  describe("performance with different car configurations", () => {
+    it("should handle high-performance car", async () => {
       // Create high-performance components by cloning and modifying
-      const highPerformanceComponents = mockComponents.map(comp => {
-        if (comp.type === 'engine') {
+      const highPerformanceComponents = mockComponents.map((comp) => {
+        if (comp.type === "engine") {
           return new Component(comp.id, {
             name: comp.name,
             type: comp.type,
@@ -294,7 +306,7 @@ describe('CarSimulationService', () => {
               efficiency: comp.properties.efficiency,
               durability: comp.properties.durability,
               cost: comp.properties.cost,
-              unlockLevel: comp.properties.unlockLevel
+              unlockLevel: comp.properties.unlockLevel,
             }),
             position: comp.position,
             size: comp.size,
@@ -303,20 +315,22 @@ describe('CarSimulationService', () => {
             rarity: comp.rarity,
             icon: comp.icon,
             description: comp.description,
-            level: comp.level
+            level: comp.level,
           });
         }
         return comp;
       });
 
-      const result = await simulationService.runSimulation(highPerformanceComponents);
+      const result = await simulationService.runSimulation(
+        highPerformanceComponents
+      );
 
       expect(result.maxSpeed).toBeGreaterThan(0);
       expect(result.distance).toBeGreaterThan(0);
     });
 
-    it('should handle heavy car', async() => {
-      const heavyComponents = mockComponents.map(comp => {
+    it("should handle heavy car", async () => {
+      const heavyComponents = mockComponents.map((comp) => {
         return new Component(comp.id, {
           name: comp.name,
           type: comp.type,
@@ -327,7 +341,7 @@ describe('CarSimulationService', () => {
             efficiency: comp.properties.efficiency,
             durability: comp.properties.durability,
             cost: comp.properties.cost,
-            unlockLevel: comp.properties.unlockLevel
+            unlockLevel: comp.properties.unlockLevel,
           }),
           position: comp.position,
           size: comp.size,
@@ -336,7 +350,7 @@ describe('CarSimulationService', () => {
           rarity: comp.rarity,
           icon: comp.icon,
           description: comp.description,
-          level: comp.level
+          level: comp.level,
         });
       });
 

@@ -1,7 +1,7 @@
 import { Component } from "../../domain/entities/Component";
 import { TestResult } from "../../domain/entities/TestResult";
 import { GameState } from "../../domain/value-objects/GameState";
-import { Position, PositionVO } from "../../domain/value-objects/Position";
+import { PositionVO } from "../../domain/value-objects/Position";
 
 export interface GameActionsRequest {
   action:
@@ -32,7 +32,7 @@ export interface GameActions {
   // Component management
   addComponent: (component: Component) => void;
   removeComponent: (componentId: string) => void;
-  moveComponent: (componentId: string, position: Position) => void;
+  moveComponent: (componentId: string, position: PositionVO) => void;
   selectComponent: (componentId: string | null) => void;
 
   // Settings
@@ -122,7 +122,7 @@ export class GameActionsUseCase {
     });
   }
 
-  moveComponent(componentId: string, position: Position): void {
+  moveComponent(componentId: string, position: PositionVO): void {
     this.updateState((state) => {
       const newState = state.moveComponent(componentId, position);
       return newState;

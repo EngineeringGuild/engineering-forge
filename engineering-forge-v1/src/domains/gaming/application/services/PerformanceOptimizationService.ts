@@ -9,7 +9,8 @@ export class PerformanceOptimizationService {
 
   static getInstance(): PerformanceOptimizationService {
     if (!PerformanceOptimizationService.instance) {
-      PerformanceOptimizationService.instance = new PerformanceOptimizationService();
+      PerformanceOptimizationService.instance =
+        new PerformanceOptimizationService();
     }
     return PerformanceOptimizationService.instance;
   }
@@ -19,11 +20,11 @@ export class PerformanceOptimizationService {
    */
   enableOptimizations(): void {
     if (this.isOptimized) {
-return;
-}
+      return;
+    }
 
     // Reduce motion for users who prefer it
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       this.enableReducedMotion();
     }
 
@@ -37,7 +38,7 @@ return;
     this.enableServiceWorker();
 
     this.isOptimized = true;
-    console.log('Performance optimizations enabled');
+    console.log("Performance optimizations enabled");
   }
 
   /**
@@ -45,14 +46,14 @@ return;
    */
   disableOptimizations(): void {
     this.isOptimized = false;
-    console.log('Performance optimizations disabled');
+    console.log("Performance optimizations disabled");
   }
 
   /**
    * Enable reduced motion for accessibility
    */
   private enableReducedMotion(): void {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       * {
         animation-duration: 0.01ms !important;
@@ -67,7 +68,7 @@ return;
    * Enable hardware acceleration hints
    */
   private enableHardwareAcceleration(): void {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .game-container, .workspace, .component {
         transform: translateZ(0);
@@ -82,29 +83,29 @@ return;
    */
   private optimizeImageLoading(): void {
     // Add loading="lazy" to all images
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-      if (!img.hasAttribute('loading')) {
-        img.setAttribute('loading', 'lazy');
+    const images = document.querySelectorAll("img");
+    images.forEach((img) => {
+      if (!img.hasAttribute("loading")) {
+        img.setAttribute("loading", "lazy");
       }
     });
 
     // Add intersection observer for lazy loading
-    if ('IntersectionObserver' in window) {
-      const imageObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
+    if ("IntersectionObserver" in window) {
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const img = entry.target as HTMLImageElement;
             if (img.dataset.src) {
               img.src = img.dataset.src;
-              img.removeAttribute('data-src');
+              img.removeAttribute("data-src");
               imageObserver.unobserve(img);
             }
           }
         });
       });
 
-      images.forEach(img => {
+      images.forEach((img) => {
         if (img.dataset.src) {
           imageObserver.observe(img);
         }
@@ -116,47 +117,16 @@ return;
    * Enable service worker for caching
    */
   private enableServiceWorker(): void {
-    if ('serviceWorker' in navigator) {
+    if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registered:', registration);
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("Service Worker registered:", registration);
         })
-        .catch(error => {
-          console.log('Service Worker registration failed:', error);
+        .catch((error) => {
+          console.log("Service Worker registration failed:", error);
         });
     }
-  }
-
-  /**
-   * Debounce function calls
-   */
-  debounce<T extends(...args: any[]) => any>(
-    func: T,
-    wait: number
-  ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func(...args), wait);
-    };
-  }
-
-  /**
-   * Throttle function calls
-   */
-  throttle<T extends(...args: any[]) => any>(
-    func: T,
-    limit: number
-  ): (...args: Parameters<T>) => void {
-    let inThrottle: boolean;
-    return (...args: Parameters<T>) => {
-      if (!inThrottle) {
-        func(...args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
   }
 
   /**
@@ -164,7 +134,7 @@ return;
    */
   batchDOMUpdates(updates: (() => void)[]): void {
     requestAnimationFrame(() => {
-      updates.forEach(update => update());
+      updates.forEach((update) => update());
     });
   }
 
@@ -172,11 +142,11 @@ return;
    * Optimize canvas rendering
    */
   optimizeCanvas(canvas: HTMLCanvasElement): void {
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (ctx) {
       // Enable image smoothing for better quality
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
+      ctx.imageSmoothingQuality = "high";
 
       // Set pixel ratio for high DPI displays
       const pixelRatio = window.devicePixelRatio || 1;
@@ -186,8 +156,8 @@ return;
       canvas.height = rect.height * pixelRatio;
 
       ctx.scale(pixelRatio, pixelRatio);
-      canvas.style.width = rect.width + 'px';
-      canvas.style.height = rect.height + 'px';
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
     }
   }
 
@@ -195,10 +165,10 @@ return;
    * Preload critical resources
    */
   preloadResources(resources: string[]): Promise<void[]> {
-    const promises = resources.map(resource => {
+    const promises = resources.map((resource) => {
       return new Promise<void>((resolve, reject) => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
+        const link = document.createElement("link");
+        link.rel = "preload";
         link.href = resource;
         link.onload = () => resolve();
         link.onerror = () => reject(new Error(`Failed to preload ${resource}`));
@@ -217,14 +187,19 @@ return;
 
     // Check for low-end devices
     if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
-      recommendations.push('Consider reducing visual effects for better performance');
+      recommendations.push(
+        "Consider reducing visual effects for better performance"
+      );
     }
 
     // Check for slow connection
-    if ('connection' in navigator) {
+    if ("connection" in navigator) {
       const connection = (navigator as any).connection;
-      if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
-        recommendations.push('Consider enabling data saver mode');
+      if (
+        connection.effectiveType === "slow-2g" ||
+        connection.effectiveType === "2g"
+      ) {
+        recommendations.push("Consider enabling data saver mode");
       }
     }
 
@@ -233,7 +208,9 @@ return;
       const memory = (performance as any).memory;
       const usedMB = memory.usedJSHeapSize / 1024 / 1024;
       if (usedMB > 100) {
-        recommendations.push('High memory usage detected - consider refreshing the page');
+        recommendations.push(
+          "High memory usage detected - consider refreshing the page"
+        );
       }
     }
 

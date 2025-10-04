@@ -1,25 +1,29 @@
 // /Users/user/Desktop/Core Guild Project/projects/Games/Engineering Forge/engineering-forge-v1/src/domains/gaming/domain/entities/Component.ts
 
-import { BaseEntity } from '../../../../shared/domain/BaseEntity';
-import { ComponentProperties } from '../value-objects/ComponentProperties';
-import { Position } from '../value-objects/Position';
+import { BaseEntity } from "../../../../shared/domain/BaseEntity";
+import { ComponentProperties } from "../value-objects/ComponentProperties";
+import { PositionVO } from "../value-objects/Position";
 
 export type ComponentType =
-  | 'engine'
-  | 'chassis'
-  | 'wheels'
-  | 'suspension'
-  | 'brakes'
-  | 'transmission';
-export type ComponentCategory = 'mechanical' | 'electrical' | 'structural' | 'aerodynamic';
-export type ComponentRarity = 'common' | 'rare' | 'epic' | 'legendary';
+  | "engine"
+  | "chassis"
+  | "wheels"
+  | "suspension"
+  | "brakes"
+  | "transmission";
+export type ComponentCategory =
+  | "mechanical"
+  | "electrical"
+  | "structural"
+  | "aerodynamic";
+export type ComponentRarity = "common" | "rare" | "epic" | "legendary";
 
 export interface ComponentProps {
   name: string;
   type: ComponentType;
   category: ComponentCategory;
   properties: ComponentProperties;
-  position: Position;
+  position: PositionVO;
   size: { width: number; height: number };
   rotation: number;
   isUnlocked: boolean;
@@ -34,7 +38,7 @@ export class Component extends BaseEntity<string> {
   private _type: ComponentType;
   private _category: ComponentCategory;
   private _properties: ComponentProperties;
-  private _position: Position;
+  private _position: PositionVO;
   private _size: { width: number; height: number };
   private _rotation: number;
   private _isUnlocked: boolean;
@@ -75,7 +79,7 @@ export class Component extends BaseEntity<string> {
     return this._properties;
   }
 
-  get position(): Position {
+  get position(): PositionVO {
     return this._position;
   }
 
@@ -107,7 +111,7 @@ export class Component extends BaseEntity<string> {
     return this._level;
   }
 
-  public moveTo(position: Position): void {
+  public moveTo(position: PositionVO): void {
     this._position = position;
     this.updateTimestamp();
   }
@@ -119,7 +123,7 @@ export class Component extends BaseEntity<string> {
 
   public resize(size: { width: number; height: number }): void {
     if (size.width <= 0 || size.height <= 0) {
-      throw new Error('Size dimensions must be positive');
+      throw new Error("Size dimensions must be positive");
     }
     this._size = size;
     this.updateTimestamp();
@@ -154,18 +158,24 @@ export class Component extends BaseEntity<string> {
     }
 
     // Engine compatibility with transmission
-    if (this.type === 'engine' && other.type === 'transmission') {
+    if (this.type === "engine" && other.type === "transmission") {
       return true;
     }
 
     // Chassis compatibility with other components
-    if (this.type === 'chassis') {
-      return ['engine', 'wheels', 'suspension', 'brakes', 'transmission'].includes(other.type);
+    if (this.type === "chassis") {
+      return [
+        "engine",
+        "wheels",
+        "suspension",
+        "brakes",
+        "transmission",
+      ].includes(other.type);
     }
 
     // Wheels compatibility
-    if (this.type === 'wheels') {
-      return ['chassis', 'suspension'].includes(other.type);
+    if (this.type === "wheels") {
+      return ["chassis", "suspension"].includes(other.type);
     }
 
     return true; // Default to compatible
@@ -181,7 +191,7 @@ export class Component extends BaseEntity<string> {
       left: this._position.x,
       top: this._position.y,
       right: this._position.x + this._size.width,
-      bottom: this._position.y + this._size.height
+      bottom: this._position.y + this._size.height,
     };
   }
 

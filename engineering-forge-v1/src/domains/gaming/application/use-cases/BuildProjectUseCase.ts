@@ -38,12 +38,10 @@ export class BuildProjectUseCase {
       // Add component to project
       project.addComponent(request.component);
 
-      // Calculate new performance using the performance calculator
-      const performanceCalculator =
-        this.physicsService.getPerformanceCalculator();
-      const performance = performanceCalculator.calculateInitialPerformance(
-        project.components
-      );
+      // Calculate new performance using the simulation service
+      const performance = this.physicsService
+        .getPerformanceCalculator()
+        .calculateInitialPerformance(project.components);
 
       // Save the project
       await this.projectRepository.save(project);

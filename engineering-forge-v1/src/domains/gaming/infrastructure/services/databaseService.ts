@@ -492,6 +492,32 @@ export class DatabaseService {
       throw error;
     }
   }
+
+  /**
+   * Get user count
+   */
+  public async getUserCount(): Promise<number> {
+    try {
+      const count = await User.countDocuments();
+      return count;
+    } catch (error) {
+      console.error("❌ Error getting user count:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get course count
+   */
+  public async getCourseCount(): Promise<number> {
+    try {
+      const count = await Course.countDocuments();
+      return count;
+    } catch (error) {
+      console.error("❌ Error getting course count:", error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

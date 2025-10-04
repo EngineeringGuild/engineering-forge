@@ -170,7 +170,13 @@ export class CanvasRenderingService {
   ): void {
     ctx.fillStyle = effect.color;
     ctx.beginPath();
-    ctx.arc(effect.position.x, effect.position.y, effect.size, 0, Math.PI * 2);
+    ctx.arc(
+      effect.position.x,
+      effect.position.y,
+      effect.size || 2,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
   }
 
@@ -179,7 +185,7 @@ export class CanvasRenderingService {
     effect: AnimationEffect
   ): void {
     ctx.strokeStyle = effect.color;
-    ctx.lineWidth = effect.size;
+    ctx.lineWidth = effect.size || 2;
     ctx.beginPath();
     ctx.moveTo(effect.position.x, effect.position.y - 5);
     ctx.lineTo(effect.position.x, effect.position.y + 5);
@@ -204,7 +210,13 @@ export class CanvasRenderingService {
   ): void {
     ctx.fillStyle = effect.color;
     ctx.beginPath();
-    ctx.arc(effect.position.x, effect.position.y, effect.size, 0, Math.PI * 2);
+    ctx.arc(
+      effect.position.x,
+      effect.position.y,
+      effect.size || 1,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
   }
 
@@ -212,26 +224,21 @@ export class CanvasRenderingService {
     ctx: CanvasRenderingContext2D,
     effect: AnimationEffect
   ): void {
+    const size = effect.size || 5;
     const gradient = ctx.createRadialGradient(
       effect.position.x,
       effect.position.y,
       0,
       effect.position.x,
       effect.position.y,
-      effect.size * 2
+      size * 2
     );
     gradient.addColorStop(0, effect.color);
     gradient.addColorStop(1, "transparent");
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(
-      effect.position.x,
-      effect.position.y,
-      effect.size * 2,
-      0,
-      Math.PI * 2
-    );
+    ctx.arc(effect.position.x, effect.position.y, size * 2, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -240,9 +247,15 @@ export class CanvasRenderingService {
     effect: AnimationEffect
   ): void {
     ctx.fillStyle = effect.color;
-    ctx.globalAlpha = effect.opacity * 0.5;
+    ctx.globalAlpha = (effect.opacity || 1) * 0.5;
     ctx.beginPath();
-    ctx.arc(effect.position.x, effect.position.y, effect.size, 0, Math.PI * 2);
+    ctx.arc(
+      effect.position.x,
+      effect.position.y,
+      effect.size || 3,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
   }
 

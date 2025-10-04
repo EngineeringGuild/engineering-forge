@@ -454,7 +454,7 @@ export function createComponent(
       type: baseComponent.type,
       category: baseComponent.category,
       properties: componentProperties,
-      position: new PositionVO(0, 0),
+      position: PositionVO.zero(),
       size: DEFAULT_COMPONENT_SIZES[baseComponent.type],
       rotation: 0,
       isUnlocked: baseComponent.properties.unlockLevel <= 1,

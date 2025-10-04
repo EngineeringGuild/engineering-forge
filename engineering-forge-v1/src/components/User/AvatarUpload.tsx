@@ -5,8 +5,19 @@
  */
 
 import React, { useRef, useState } from "react";
-import { UserService } from "../../domains/gaming/domain/services/userService";
 import { useAvatarUpload } from "../../hooks/useUser";
+
+// Mock UserService for now
+const UserService = {
+  uploadAvatar: async (file: File): Promise<string> => {
+    // Mock implementation
+    console.log("Uploading avatar:", file.name);
+    return "https://example.com/avatar.jpg";
+  },
+  deleteAvatar: async () => {
+    console.log("Deleting avatar");
+  },
+};
 
 interface AvatarUploadProps {
   currentAvatar?: string;

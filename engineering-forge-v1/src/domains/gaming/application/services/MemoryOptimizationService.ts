@@ -27,12 +27,12 @@ export class MemoryOptimizationService {
    */
   startMonitoring(): void {
     if (this.isMonitoring) {
-return;
-}
+      return;
+    }
 
     this.isMonitoring = true;
     this.monitorMemory();
-    console.log('Memory monitoring started');
+    console.log("Memory monitoring started");
   }
 
   /**
@@ -40,7 +40,7 @@ return;
    */
   stopMonitoring(): void {
     this.isMonitoring = false;
-    console.log('Memory monitoring stopped');
+    console.log("Memory monitoring stopped");
   }
 
   /**
@@ -48,8 +48,8 @@ return;
    */
   private monitorMemory(): void {
     if (!this.isMonitoring) {
-return;
-}
+      return;
+    }
 
     const stats = this.getMemoryStats();
     if (stats) {
@@ -58,7 +58,9 @@ return;
       const limitMB = stats.jsHeapSizeLimit / 1024 / 1024;
 
       console.log(
-        `Memory usage: ${usedMB.toFixed(2)}MB / ${totalMB.toFixed(2)}MB (${limitMB.toFixed(2)}MB limit)`
+        `Memory usage: ${usedMB.toFixed(2)}MB / ${totalMB.toFixed(
+          2
+        )}MB (${limitMB.toFixed(2)}MB limit)`
       );
 
       // Trigger cleanup if memory usage is high
@@ -75,7 +77,7 @@ return;
    * Get current memory statistics
    */
   getMemoryStats(): MemoryStats | null {
-    if ('memory' in performance) {
+    if ("memory" in performance) {
       return (performance as any).memory;
     }
     return null;
@@ -85,28 +87,28 @@ return;
    * Trigger memory cleanup
    */
   triggerCleanup(): void {
-    console.log('Triggering memory cleanup...');
+    console.log("Triggering memory cleanup...");
 
     // Run all cleanup tasks
-    this.cleanupTasks.forEach(task => {
+    this.cleanupTasks.forEach((task) => {
       try {
         task();
       } catch (error) {
-        console.error('Cleanup task failed:', error);
+        console.error("Cleanup task failed:", error);
       }
     });
 
     // Force garbage collection if available
     this.forceGarbageCollection();
 
-    console.log('Memory cleanup completed');
+    console.log("Memory cleanup completed");
   }
 
   /**
    * Force garbage collection (if available)
    */
   private forceGarbageCollection(): void {
-    if ('gc' in window) {
+    if ("gc" in window) {
       (window as any).gc();
     }
   }
@@ -138,39 +140,11 @@ return;
   /**
    * Optimize object pooling
    */
-  createObjectPool<T>(factory: () => T, reset: (obj: T) => void): ObjectPool<T> {
+  createObjectPool<T>(
+    factory: () => T,
+    reset: (obj: T) => void
+  ): ObjectPool<T> {
     return new ObjectPool(factory, reset);
-  }
-
-  /**
-   * Debounce function to prevent excessive calls
-   */
-  debounce<T extends(...args: any[]) => any>(
-    func: T,
-    wait: number
-  ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func(...args), wait);
-    };
-  }
-
-  /**
-   * Throttle function to limit call frequency
-   */
-  throttle<T extends(...args: any[]) => any>(
-    func: T,
-    limit: number
-  ): (...args: Parameters<T>) => void {
-    let inThrottle: boolean;
-    return (...args: Parameters<T>) => {
-      if (!inThrottle) {
-        func(...args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
   }
 
   /**
@@ -205,7 +179,7 @@ return;
    */
   batchDOMUpdates(updates: (() => void)[]): void {
     requestAnimationFrame(() => {
-      updates.forEach(update => update());
+      updates.forEach((update) => update());
     });
   }
 
@@ -213,9 +187,9 @@ return;
    * Clear unused cache entries
    */
   clearCache(): void {
-    if ('caches' in window) {
-      caches.keys().then(cacheNames => {
-        cacheNames.forEach(cacheName => {
+    if ("caches" in window) {
+      caches.keys().then((cacheNames) => {
+        cacheNames.forEach((cacheName) => {
           caches.delete(cacheName);
         });
       });
@@ -235,15 +209,21 @@ return;
       const usagePercent = (stats.usedJSHeapSize / stats.jsHeapSizeLimit) * 100;
 
       if (usagePercent > 80) {
-        recommendations.push('High memory usage detected - consider refreshing the page');
+        recommendations.push(
+          "High memory usage detected - consider refreshing the page"
+        );
       }
 
       if (usedMB > 100) {
-        recommendations.push('Memory usage is high - consider reducing visual effects');
+        recommendations.push(
+          "Memory usage is high - consider reducing visual effects"
+        );
       }
 
       if (this.cleanupTasks.length > 10) {
-        recommendations.push('Many cleanup tasks registered - consider optimizing cleanup');
+        recommendations.push(
+          "Many cleanup tasks registered - consider optimizing cleanup"
+        );
       }
     }
 
