@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 01_VISION
-version: 0.2.0
+version: 0.3.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-19
+updated: 2026-07-22
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -29,23 +29,28 @@ conteúdo**, cada um com sua própria mecânica de simulação:
 
 | Pack | Mecânica | Status |
 |---|---|---|
-| **Estruturas** (pontes, torres) | Estática de treliças 2D — método dos nós, tensão/compressão real | **MVP — em construção** |
-| Circuitos | Lei de Ohm, série/paralelo, capacidade de componentes | proposto, fase 2 |
-| Máquinas/Veículos | Componentes → performance (aceleração, torque, eficiência) | proposto, fase 3 |
-| Algoritmos/Código | Desafios de lógica e complexidade | proposto, fase 4 |
+| **Estruturas** (pontes, torres) | Estática de treliças 2D — método da rigidez direta, tensão/compressão real | **MVP — jogável** (tutorial + 3 níveis) |
+| **Circuitos** | Análise nodal (Lei de Ohm/Kirchhoff), capacidade de potência por componente | **MVP — jogável** (tutorial + 2 níveis) |
+| Máquinas/Veículos | Componentes → performance (aceleração, torque, eficiência) | proposto, fase 4 |
+| Algoritmos/Código | Desafios de lógica e complexidade | proposto, fase 5 |
 
 Cada pack usa a mesma moldura de progressão (aprendiz → oficial → mestre-ferreiro) e o mesmo
 loop de jogo (ver abaixo), mudando apenas o motor de simulação e o vocabulário de peças.
 
-## Loop de jogo (MVP — pack Estruturas)
+## Loop de jogo (o mesmo em todo pack)
 
-1. **Briefing** — o nível define vão, apoios, carga a suportar e orçamento de material.
-2. **Forjar** — o jogador coloca nós e conecta membros (vigas) entre pontos de ancoragem, escolhendo
-   material/seção por membro (custo vs. resistência).
-3. **Testar** — o motor de física resolve o equilíbrio estático da treliça (forças em cada membro)
-   e aplica a carga; membros sobrecarregados falham visualmente (cor → vermelho → rompe).
-4. **Resultado** — passa/falha + até 3 estrelas por eficiência de custo/material.
-5. **Progressão** — próximo nível libera vãos maiores, cargas mais complexas, novos tipos de membro.
+1. **Briefing** — o nível define o desafio (vão + carga, ou fonte + carga elétrica) e o orçamento.
+2. **Forjar** — o jogador coloca nós e conecta membros/componentes entre pontos dados, escolhendo
+   material/componente por conexão (custo vs. capacidade).
+3. **Testar** — o motor de física resolve o modelo (equilíbrio estático da treliça, ou tensões/
+   correntes do circuito) sob a carga real; peças sobrecarregadas falham visualmente.
+4. **Resultado** — passa/falha + até 3 estrelas por eficiência de custo.
+5. **Progressão** — próximo nível libera desafios maiores/mais complexos.
+
+**Pack Estruturas:** membros de treliça (madeira/aço), a treliça aguenta o caminhão ou desaba.
+**Pack Circuitos:** fios/resistores entre a bateria e uma carga (lâmpada dada, grátis) — a lâmpada
+acende dentro da faixa de potência segura, ou queima por excesso de corrente, ou fica fraca demais
+por excesso de resistência em série; um circuito sem caminho fechado é detectado como "aberto".
 
 ## Público e papel no portfólio
 
@@ -70,11 +75,11 @@ Existiam três visões incompatíveis antes desta reforma:
    duas visões acima, mais uma camada MongoDB/Mongoose nunca conectada à UI. Arquivado; ver
    DEC-010-004.
 
-## Critérios de sucesso (MVP — pack Estruturas)
+## Critérios de sucesso (MVP)
 
-- Um jogador consegue completar o tutorial + 3 níveis sem explicação externa (self-explanatory UX).
-- A simulação é **honesta**: nenhuma estrutura "aprovada" pela física real do jogo desabaria por
-  um motivo que o jogador não consiga entender olhando o feedback visual (cor de tensão/compressão).
+- Um jogador consegue completar o tutorial de cada pack sem explicação externa (self-explanatory UX).
+- A simulação é **honesta**: nenhuma estrutura/circuito "aprovado" pela física real do jogo falharia
+  por um motivo que o jogador não consiga entender olhando o feedback visual (cor de tensão/potência).
 - Deploy público em `forge.guildeng.com` (Cloudflare Pages, custo R$0) jogável em desktop e mobile
   web.
 - Green gates: install · lint · type-check · test · build (AOA v3 §3.3 / DEC-001-012).
@@ -83,7 +88,7 @@ Existiam três visões incompatíveis antes desta reforma:
 
 - Sem backend, sem conta de usuário, sem persistência em nuvem — progresso em `localStorage`.
 - Sem blockchain/NFT nesta fase (pode voltar como diferencial *depois* de tração comprovada).
-- Sem os packs de Circuitos/Máquinas/Código ainda — o MVP prova o loop com um pack só.
+- Sem os packs de Máquinas/Código ainda — provados o modelo "packs por disciplina" com dois.
 - Sem monetização no MVP.
 
 ## Tier GOX (DEC-010-005)

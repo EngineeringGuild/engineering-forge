@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.2.0
+version: 0.3.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-19
+updated: 2026-07-22
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -43,14 +43,38 @@ Núcleo do jogo, isolado de UI e testável (`game/src/physics/`):
 4. **Custo:** cada membro tem custo = `comprimento × preço do material por unidade`; pontuação de
    estrelas cruza aprovação estrutural com eficiência de orçamento.
 
-Este solver é a peça de maior valor de reuso: os packs futuros (Circuitos, Máquinas) trocam o
-motor de simulação mas reaproveitam o resto da arquitetura (editor de canvas, progressão, UI).
+## Motor de física — análise nodal de circuitos DC
+
+Segundo pack, mesma ideia (`game/src/physics/circuit.ts`): a matriz de condutância montada aqui é
+**a mesma estrutura matemática** da matriz de rigidez da treliça (um Laplaciano de grafo ponderado)
+— só muda para 1 grau de liberdade por nó (tensão) em vez de 2 (x,y), e reaproveita o mesmo
+`physics/linalg.ts` (eliminação gaussiana) para resolver o sistema linear.
+
+1. **Modelo:** nós (terminais da bateria com tensão fixa, ou juntas livres) e conexões de dois nós
+   (fio/resistor/carga), cada uma com resistência e potência máxima antes de queimar.
+2. **Solver:** análise nodal (Lei de Kirchhoff das Correntes) — monta a matriz de condutância,
+   fixa os terminais +/− da bateria, resolve as tensões dos nós livres. Um nó (ou ilha de nós) sem
+   caminho até nenhum terminal deixa o sistema singular → "circuito aberto", antes mesmo de calcular
+   corrente — mesmo tratamento que a treliça dá a um mecanismo instável.
+3. **Verificação de falha:** potência dissipada (`I² × R`) de cada componente vs. sua capacidade;
+   componente que excede queima. A carga dada (lâmpada) tem também um piso de potência — abaixo
+   dele, "fraca demais" (sem queimar, mas não cumpre o objetivo).
+4. **Lição de design:** o primeiro rascunho do nível "Higher Voltage" media só a potência da
+   lâmpada e deixava passar uma solução que queimava o **resistor** (14,2 W contra um limite de
+   10 W) — só apareceu jogando de ponta a ponta no browser, não no type-check. Corrigido subindo o
+   rating do resistor grande; mantido aqui como lembrete de que os testes automatizados verificam a
+   matemática do solver, não os números de cada nível — isso exige jogar.
+
+Este par de solvers é a peça de maior valor de reuso: os packs futuros (Máquinas, Código) trocam o
+motor de simulação mas reaproveitam o resto da arquitetura (editor de canvas SVG, progressão,
+seleção de pack, UI).
 
 ## Dados de nível
 
-Níveis são dados estáticos versionados em `game/src/content/levels/*.ts` (não precisam de backend):
-vão, posição dos apoios, carga a aplicar, orçamento, materiais liberados. Um "pack" é uma pasta de
-níveis + o motor de simulação correspondente.
+Níveis são dados estáticos versionados em `game/src/content/levels/*.ts` (Estruturas) e
+`game/src/content/circuitLevels/*.ts` (Circuitos) — não precisam de backend. Um "pack" é uma pasta
+de níveis + o motor de simulação correspondente + uma rota própria (`/structures`, `/circuits`) a
+partir da tela de seleção de pack (`/`).
 
 ## Deploy (ver `06_OPERATIONS.md`)
 
