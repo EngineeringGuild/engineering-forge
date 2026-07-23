@@ -57,7 +57,3 @@ export const COMPONENTS: Record<string, ElectricalComponent> = {
     costPerMeter: 0,
   },
 };
-
-export function componentCapacity(component: ElectricalComponent): number {
-  return component.maxPower;
-}
