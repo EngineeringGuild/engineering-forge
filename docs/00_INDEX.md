@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 00_INDEX
-version: 0.2.0
+version: 0.3.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-19
+updated: 2026-07-22
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -24,7 +24,8 @@ máquinas — e a física decide se aguentam. Ver `01_VISION.md` para o pitch co
 
 ## Onde as coisas estão
 
-- **Jogo (ativo):** `game/` — Vite + React + TS, client-side, sem backend.
+- **Jogo (ativo):** `game/` — Vite + React + TS, client-side, sem backend. Dois packs jogáveis:
+  Estruturas (`/structures`) e Circuitos (`/circuits`), a partir da seleção de pack em `/`.
 - **Legado (arquivado, não desenvolver aqui):** `legacy/engineering-forge-v1` (protótipo clicker +
   camada MongoDB nunca conectada) e `legacy/engineering-forge-docs` (site de docs em 5 idiomas).
 - **Visão 2025 arquivada (não é o roadmap atual):** `docs/archive/2025-blockchain-university-vision/`
@@ -37,4 +38,4 @@ Memória viva: `memory-AI/projects/idea-010-engineering-forge-L1.md` · Padrão:
 
 ⚠️ **Pendente de validação por Caio (HITL):** o pivô de conceito (DEC-010-003/004), o tier GOX
 (DEC-010-005) e a rotação da credencial MongoDB exposta (DEC-010-007) foram propostos e já
-implementados nesta sessão, mas continuam com `status: draft` até confirmação explícita.
+implementados em sessões de agente, mas continuam com `status: draft` até confirmação explícita.

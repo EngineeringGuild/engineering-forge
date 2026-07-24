@@ -1,25 +1,26 @@
 import { Link } from 'react-router-dom';
-import { LEVELS } from '../content/levels';
-import { useGameStore } from '../state/gameStore';
+import { CIRCUIT_LEVELS } from '../content/circuitLevels';
+import { useCircuitStore } from '../state/circuitStore';
 
-export function LevelSelect() {
-  const progress = useGameStore((s) => s.progress);
-  const isLevelUnlocked = useGameStore((s) => s.isLevelUnlocked);
+export function CircuitsLevelSelect() {
+  const progress = useCircuitStore((s) => s.progress);
+  const isLevelUnlocked = useCircuitStore((s) => s.isLevelUnlocked);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <header className="mb-10 text-center">
-        <p className="font-mono text-xs uppercase tracking-widest text-accent">
-          Engineering Forge
-        </p>
-        <h1 className="font-display text-4xl font-semibold text-fg">The Forge</h1>
+      <Link to="/" className="text-sm text-fg-muted hover:text-fg">
+        ← Packs
+      </Link>
+      <header className="mb-10 mt-4 text-center">
+        <p className="font-mono text-xs uppercase tracking-widest text-accent">Circuits</p>
+        <h1 className="font-display text-4xl font-semibold text-fg">Wiring</h1>
         <p className="mt-2 text-fg-muted">
-          Structures pack — build a bridge, then let the physics decide if it holds.
+          Wire a circuit, then let Ohm's law decide if it lights up.
         </p>
       </header>
 
       <ol className="flex flex-col gap-3">
-        {LEVELS.map((level) => {
+        {CIRCUIT_LEVELS.map((level) => {
           const unlocked = isLevelUnlocked(level.id);
           const stars = progress[level.id]?.stars ?? 0;
           const content = (
@@ -42,7 +43,7 @@ export function LevelSelect() {
           return (
             <li key={level.id}>
               {unlocked ? (
-                <Link to={`/level/${level.id}`}>{content}</Link>
+                <Link to={`/circuits/level/${level.id}`}>{content}</Link>
               ) : (
                 <div className="cursor-not-allowed">{content}</div>
               )}

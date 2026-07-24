@@ -1,25 +1,34 @@
-import { MATERIALS } from '../physics/materials';
+export interface PickableMaterial {
+  id: string;
+  name: string;
+  color: string;
+  costPerMeter: number;
+}
 
 interface Props {
   budget: number;
   cost: number;
+  materials: Record<string, PickableMaterial>;
   selectedMaterial: string;
   unlockedMaterials: string[];
   onSelectMaterial: (materialId: string) => void;
   onTest: () => void;
   onReset: () => void;
   testing: boolean;
+  testLabel?: string;
 }
 
 export function Toolbar({
   budget,
   cost,
+  materials,
   selectedMaterial,
   unlockedMaterials,
   onSelectMaterial,
   onTest,
   onReset,
   testing,
+  testLabel = 'Test',
 }: Props) {
   const overBudget = cost > budget;
 
@@ -27,7 +36,7 @@ export function Toolbar({
     <div className="flex flex-wrap items-center gap-4 rounded-xl bg-surface-1 border border-border px-4 py-3">
       <div className="flex gap-2">
         {unlockedMaterials.map((id) => {
-          const material = MATERIALS[id];
+          const material = materials[id];
           const active = selectedMaterial === id;
           return (
             <button
@@ -70,7 +79,7 @@ export function Toolbar({
           disabled={testing}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {testing ? 'Testing…' : 'Test Bridge'}
+          {testing ? 'Testing…' : testLabel}
         </button>
       </div>
     </div>

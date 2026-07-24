@@ -1,13 +1,19 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { LevelSelect } from './pages/LevelSelect';
-import { PlayLevel } from './pages/PlayLevel';
+import { PackSelect } from './pages/PackSelect';
+import { StructuresLevelSelect } from './pages/StructuresLevelSelect';
+import { StructuresPlayLevel } from './pages/StructuresPlayLevel';
+import { CircuitsLevelSelect } from './pages/CircuitsLevelSelect';
+import { CircuitsPlayLevel } from './pages/CircuitsPlayLevel';
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LevelSelect />} />
-        <Route path="/level/:levelId" element={<PlayLevel />} />
+        <Route path="/" element={<PackSelect />} />
+        <Route path="/structures" element={<StructuresLevelSelect />} />
+        <Route path="/structures/level/:levelId" element={<StructuresPlayLevel />} />
+        <Route path="/circuits" element={<CircuitsLevelSelect />} />
+        <Route path="/circuits/level/:levelId" element={<CircuitsPlayLevel />} />
       </Routes>
     </BrowserRouter>
   );

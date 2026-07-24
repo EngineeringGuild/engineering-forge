@@ -1,34 +1,35 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { BridgeCanvas } from '../components/BridgeCanvas';
-import { ResultOverlay } from '../components/ResultOverlay';
+import { CircuitCanvas } from '../components/CircuitCanvas';
+import { CircuitResultOverlay } from '../components/CircuitResultOverlay';
 import { Toolbar } from '../components/Toolbar';
-import { getLevel, nextLevelId } from '../content/levels';
-import { totalCost } from '../game/build';
-import { useGameStore } from '../state/gameStore';
+import { getCircuitLevel, nextCircuitLevelId } from '../content/circuitLevels';
+import { totalCircuitCost } from '../game/circuitBuild';
+import { COMPONENTS } from '../physics/components';
+import { useCircuitStore } from '../state/circuitStore';
 
-export function PlayLevel() {
+export function CircuitsPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
   const navigate = useNavigate();
   const [showHint, setShowHint] = useState(false);
 
-  const level = levelId ? getLevel(levelId) : undefined;
-  const isLevelUnlocked = useGameStore((s) => s.isLevelUnlocked);
-  const currentLevelId = useGameStore((s) => s.currentLevelId);
-  const builtNodes = useGameStore((s) => s.builtNodes);
-  const builtMembers = useGameStore((s) => s.builtMembers);
-  const pendingNodeId = useGameStore((s) => s.pendingNodeId);
-  const selectedMaterial = useGameStore((s) => s.selectedMaterial);
-  const testResult = useGameStore((s) => s.testResult);
-  const startLevel = useGameStore((s) => s.startLevel);
-  const addNode = useGameStore((s) => s.addNode);
-  const removeNode = useGameStore((s) => s.removeNode);
-  const addMember = useGameStore((s) => s.addMember);
-  const removeMember = useGameStore((s) => s.removeMember);
-  const setSelectedMaterial = useGameStore((s) => s.setSelectedMaterial);
-  const setPendingNode = useGameStore((s) => s.setPendingNode);
-  const runTest = useGameStore((s) => s.runTest);
-  const resetBuild = useGameStore((s) => s.resetBuild);
+  const level = levelId ? getCircuitLevel(levelId) : undefined;
+  const isLevelUnlocked = useCircuitStore((s) => s.isLevelUnlocked);
+  const currentLevelId = useCircuitStore((s) => s.currentLevelId);
+  const builtNodes = useCircuitStore((s) => s.builtNodes);
+  const builtEdges = useCircuitStore((s) => s.builtEdges);
+  const pendingNodeId = useCircuitStore((s) => s.pendingNodeId);
+  const selectedMaterial = useCircuitStore((s) => s.selectedMaterial);
+  const testResult = useCircuitStore((s) => s.testResult);
+  const startLevel = useCircuitStore((s) => s.startLevel);
+  const addNode = useCircuitStore((s) => s.addNode);
+  const removeNode = useCircuitStore((s) => s.removeNode);
+  const addEdge = useCircuitStore((s) => s.addEdge);
+  const removeEdge = useCircuitStore((s) => s.removeEdge);
+  const setSelectedMaterial = useCircuitStore((s) => s.setSelectedMaterial);
+  const setPendingNode = useCircuitStore((s) => s.setPendingNode);
+  const runTest = useCircuitStore((s) => s.runTest);
+  const resetBuild = useCircuitStore((s) => s.resetBuild);
 
   useEffect(() => {
     if (level && currentLevelId !== level.id) {
@@ -36,11 +37,11 @@ export function PlayLevel() {
     }
   }, [level, currentLevelId, startLevel]);
 
-  if (!level) return <Navigate to="/" replace />;
-  if (!isLevelUnlocked(level.id)) return <Navigate to="/" replace />;
+  if (!level) return <Navigate to="/circuits" replace />;
+  if (!isLevelUnlocked(level.id)) return <Navigate to="/circuits" replace />;
 
-  const cost = totalCost(level, builtNodes, builtMembers);
-  const next = nextLevelId(level.id);
+  const cost = totalCircuitCost(level, builtNodes, builtEdges);
+  const next = nextCircuitLevelId(level.id);
 
   function handleSelectNode(nodeId: string) {
     if (pendingNodeId === null) {
@@ -48,7 +49,7 @@ export function PlayLevel() {
     } else if (pendingNodeId === nodeId) {
       setPendingNode(null);
     } else {
-      addMember(pendingNodeId, nodeId);
+      addEdge(pendingNodeId, nodeId);
       setPendingNode(null);
     }
   }
@@ -77,43 +78,45 @@ export function PlayLevel() {
       )}
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface-1">
-        <BridgeCanvas
+        <CircuitCanvas
           level={level}
           builtNodes={builtNodes}
-          builtMembers={builtMembers}
+          builtEdges={builtEdges}
           pendingNodeId={pendingNodeId}
           testResult={testResult}
           onAddNode={addNode}
           onSelectNode={handleSelectNode}
           onRemoveNode={removeNode}
-          onRemoveMember={removeMember}
+          onRemoveEdge={removeEdge}
         />
       </div>
 
       <p className="text-center text-xs text-fg-subtle">
         Click empty grid to add a joint · click two joints to connect them · right-click a joint to
-        remove it · click a member to remove it
+        remove it · click a connection to remove it
       </p>
 
       <Toolbar
         budget={level.budget}
         cost={cost}
+        materials={COMPONENTS}
         selectedMaterial={selectedMaterial}
         unlockedMaterials={level.unlockedMaterials}
         onSelectMaterial={setSelectedMaterial}
         onTest={runTest}
         onReset={resetBuild}
         testing={false}
+        testLabel="Test Circuit"
       />
 
       {testResult && (
-        <ResultOverlay
+        <CircuitResultOverlay
           result={testResult}
           budget={level.budget}
           hasNext={Boolean(next)}
           onRetry={resetBuild}
-          onNext={() => next && navigate(`/level/${next}`)}
-          onLevelSelect={() => navigate('/')}
+          onNext={() => next && navigate(`/circuits/level/${next}`)}
+          onLevelSelect={() => navigate('/circuits')}
         />
       )}
     </div>

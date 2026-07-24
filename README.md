@@ -1,7 +1,7 @@
 # Engineering Forge (IDEA-010)
 
 **A physics puzzle game that teaches real engineering.** You're an apprentice in a forge — each
-level asks for a functional artifact (a bridge, eventually a circuit, a machine). You build it,
+level asks for a functional artifact (a bridge, a circuit, eventually a machine). You build it,
 you test it, and real physics decides whether it holds. No multiple choice, no partial credit.
 
 Part of the [Engineering Guild](https://github.com/EngineeringGuild) portfolio. See `docs/` for
@@ -33,13 +33,21 @@ Green gate before calling anything "done":
 npm run lint && npm run type-check && npm run test && npm run build
 ```
 
-## What's actually being built right now
+## What's playable right now
 
-The **Structures** pack: build a truss bridge over a given span and budget, then run a real 2D
-static analysis (direct stiffness method) against the load. Members are colored by how close they
-are to failing; a member that exceeds its material's capacity breaks, and a structure with an
-unconstrained mechanism is flagged unstable before it's even loaded. See
-`docs/02_ARCHITECTURE.md` for how the solver works, and `docs/01_VISION.md` for the full concept
+Two packs, picked from the home screen (`/`):
+
+- **Structures** (`/structures`): build a truss bridge over a given span and budget, then run a
+  real 2D static analysis (direct stiffness method) against the load. Members are colored by how
+  close they are to failing; a member that exceeds its material's capacity breaks, and a structure
+  with an unconstrained mechanism is flagged unstable before it's even loaded.
+- **Circuits** (`/circuits`): wire a battery to a bulb through resistors, then run a real nodal
+  (Kirchhoff's Current Law) analysis. Too little series resistance and the bulb burns out; too
+  much and it stays dim; no closed path and it's an open circuit.
+
+Both solvers share the same underlying linear-algebra core (`physics/linalg.ts`) — a truss
+stiffness matrix and a circuit conductance matrix are the same mathematical structure. See
+`docs/02_ARCHITECTURE.md` for how they work, and `docs/01_VISION.md` for the full concept
 ("packs" per engineering discipline).
 
 ## Status

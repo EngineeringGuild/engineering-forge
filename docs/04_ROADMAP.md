@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.2.0
+version: 0.3.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-19
+updated: 2026-07-22
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -16,18 +16,30 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | Fase | Objetivo | Pack/Escopo | Status |
 |---|---|---|---|
 | 0 | Inventário do código + decisão reformar/relançar | — | ✅ concluído (DEC-010-004) |
-| 1 | MVP jogável: tutorial + 3 níveis, motor de física de treliças, deploy público | Estruturas (pontes) | **em execução** |
-| 2 | Expandir pack Estruturas (mais níveis, tipos de apoio, cargas móveis) | Estruturas | planejado |
-| 3 | Segundo pack (Circuitos) prova o modelo "packs por disciplina" | Circuitos | proposto |
+| 1 | MVP jogável: tutorial + 3 níveis, motor de física de treliças, deploy público | Estruturas (pontes) | ✅ concluído |
+| 2 | Segundo pack (Circuitos) prova o modelo "packs por disciplina" | Circuitos | ✅ concluído (DEC-010-008) |
+| 3 | Expandir packs existentes (mais níveis Estruturas/Circuitos: apoios, cargas móveis, mais componentes) | Estruturas, Circuitos | planejado |
 | 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | proposto |
-| 5 | Avaliar conta de usuário / integração BOSS / monetização | — | condicionado a tração da Fase 1-2 |
+| 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | condicionado a tração |
 
-## Fase 1 — detalhamento (esta sessão)
+## Fase 1 — Estruturas (concluída)
 
-1. Motor de física de treliças (nós, membros, solver estático, verificação de falha).
+1. Motor de física de treliças (nós, membros, solver estático via método da rigidez direta,
+   verificação de falha) — `game/src/physics/truss.ts`, testado contra caso calculado à mão.
 2. Editor de canvas SVG: colocar nós, conectar membros, escolher material.
-3. Tutorial + 3 níveis com dificuldade crescente (vão maior, apoio a mais, carga móvel).
+3. Tutorial + 3 níveis com dificuldade crescente (vão maior, apoio a mais, dois eixos de carga).
 4. Loop de progressão local (`localStorage`): níveis completos, estrelas, desbloqueio sequencial.
-5. Deploy: Cloudflare Pages, `forge.guildeng.com` (ver `06_OPERATIONS.md`).
+5. Workflow de deploy (`deploy-cloudflare.yml`) — deploy real em `forge.guildeng.com` pendente
+   (ver Fase 5, requer config no dashboard Cloudflare fora do repo).
 
-Linear: issues a criar sob o projeto IDEA-010 quando a Fase 1 for revisada por Caio.
+## Fase 2 — Circuitos (concluída)
+
+1. Motor de análise nodal (`game/src/physics/circuit.ts`), reaproveitando `physics/linalg.ts`.
+2. Reestruturação de navegação: `/` = seleção de pack, `/structures` e `/circuits` cada um com
+   sua lista de níveis e página de jogo.
+3. Tutorial ("First Spark") + 2 níveis ("Two Bulbs", "Higher Voltage") jogados e validados
+   ponta a ponta no browser (não só testes unitários — ver nota em `02_ARCHITECTURE.md` sobre o
+   bug do resistor que só apareceu jogando).
+4. Componentes: fio, dois resistores, lâmpada (carga dada/grátis) — `physics/components.ts`.
+
+Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
