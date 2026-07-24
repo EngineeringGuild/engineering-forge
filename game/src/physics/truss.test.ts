@@ -76,4 +76,35 @@ describe('analyzeTruss', () => {
       expect(member.utilization).toBeLessThan(1);
     }
   });
+
+  it('lets a cable stand in for a member that stays in tension', () => {
+    // AB carries P/3 in tension in this A-frame — well within a cable's reach.
+    const truss = apexTruss(100);
+    truss.members = truss.members.map((m) =>
+      m.id === 'AB' ? { ...m, materialId: 'cable' } : m,
+    );
+    const result = analyzeTruss(truss);
+    expect(result.status).toBe('analyzed');
+    if (result.status !== 'analyzed') return;
+    const ab = result.members.find((m) => m.memberId === 'AB')!;
+    expect(ab.axialForce).toBeGreaterThan(0);
+    expect(ab.failed).toBe(false);
+  });
+
+  it('fails a cable outright if it ends up in compression, regardless of magnitude', () => {
+    // AC carries compression in this A-frame. Even at a tiny load — where a
+    // rigid member would be nowhere near its capacity — a cable can't take it.
+    const truss = apexTruss(1);
+    truss.members = truss.members.map((m) =>
+      m.id === 'AC' ? { ...m, materialId: 'cable' } : m,
+    );
+    const result = analyzeTruss(truss);
+    expect(result.status).toBe('analyzed');
+    if (result.status !== 'analyzed') return;
+    const ac = result.members.find((m) => m.memberId === 'AC')!;
+    expect(ac.axialForce).toBeLessThan(0);
+    expect(ac.utilization).toBeLessThan(0.01);
+    expect(ac.failed).toBe(true);
+    expect(result.anyFailed).toBe(true);
+  });
 });

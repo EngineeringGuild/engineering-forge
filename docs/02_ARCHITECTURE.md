@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.3.0
+version: 0.4.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-22
+updated: 2026-07-24
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -42,6 +42,19 @@ Núcleo do jogo, isolado de UI e testável (`game/src/physics/`):
    (>70% da capacidade), vermelho (rompido).
 4. **Custo:** cada membro tem custo = `comprimento × preço do material por unidade`; pontuação de
    estrelas cruza aprovação estrutural com eficiência de orçamento.
+5. **Material tração-only (`cable`):** cabos só puxam, nunca empurram. Em vez de resolver o
+   problema não-linear real (um cabo em compressão fica frouxo, o que exigiria re-resolver o
+   sistema iterativamente), a falha é tratada como um corte direto: força axial negativa
+   (compressão) em um material `tensionOnly` = falha imediata, independente da magnitude — a mesma
+   filosofia de simplificação documentada da flambagem não-modelada. Verificado por teste unitário
+   (`truss.test.ts`) tanto no caso "cabo em tração, ok" quanto "cabo em compressão, falha mesmo com
+   carga mínima".
+6. **Verificar topologias complexas com o próprio solver, não só na cabeça:** o nível "The Tower"
+   (torre + 5 linhas até o tabuleiro) tem uma distribuição de tração/compressão não-óbvia à mão —
+   foi descoberta rodando o solver já validado num script exploratório antes de fixar os materiais
+   do nível, revelando que as duas linhas até os pontos carregados ficam em tração (boas para
+   cabo) mas as duas linhas até as ancoragens ficam em **compressão** (precisam de aço) — o
+   oposto do que a intuição "toda diagonal de uma torre é um estai em tração" sugeriria.
 
 ## Motor de física — análise nodal de circuitos DC
 

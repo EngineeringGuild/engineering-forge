@@ -17,6 +17,12 @@ export interface Material {
   allowableStress: number;
   /** Cost per meter of built length. */
   costPerMeter: number;
+  /** Cables can only pull, never push. A tension-only member that ends up in
+   * compression fails outright regardless of magnitude — real cables go
+   * slack rather than resist compression. Modeled as a hard fail rather than
+   * a nonlinear slack-cable re-solve, the same style of simplification as
+   * the unmodeled buckling above. */
+  tensionOnly?: boolean;
 }
 
 export const MATERIALS: Record<string, Material> = {
@@ -37,6 +43,16 @@ export const MATERIALS: Record<string, Material> = {
     area: 0.005,
     allowableStress: 250e6,
     costPerMeter: 20,
+  },
+  cable: {
+    id: 'cable',
+    name: 'Cable',
+    color: '#4FB0C6',
+    youngsModulus: 150e9,
+    area: 0.002,
+    allowableStress: 600e6,
+    costPerMeter: 8,
+    tensionOnly: true,
   },
 };
 
