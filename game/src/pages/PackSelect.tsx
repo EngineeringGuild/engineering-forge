@@ -25,10 +25,10 @@ const PACKS: PackCard[] = [
   },
   {
     id: 'machines',
-    path: '#',
+    path: '/machines',
     name: 'Machines',
-    tagline: 'Coming soon.',
-    status: 'coming-soon',
+    tagline: 'Spec an engine and chassis. Newton decides how fast it goes.',
+    status: 'available',
   },
 ];
 

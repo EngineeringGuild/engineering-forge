@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 01_VISION
-version: 0.4.0
+version: 0.5.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-24
@@ -31,7 +31,7 @@ conteúdo**, cada um com sua própria mecânica de simulação:
 |---|---|---|
 | **Estruturas** (pontes, torres) | Estática de treliças 2D — método da rigidez direta, tensão/compressão real | **MVP — jogável** (tutorial + 4 níveis) |
 | **Circuitos** | Análise nodal (Lei de Ohm/Kirchhoff), capacidade de potência por componente | **MVP — jogável** (tutorial + 3 níveis) |
-| Máquinas/Veículos | Componentes → performance (aceleração, torque, eficiência) | proposto, fase 4 |
+| **Máquinas/Veículos** | 2ª lei de Newton + cinemática + teto de tração (atrito) | **MVP — jogável** (tutorial, escopo enxuto) |
 | Algoritmos/Código | Desafios de lógica e complexidade | proposto, fase 5 |
 
 Cada pack usa a mesma moldura de progressão (aprendiz → oficial → mestre-ferreiro) e o mesmo
@@ -39,18 +39,23 @@ loop de jogo (ver abaixo), mudando apenas o motor de simulação e o vocabulári
 
 ## Loop de jogo (o mesmo em todo pack)
 
-1. **Briefing** — o nível define o desafio (vão + carga, ou fonte + carga elétrica) e o orçamento.
-2. **Forjar** — o jogador coloca nós e conecta membros/componentes entre pontos dados, escolhendo
-   material/componente por conexão (custo vs. capacidade).
-3. **Testar** — o motor de física resolve o modelo (equilíbrio estático da treliça, ou tensões/
-   correntes do circuito) sob a carga real; peças sobrecarregadas falham visualmente.
+1. **Briefing** — o nível define o desafio (vão + carga, fonte + carga elétrica, ou meta de
+   desempenho) e o orçamento.
+2. **Forjar** — o jogador monta a solução: em Estruturas/Circuitos, colocando nós e conectando
+   membros/componentes num canvas espacial; em Máquinas, escolhendo peças de um catálogo
+   ("loadout") — nem todo pack precisa da mesma metáfora de interação, só do mesmo rigor de física.
+3. **Testar** — o motor de física resolve o modelo (equilíbrio estático da treliça, tensões/
+   correntes do circuito, ou cinemática do veículo) sob a carga real; peças sobrecarregadas ou
+   metas não atingidas falham visualmente/textualmente.
 4. **Resultado** — passa/falha + até 3 estrelas por eficiência de custo.
 5. **Progressão** — próximo nível libera desafios maiores/mais complexos.
 
-**Pack Estruturas:** membros de treliça (madeira/aço), a treliça aguenta o caminhão ou desaba.
+**Pack Estruturas:** membros de treliça (madeira/aço/cabo), a treliça aguenta o caminhão ou desaba.
 **Pack Circuitos:** fios/resistores entre a bateria e uma carga (lâmpada dada, grátis) — a lâmpada
 acende dentro da faixa de potência segura, ou queima por excesso de corrente, ou fica fraca demais
 por excesso de resistência em série; um circuito sem caminho fechado é detectado como "aberto".
+**Pack Máquinas:** escolher motor + chassi para um veículo atingir uma velocidade-alvo numa corrida
+reta — a 2ª lei de Newton e um teto de tração (atrito dos pneus) decidem se chega lá.
 
 ## Público e papel no portfólio
 

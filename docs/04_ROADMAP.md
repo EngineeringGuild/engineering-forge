@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.4.0
+version: 0.5.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-24
@@ -19,7 +19,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 1 | MVP jogável: tutorial + 3 níveis, motor de física de treliças, deploy público | Estruturas (pontes) | ✅ concluído |
 | 2 | Segundo pack (Circuitos) prova o modelo "packs por disciplina" | Circuitos | ✅ concluído (DEC-010-008) |
 | 3 | Expandir packs existentes: nível "The Tower" (cabo tração-only) em Estruturas, nível "Splitting the Load" (resistores em paralelo) em Circuitos | Estruturas, Circuitos | ✅ concluído |
-| 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | proposto |
+| 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | ✅ fundação concluída (DEC-010-010) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -55,5 +55,22 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
    fraca demais. Ensina a técnica de combinação em paralelo diretamente (distinta da Fase 2, que
    já cobria múltiplas cargas em paralelo, não múltiplos resistores).
 3. Ambos os níveis jogados e validados ponta a ponta no browser antes de commit.
+
+## Fase 4 — fundação do pack Máquinas (concluída, escopo enxuto)
+
+1. **Motor de física** (`physics/vehicle.ts`): corrida em linha reta a partir do repouso —
+   2ª lei de Newton (a=F/m) + cinemática (v²=2as) pra velocidade final, com um teto de tração
+   (atrito de Coulomb, F≤μmg) — motor com força maior que o grip dos pneus só faz o pneu
+   patinar, não acelera mais rápido. Simplificação documentada: força do motor é constante
+   (não modela curva de potência real).
+2. **Interação diferente dos outros dois packs:** não é canvas espacial — é um "loadout"
+   (escolher 1 motor + 1 chassi entre opções), mais parecido com escolher peças que desenhar
+   uma estrutura. Decisão deliberada: forçar o metáfora de canvas nessa mecânica seria
+   artificial.
+3. Tutorial ("First Drive") jogado ponta a ponta no browser: motor pequeno sozinho não atinge
+   a meta de velocidade ("Too slow"), motor grande + chassi leve atinge com 3 estrelas.
+4. Mais níveis (que exercitem o teto de tração de verdade, não só a fundação) ficam para a
+   próxima iteração — escopo desta fase foi deliberadamente enxuto (uma fundação + um nível,
+   como as Fases 1 e 2 também começaram).
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
