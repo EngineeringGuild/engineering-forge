@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.4.0
+version: 0.5.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-24
@@ -78,16 +78,34 @@ Segundo pack, mesma ideia (`game/src/physics/circuit.ts`): a matriz de condutân
    rating do resistor grande; mantido aqui como lembrete de que os testes automatizados verificam a
    matemática do solver, não os números de cada nível — isso exige jogar.
 
-Este par de solvers é a peça de maior valor de reuso: os packs futuros (Máquinas, Código) trocam o
-motor de simulação mas reaproveitam o resto da arquitetura (editor de canvas SVG, progressão,
-seleção de pack, UI).
+Este par de solvers reaproveita o mesmo núcleo de álgebra linear (`physics/linalg.ts`).
+
+## Motor de física — cinemática de veículos (Máquinas)
+
+Terceiro pack (`game/src/physics/vehicle.ts`), **sem álgebra linear** — uma corrida em linha reta
+a partir do repouso é fechada com fórmulas diretas, não um sistema a resolver:
+
+1. **Modelo:** motor (força constante, N — simplificação de uma curva de potência real) + chassi
+   (massa, kg). Sem canvas espacial: o jogador escolhe as duas peças de um catálogo ("loadout"),
+   não desenha nada — decisão deliberada de não forçar a metáfora de construção num pack que não
+   precisa dela.
+2. **Teto de tração:** força efetiva nas rodas = `min(força do motor, μ × massa × g)` (atrito de
+   Coulomb) — um motor mais forte que o grip dos pneus só faz a roda patinar, não acelera mais.
+3. **Resultado:** aceleração = força efetiva / massa; velocidade final = `√(2 × aceleração ×
+   distância)` (cinemática de MRUV, u=0). Meta de velocidade mínima define passa/falha, custo do
+   motor+chassi cruza com orçamento pra estrelas — mesmo padrão dos outros dois packs.
+
+Não compartilha o solver linear dos outros dois packs (não há sistema de equações aqui), mas segue
+o mesmo padrão de rigor: motor de física isolado e testável, `vehicle.test.ts` verifica a fórmula
+de cinemática e o teto de tração separadamente antes de qualquer nível ser jogado.
 
 ## Dados de nível
 
-Níveis são dados estáticos versionados em `game/src/content/levels/*.ts` (Estruturas) e
-`game/src/content/circuitLevels/*.ts` (Circuitos) — não precisam de backend. Um "pack" é uma pasta
-de níveis + o motor de simulação correspondente + uma rota própria (`/structures`, `/circuits`) a
-partir da tela de seleção de pack (`/`).
+Níveis são dados estáticos versionados em `game/src/content/levels/*.ts` (Estruturas),
+`game/src/content/circuitLevels/*.ts` (Circuitos) e `game/src/content/vehicleLevels/*.ts`
+(Máquinas) — não precisam de backend. Um "pack" é uma pasta de níveis + o motor de simulação
+correspondente + uma rota própria (`/structures`, `/circuits`, `/machines`) a partir da tela de
+seleção de pack (`/`).
 
 ## Deploy (ver `06_OPERATIONS.md`)
 
