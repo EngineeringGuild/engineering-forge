@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.3.0
+version: 0.4.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-22
+updated: 2026-07-24
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -18,9 +18,9 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 0 | Inventário do código + decisão reformar/relançar | — | ✅ concluído (DEC-010-004) |
 | 1 | MVP jogável: tutorial + 3 níveis, motor de física de treliças, deploy público | Estruturas (pontes) | ✅ concluído |
 | 2 | Segundo pack (Circuitos) prova o modelo "packs por disciplina" | Circuitos | ✅ concluído (DEC-010-008) |
-| 3 | Expandir packs existentes (mais níveis Estruturas/Circuitos: apoios, cargas móveis, mais componentes) | Estruturas, Circuitos | planejado |
+| 3 | Expandir packs existentes: nível "The Tower" (cabo tração-only) em Estruturas, nível "Splitting the Load" (resistores em paralelo) em Circuitos | Estruturas, Circuitos | ✅ concluído |
 | 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | proposto |
-| 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | condicionado a tração |
+| 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
 
@@ -41,5 +41,19 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
    ponta a ponta no browser (não só testes unitários — ver nota em `02_ARCHITECTURE.md` sobre o
    bug do resistor que só apareceu jogando).
 4. Componentes: fio, dois resistores, lâmpada (carga dada/grátis) — `physics/components.ts`.
+
+## Fase 3 — aprofundar os dois packs (concluída)
+
+1. **Estruturas — "The Tower":** novo material `cable` (tração-only — falha imediatamente se
+   ficar em compressão, sem precisar de resolução não-linear; ver `materials.ts`/`truss.ts`).
+   Nível 4 é uma ponte estaiada (torre + 5 linhas até o tabuleiro): duas ficam em tração real
+   (boas candidatas a cabo, mais barato) e duas ficam em compressão (precisam de aço rígido) —
+   a topologia foi verificada computacionalmente com o próprio solver antes de fixar os números,
+   não só calculada à mão (ver `02_ARCHITECTURE.md`).
+2. **Circuitos — "Splitting the Load":** nível 3 exige combinar dois resistores **em paralelo**
+   pra atingir uma resistência intermediária, já que só o resistor grande sozinho deixa a lâmpada
+   fraca demais. Ensina a técnica de combinação em paralelo diretamente (distinta da Fase 2, que
+   já cobria múltiplas cargas em paralelo, não múltiplos resistores).
+3. Ambos os níveis jogados e validados ponta a ponta no browser antes de commit.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.

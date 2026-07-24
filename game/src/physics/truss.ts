@@ -36,6 +36,9 @@ export interface MemberResult {
   capacity: number;
   utilization: number; // |axialForce| / capacity
   failed: boolean;
+  /** True only when a tension-only member (a cable) failed because it ended
+   * up in compression — distinct from an ordinary overload. */
+  wentSlack: boolean;
 }
 
 export type TrussAnalysis =
@@ -142,12 +145,14 @@ export function analyzeTruss(model: TrussModel): TrussAnalysis {
     const axialForce = geo.k * elongation;
     const capacity = materialCapacity(material);
     const utilization = Math.abs(axialForce) / capacity;
+    const wentSlack = Boolean(material.tensionOnly) && axialForce < 0;
     return {
       memberId: member.id,
       axialForce,
       capacity,
       utilization,
-      failed: utilization > 1,
+      failed: wentSlack || utilization > 1,
+      wentSlack,
     };
   });
 

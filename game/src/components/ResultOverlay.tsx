@@ -43,10 +43,18 @@ export function ResultOverlay({ result, budget, hasNext, onRetry, onNext, onLeve
         {result.status === 'analyzed' && result.anyFailed && (
           <>
             <h2 className="font-display text-2xl text-danger">It collapsed</h2>
-            <p className="mt-2 text-sm text-fg-muted">
-              At least one member (shown in red) took more force than it can carry. Add a member
-              to share the load, or switch it to a stronger material.
-            </p>
+            {result.members.some((m) => m.wentSlack) ? (
+              <p className="mt-2 text-sm text-fg-muted">
+                A cable (shown in red) ended up under compression — cables can only pull, never
+                push. Rework the shape so that member is in tension instead, or rebuild it in a
+                rigid material.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-fg-muted">
+                At least one member (shown in red) took more force than it can carry. Add a member
+                to share the load, or switch it to a stronger material.
+              </p>
+            )}
           </>
         )}
 

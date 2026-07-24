@@ -21,7 +21,8 @@ select) → `/<pack>/level/:levelId` (play).
 - `src/physics/linalg.ts` — shared linear solver (Gaussian elimination) both packs build on.
 - `src/physics/truss.ts` + `truss.test.ts` — Structures: 2D truss statics (direct stiffness
   method), unit-tested against a hand-calculated reference case. `materials.ts` has the buildable
-  materials.
+  materials, including `cable` (tension-only — fails outright if it ends up in compression,
+  rather than a nonlinear slack-cable re-solve).
 - `src/physics/circuit.ts` + `circuit.test.ts` — Circuits: DC nodal analysis (Kirchhoff's Current
   Law) — mathematically the same conductance-matrix structure as the truss stiffness matrix, one
   DOF per node instead of two. `components.ts` has the buildable components + the given bulb load.

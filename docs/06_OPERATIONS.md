@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 06_OPERATIONS
-version: 0.2.0
+version: 0.3.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-19
+updated: 2026-07-24
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -18,6 +18,15 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
   — build em PR, deploy em push para `main`. Secrets por nome (nunca valor):
   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_PROJECT_NAME`.
 - Postura de custo: **R$0** — Cloudflare Pages free tier cobre o MVP inteiro (sem backend, sem DB).
+
+⚠️ **Bloqueio ativo pra deploy real — ação pendente para Caio (HITL):** os secrets
+`CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` já estão configurados no repo, mas o job `deploy`
+falha desde o merge da primeira PR (2026-07-19) com `404 Project not found` — **não existe um
+projeto Cloudflare Pages chamado `engineering-forge` na conta**. O job `build` (o que valida o
+código) continua verde normalmente; só o passo de deploy falha, e vai falhar de novo em todo push
+futuro pra `main` até isso ser resolvido. Precisa de acesso ao dashboard Cloudflare (fora do
+alcance deste agente) para: (a) criar um projeto Pages chamado exatamente `engineering-forge`, ou
+(b) ajustar `projectName:` em `.github/workflows/deploy-cloudflare.yml` pra um projeto existente.
 
 ## Ambientes
 

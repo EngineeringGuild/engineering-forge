@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 01_VISION
-version: 0.3.0
+version: 0.4.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-22
+updated: 2026-07-24
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -29,8 +29,8 @@ conteúdo**, cada um com sua própria mecânica de simulação:
 
 | Pack | Mecânica | Status |
 |---|---|---|
-| **Estruturas** (pontes, torres) | Estática de treliças 2D — método da rigidez direta, tensão/compressão real | **MVP — jogável** (tutorial + 3 níveis) |
-| **Circuitos** | Análise nodal (Lei de Ohm/Kirchhoff), capacidade de potência por componente | **MVP — jogável** (tutorial + 2 níveis) |
+| **Estruturas** (pontes, torres) | Estática de treliças 2D — método da rigidez direta, tensão/compressão real | **MVP — jogável** (tutorial + 4 níveis) |
+| **Circuitos** | Análise nodal (Lei de Ohm/Kirchhoff), capacidade de potência por componente | **MVP — jogável** (tutorial + 3 níveis) |
 | Máquinas/Veículos | Componentes → performance (aceleração, torque, eficiência) | proposto, fase 4 |
 | Algoritmos/Código | Desafios de lógica e complexidade | proposto, fase 5 |
 
