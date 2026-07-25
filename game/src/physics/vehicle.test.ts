@@ -35,4 +35,19 @@ describe('analyzeVehicle', () => {
     expect(result.tractionLimited).toBe(false);
     expect(result.effectiveForce).toBe(ENGINES['engine-large'].force);
   });
+
+  it('the turbo engine (real catalog part) gets traction-limited on the light chassis but not the heavy one', () => {
+    const onLight = analyzeVehicle(ENGINES['engine-turbo'], CHASSIS['chassis-light'], 100);
+    const onHeavy = analyzeVehicle(ENGINES['engine-turbo'], CHASSIS['chassis-heavy'], 100);
+
+    expect(onLight.tractionLimited).toBe(true);
+    expect(onLight.effectiveForce).toBeCloseTo(0.8 * 800 * 9.8, 6);
+
+    expect(onHeavy.tractionLimited).toBe(false);
+    expect(onHeavy.effectiveForce).toBe(ENGINES['engine-turbo'].force);
+
+    // Even capped, the lighter chassis still comes out ahead here: a capped
+    // engine divided by less mass beats an uncapped one divided by more.
+    expect(onLight.finalSpeed).toBeGreaterThan(onHeavy.finalSpeed);
+  });
 });
