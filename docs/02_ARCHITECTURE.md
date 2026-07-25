@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.5.0
+version: 0.6.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-24
+updated: 2026-07-25
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -94,10 +94,19 @@ a partir do repouso é fechada com fórmulas diretas, não um sistema a resolver
 3. **Resultado:** aceleração = força efetiva / massa; velocidade final = `√(2 × aceleração ×
    distância)` (cinemática de MRUV, u=0). Meta de velocidade mínima define passa/falha, custo do
    motor+chassi cruza com orçamento pra estrelas — mesmo padrão dos outros dois packs.
+4. **Inclinação (`inclineDegrees`, opcional, default 0 = plano):** numa rampa, o peso normal (e por
+   isso o teto de tração) encolhe por `cos θ`, e a componente da gravidade ao longo da rampa
+   (`massa × g × sin θ`) subtrai direto da força líquida de tração. Se essa componente vencer, a
+   aceleração fica ≤ 0 e o veículo **estola** (`stalled`) em vez de rastejar — velocidade final
+   travada em 0, não uma raiz de número negativo. Generaliza o teorema já provado da Fase 4b ("o
+   chassi leve nunca perde pro pesado"): o chassi que o motor consegue saturar primeiro nunca é
+   superado pelo que ainda não saturou — testado explicitamente em `vehicle.test.ts` pra rampa,
+   não só pra plano.
 
 Não compartilha o solver linear dos outros dois packs (não há sistema de equações aqui), mas segue
 o mesmo padrão de rigor: motor de física isolado e testável, `vehicle.test.ts` verifica a fórmula
-de cinemática e o teto de tração separadamente antes de qualquer nível ser jogado.
+de cinemática, o teto de tração e o comportamento em rampa separadamente antes de qualquer nível
+ser jogado.
 
 ## Dados de nível
 

@@ -8,6 +8,8 @@ export interface VehicleLevelDef {
   distance: number;
   /** Minimum speed the vehicle must reach at the end of the run, m/s. */
   targetSpeed: number;
+  /** Grade of the run, degrees above horizontal. Omitted/0 = flat. */
+  inclineDegrees?: number;
   budget: number;
   unlockedEngines: string[];
   unlockedChassis: string[];

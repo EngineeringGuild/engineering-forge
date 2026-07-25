@@ -31,7 +31,12 @@ export function runVehicleTest(
   engineId: string,
   chassisId: string,
 ): { analysis: VehicleAnalysis; cost: number; score: VehicleStarResult } {
-  const analysis = analyzeVehicle(ENGINES[engineId], CHASSIS[chassisId], level.distance);
+  const analysis = analyzeVehicle(
+    ENGINES[engineId],
+    CHASSIS[chassisId],
+    level.distance,
+    level.inclineDegrees,
+  );
   const cost = totalVehicleCost(engineId, chassisId);
   const score = scoreVehicleAttempt(level, analysis, cost);
   return { analysis, cost, score };
