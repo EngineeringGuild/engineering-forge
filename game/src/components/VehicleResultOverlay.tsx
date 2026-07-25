@@ -70,6 +70,12 @@ export function VehicleResultOverlay({
             <p className="mt-1 text-sm text-fg-muted">
               {result.analysis.finalSpeed.toFixed(1)} m/s, built for ${result.cost} of ${budget}.
             </p>
+            {result.analysis.tractionLimited && (
+              <p className="mt-2 text-xs text-fg-subtle">
+                Even here, the tires capped the engine's force before all of it reached the road —
+                a stronger engine than this wouldn't have added any more speed.
+              </p>
+            )}
             <div className="mt-3 flex justify-center">
               <Stars count={result.stars} />
             </div>

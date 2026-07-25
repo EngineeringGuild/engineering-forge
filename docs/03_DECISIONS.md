@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 03_DECISIONS
-version: 0.5.0
+version: 0.6.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-24
+updated: 2026-07-25
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -22,3 +22,4 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | DEC-010-008 | 2026-07-22 | Segundo pack — **Circuitos** — jogável: tutorial + 2 níveis, motor de análise nodal (`game/src/physics/circuit.ts`) reaproveitando o solver de álgebra linear da treliça | Prova o modelo "packs por disciplina" da DEC-010-003 com um segundo domínio de simulação real (Lei de Ohm/Kirchhoff). Navegação reestruturada: `/` agora é seleção de pack, `/structures` e `/circuits` cada um com sua lista de níveis. Bug de design pego só ao jogar no browser (não pelo type-check): um resistor queimava a si mesmo no nível "Higher Voltage" — corrigido subindo seu rating de potência; ver `02_ARCHITECTURE.md`. |
 | DEC-010-009 | 2026-07-24 | Aprofunda os dois packs: material **cable** (tração-only, falha imediata em compressão) + nível 4 "The Tower" em Estruturas; nível 3 "Splitting the Load" (resistores em paralelo) em Circuitos | Trabalho autônomo durante período sem supervisão direta do Caio — decisões de conteúdo/design tomadas por critério próprio, seguindo o padrão de rigor já estabelecido (topologia da torre verificada computacionalmente com o próprio solver antes de fixar números; ambos os níveis jogados ponta a ponta no browser antes de commit). Achado operacional relevante durante esta sessão: o job `deploy` do GitHub Actions falha desde o merge da PR #1 (`404 Project not found` no Cloudflare Pages) — ver `06_OPERATIONS.md`, ação pendente e urgente para Caio antes de qualquer deploy real. |
 | DEC-010-010 | 2026-07-24 | Terceiro pack — **Máquinas** — fundação jogável: tutorial "First Drive" ("loadout" de motor+chassi, não canvas espacial), motor de física em cinemática + 2ª lei de Newton + teto de tração (`physics/vehicle.ts`) | Continuação do trabalho autônomo (mesmo contexto da DEC-010-009). Prova o modelo "packs por disciplina" com um terceiro domínio de simulação (mecânica newtoniana, não álgebra linear como os outros dois — decisão deliberada de não forçar a metáfora de canvas numa mecânica que não precisa dela). Escopo enxuto por design (fundação + 1 nível), mais níveis explorando o teto de tração ficam para depois — mesmo padrão incremental das Fases 1 e 2. |
+| DEC-010-011 | 2026-07-25 | Máquinas nível 1 "Full Throttle": novo motor Turbo (8000N) exercita o teto de tração de verdade | Continuação do trabalho autônomo. Antes de fixar os números, provou-se por álgebra (não só testado) que neste modelo o chassi leve nunca perde pro pesado em velocidade final — ambos convergem pro mesmo teto de aceleração `μg` quando limitados por tração, e o leve sempre alcança esse teto com motor mais barato. Descartada a ideia original de uma pegadinha "chassi pesado vence por causa do grip" por não ser sustentada pela física; o nível ensina em vez disso que motor mais forte que o teto de tração é dinheiro desperdiçado — ver `04_ROADMAP.md` Fase 4b. |

@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.5.0
+version: 0.6.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-24
+updated: 2026-07-25
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -72,5 +72,21 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 4. Mais níveis (que exercitem o teto de tração de verdade, não só a fundação) ficam para a
    próxima iteração — escopo desta fase foi deliberadamente enxuto (uma fundação + um nível,
    como as Fases 1 e 2 também começaram).
+
+## Fase 4b — Máquinas exercita o teto de tração (concluída)
+
+1. Novo motor **Turbo Engine** (8000N, caro) — forte o bastante pra saturar o limite de tração
+   do chassi leve (6272N a μ=0.8) mas não o do chassi pesado (9408N).
+2. Nível 1 ("Full Throttle"): só o turbo atinge a meta de 35 m/s (motor pequeno e grande falham
+   nos dois chassis); jogado e validado ponta a ponta no browser nos três casos relevantes
+   (motor grande falha, turbo+leve passa com nota de tração ativa, turbo+pesado passa sem a nota).
+3. **Achado matemático (provado por álgebra antes de tentar forçar um "gotcha" artificial):**
+   neste modelo, o chassi leve **nunca** perde pro pesado em velocidade final — quando limitado
+   por tração, a aceleração de qualquer chassi converge pro mesmo teto `μg`, e o chassi leve
+   sempre alcança esse teto com um motor mais barato. Não existe cenário de "o pesado ganha por
+   causa do grip" dentro de 2 chassis fixos e 1 valor de atrito — a lição real e honesta que o
+   nível ensina é "depois do teto de tração, motor mais forte é dinheiro jogado fora", não uma
+   inversão de chassi. Preferível descartar a ideia inicial (uma pegadinha que a física não
+   sustentava) a forçar números artificiais só pra criar uma reviravolta.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.

@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 01_VISION
-version: 0.5.0
+version: 0.6.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-24
+updated: 2026-07-25
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -31,7 +31,7 @@ conteúdo**, cada um com sua própria mecânica de simulação:
 |---|---|---|
 | **Estruturas** (pontes, torres) | Estática de treliças 2D — método da rigidez direta, tensão/compressão real | **MVP — jogável** (tutorial + 4 níveis) |
 | **Circuitos** | Análise nodal (Lei de Ohm/Kirchhoff), capacidade de potência por componente | **MVP — jogável** (tutorial + 3 níveis) |
-| **Máquinas/Veículos** | 2ª lei de Newton + cinemática + teto de tração (atrito) | **MVP — jogável** (tutorial, escopo enxuto) |
+| **Máquinas/Veículos** | 2ª lei de Newton + cinemática + teto de tração (atrito) | **MVP — jogável** (tutorial + 1 nível) |
 | Algoritmos/Código | Desafios de lógica e complexidade | proposto, fase 5 |
 
 Cada pack usa a mesma moldura de progressão (aprendiz → oficial → mestre-ferreiro) e o mesmo
@@ -93,7 +93,8 @@ Existiam três visões incompatíveis antes desta reforma:
 
 - Sem backend, sem conta de usuário, sem persistência em nuvem — progresso em `localStorage`.
 - Sem blockchain/NFT nesta fase (pode voltar como diferencial *depois* de tração comprovada).
-- Sem os packs de Máquinas/Código ainda — provados o modelo "packs por disciplina" com dois.
+- Sem o pack de Código ainda — provados o modelo "packs por disciplina" com três domínios de
+  simulação diferentes (álgebra linear × 2, mecânica newtoniana).
 - Sem monetização no MVP.
 
 ## Tier GOX (DEC-010-005)

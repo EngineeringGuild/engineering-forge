@@ -40,6 +40,13 @@ export const ENGINES: Record<string, Engine> = {
     force: 3000,
     cost: 1800,
   },
+  'engine-turbo': {
+    id: 'engine-turbo',
+    name: 'Turbo Engine',
+    color: '#E63946',
+    force: 8000,
+    cost: 3200,
+  },
 };
 
 export const CHASSIS: Record<string, Chassis> = {
