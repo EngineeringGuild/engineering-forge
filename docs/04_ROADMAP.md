@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.8.0
+version: 0.9.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-25
@@ -22,6 +22,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | ✅ fundação concluída (DEC-010-010) |
 | 4c | Endurecer pra produção: cobertura de teste na camada de scoring/custo (antes só os solvers de física tinham teste dedicado) | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-012) |
 | 4d | Endurecer pra produção: checagem de layout em viewport estreito (mobile), até então só verificado em desktop | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-013) |
+| 4e | Máquinas nível 2: mecanismo de inclinação/rampa + novo estado de falha "estolado" | Máquinas | ✅ concluído (DEC-010-014) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -121,5 +122,22 @@ permitindo quebra. Corrigido com uma única classe em `Toolbar.tsx`; revalidado 
 fluxos + nos dois níveis de 3 materiais, sem overflow em nenhum. Máquinas usa um grid
 `grid-cols-2` (não a `Toolbar`) e nunca teve o problema, já que colunas de grid dividem a
 largura do contêiner automaticamente. Ver `03_DECISIONS.md` DEC-010-013.
+
+## Fase 4e — Máquinas nível 2, mecanismo de inclinação (concluída)
+
+Máquinas era o pack mais atrasado em conteúdo (só o tutorial + 1 nível, contra 4-5 níveis dos
+outros dois). Nível 2 ("Uphill Battle") introduz um mecanismo genuinamente novo, não só uma
+reparametrização do nível 1: rampa de 15° (`inclineDegrees` em `VehicleLevelDef`, opcional,
+default 0 = comportamento antigo inalterado — coberto por teste). Numa rampa, o teto de tração
+encolhe por `cos θ` (menos peso pressiona a roda) e a gravidade ao longo da rampa (`mg sin θ`)
+subtrai direto da força que sobra pra acelerar — se essa componente vencer, o veículo **estola**
+(não sai do lugar), um estado de falha novo que as pistas planas nunca produziam. Verificado por
+álgebra e depois por script numérico antes de fixar os números do nível: das 6 combinações
+motor×chassi, só turbo+leve atinge a meta de 27 m/s (28,4 m/s); pequeno em qualquer chassi e
+grande+pesado estolam; grande+leve e turbo+pesado se movem mas ficam abaixo da meta (13,9 e 25,7
+m/s). O teorema da Fase 4b ("chassi leve nunca perde pro pesado") foi generalizado e testado
+também pra rampa — continua valendo. Jogado ponta a ponta no browser nas 5 combinações relevantes,
+todos os números batendo com o cálculo prévio, antes de commitar. Ver `03_DECISIONS.md`
+DEC-010-014, `02_ARCHITECTURE.md` §Máquinas.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.

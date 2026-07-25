@@ -31,13 +31,24 @@ export function VehicleResultOverlay({
   onNext,
   onLevelSelect,
 }: Props) {
-  const tooSlow = result.analysis.finalSpeed < targetSpeed;
-  const overBudget = !tooSlow && result.cost > budget;
+  const stalled = result.analysis.stalled;
+  const tooSlow = !stalled && result.analysis.finalSpeed < targetSpeed;
+  const overBudget = !stalled && !tooSlow && result.cost > budget;
   const passed = result.passed;
 
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center">
+        {stalled && (
+          <>
+            <h2 className="font-display text-2xl text-danger">Stalled</h2>
+            <p className="mt-2 text-sm text-fg-muted">
+              Gravity along the grade beat the force reaching the road — it never moved forward at
+              all. Pick a stronger engine or shed some mass.
+            </p>
+          </>
+        )}
+
         {tooSlow && (
           <>
             <h2 className="font-display text-2xl text-danger">Too slow</h2>

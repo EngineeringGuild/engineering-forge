@@ -1,8 +1,9 @@
 import { tutorial } from './tutorial';
 import { level1 } from './level1';
+import { level2 } from './level2';
 import type { VehicleLevelDef } from '../vehicleTypes';
 
-export const VEHICLE_LEVELS: VehicleLevelDef[] = [tutorial, level1];
+export const VEHICLE_LEVELS: VehicleLevelDef[] = [tutorial, level1, level2];
 
 export function getVehicleLevel(id: string): VehicleLevelDef | undefined {
   return VEHICLE_LEVELS.find((level) => level.id === id);

@@ -17,7 +17,14 @@ const level: VehicleLevelDef = {
 };
 
 function fakeAnalysis(finalSpeed: number): VehicleAnalysis {
-  return { effectiveForce: 0, tractionLimit: 0, tractionLimited: false, acceleration: 0, finalSpeed };
+  return {
+    effectiveForce: 0,
+    tractionLimit: 0,
+    tractionLimited: false,
+    acceleration: 0,
+    finalSpeed,
+    stalled: false,
+  };
 }
 
 describe('totalVehicleCost', () => {
@@ -85,5 +92,16 @@ describe('runVehicleTest', () => {
     const { score } = runVehicleTest(level, 'engine-large', 'chassis-light');
     expect(score.passed).toBe(false);
     expect(score.stars).toBe(0);
+  });
+
+  it('passes inclineDegrees through to the solver and reports a stall as a fail, not a crash', () => {
+    // Small engine (1500N) can't beat gravity's pull on an 800kg chassis at
+    // 15 degrees (mg sin(theta) ~= 1976N) — the real solver should stall,
+    // and that must fail the level cleanly (finalSpeed 0 < any positive target).
+    const gradedLevel: VehicleLevelDef = { ...level, inclineDegrees: 15 };
+    const { analysis, score } = runVehicleTest(gradedLevel, 'engine-small', 'chassis-light');
+    expect(analysis.stalled).toBe(true);
+    expect(analysis.finalSpeed).toBe(0);
+    expect(score.passed).toBe(false);
   });
 });

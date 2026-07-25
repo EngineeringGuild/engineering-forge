@@ -50,4 +50,40 @@ describe('analyzeVehicle', () => {
     // engine divided by less mass beats an uncapped one divided by more.
     expect(onLight.finalSpeed).toBeGreaterThan(onHeavy.finalSpeed);
   });
+
+  it('is unaffected by inclineDegrees defaulting to 0 (flat, same as omitting it)', () => {
+    const withDefault = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100);
+    const explicitFlat = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100, 0);
+    expect(explicitFlat).toEqual(withDefault);
+  });
+
+  it('shrinks the traction limit and adds a gravity penalty on a grade', () => {
+    const flat = analyzeVehicle(ENGINES['engine-turbo'], CHASSIS['chassis-light'], 80, 0);
+    const graded = analyzeVehicle(ENGINES['engine-turbo'], CHASSIS['chassis-light'], 80, 15);
+    const theta = (15 * Math.PI) / 180;
+    expect(graded.tractionLimit).toBeCloseTo(flat.tractionLimit * Math.cos(theta), 6);
+    expect(graded.acceleration).toBeLessThan(flat.acceleration);
+    expect(graded.stalled).toBe(false);
+  });
+
+  it('stalls (acceleration <= 0, finalSpeed 0) when gravity along the slope beats the driving force', () => {
+    // Small engine (1500N) on a 15° grade: gravity component alone is
+    // 800*9.8*sin(15°) ≈ 1976N, already more than the engine can deliver.
+    const result = analyzeVehicle(ENGINES['engine-small'], CHASSIS['chassis-light'], 80, 15);
+    expect(result.stalled).toBe(true);
+    expect(result.acceleration).toBeLessThanOrEqual(0);
+    expect(result.finalSpeed).toBe(0);
+  });
+
+  it('generalizes "light chassis never loses" to a grade: whichever chassis the engine saturates gives the best (or tied) acceleration', () => {
+    // Turbo (8000N) saturates the light chassis' shrunk traction limit at 15°
+    // but not the heavy one's — same theorem as flat ground, just scaled by
+    // cos/sin(theta): a chassis at its traction ceiling can never be beaten
+    // by one that hasn't reached its own ceiling yet.
+    const light = analyzeVehicle(ENGINES['engine-turbo'], CHASSIS['chassis-light'], 80, 15);
+    const heavy = analyzeVehicle(ENGINES['engine-turbo'], CHASSIS['chassis-heavy'], 80, 15);
+    expect(light.tractionLimited).toBe(true);
+    expect(heavy.tractionLimited).toBe(false);
+    expect(light.finalSpeed).toBeGreaterThan(heavy.finalSpeed);
+  });
 });
