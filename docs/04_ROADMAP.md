@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.6.0
+version: 0.7.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-25
@@ -20,6 +20,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 2 | Segundo pack (Circuitos) prova o modelo "packs por disciplina" | Circuitos | ✅ concluído (DEC-010-008) |
 | 3 | Expandir packs existentes: nível "The Tower" (cabo tração-only) em Estruturas, nível "Splitting the Load" (resistores em paralelo) em Circuitos | Estruturas, Circuitos | ✅ concluído |
 | 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | ✅ fundação concluída (DEC-010-010) |
+| 4c | Endurecer pra produção: cobertura de teste na camada de scoring/custo (antes só os solvers de física tinham teste dedicado) | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-012) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -88,5 +89,21 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
    nível ensina é "depois do teto de tração, motor mais forte é dinheiro jogado fora", não uma
    inversão de chassi. Preferível descartar a ideia inicial (uma pegadinha que a física não
    sustentava) a forçar números artificiais só pra criar uma reviravolta.
+
+## Fase 4c — cobertura de teste na camada de scoring (concluída)
+
+Até aqui, só os motores de física (`truss.ts`, `circuit.ts`, `vehicle.ts`) tinham teste unitário
+dedicado — a camada que transforma um nível + a construção do jogador num modelo pro solver, e
+que pontua o resultado em estrelas (`game/build.ts`, `game/circuitBuild.ts`,
+`game/vehicleBuild.ts`), não tinha nenhum. Adicionados `build.test.ts`, `circuitBuild.test.ts`,
+`vehicleBuild.test.ts` — 17 testes cobrindo: montagem do modelo (membros do tabuleiro/carga dada
+sempre usam o material/componente correto independente do que estiver salvo neles), cálculo de
+comprimento/custo (só conta peças construídas pelo jogador, tabuleiro/carga são grátis), e a
+lógica de estrelas (0 estrelas se não passou ou estourou orçamento — mesmo que a checagem
+estrutural/de velocidade tenha passado — 3/2/1 conforme a razão custo/orçamento). Um erro real foi
+pego escrevendo estes testes: a primeira versão do teste de integração de `runVehicleTest` afirmava
+que um combo passaria, mas o orçamento da fixture usada era baixo demais pro custo real do combo —
+corrigido antes de commitar, mesmo padrão de rigor "verificar antes de confiar" aplicado ao próprio
+código de teste, não só ao conteúdo do jogo.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
