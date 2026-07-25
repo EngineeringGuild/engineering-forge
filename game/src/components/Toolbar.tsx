@@ -34,7 +34,7 @@ export function Toolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-xl bg-surface-1 border border-border px-4 py-3">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {unlockedMaterials.map((id) => {
           const material = materials[id];
           const active = selectedMaterial === id;
