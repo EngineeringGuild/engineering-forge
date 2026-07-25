@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.7.0
+version: 0.8.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-25
@@ -21,6 +21,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 3 | Expandir packs existentes: nível "The Tower" (cabo tração-only) em Estruturas, nível "Splitting the Load" (resistores em paralelo) em Circuitos | Estruturas, Circuitos | ✅ concluído |
 | 4 | Terceiro pack (Máquinas/Veículos) — reaproveita ideias de física do GDD original | Máquinas | ✅ fundação concluída (DEC-010-010) |
 | 4c | Endurecer pra produção: cobertura de teste na camada de scoring/custo (antes só os solvers de física tinham teste dedicado) | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-012) |
+| 4d | Endurecer pra produção: checagem de layout em viewport estreito (mobile), até então só verificado em desktop | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-013) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -105,5 +106,20 @@ pego escrevendo estes testes: a primeira versão do teste de integração de `ru
 que um combo passaria, mas o orçamento da fixture usada era baixo demais pro custo real do combo —
 corrigido antes de commitar, mesmo padrão de rigor "verificar antes de confiar" aplicado ao próprio
 código de teste, não só ao conteúdo do jogo.
+
+## Fase 4d — checagem de layout mobile (concluída)
+
+Até aqui o jogo só tinha sido verificado em viewports de desktop. Testado num viewport de
+375×667 (iPhone SE, o mais estreito comum) nos 7 fluxos principais (seleção de pack, seleção de
+nível e tela de jogo de cada um dos 3 packs) medindo `document.documentElement.scrollWidth` vs
+`clientWidth` — não só assumindo que as classes responsivas do Tailwind funcionavam. Achado:
+qualquer nível com 3 materiais desbloqueados na `Toolbar` (compartilhada por Estruturas e
+Circuitos) estourava a largura da tela (ex.: tutorial de Circuitos, 448px; nível 4 de Estruturas
+"The Tower", 419px, ambos contra um viewport de 375px) — a linha de botões de material nunca
+quebrava linha porque faltava `flex-wrap` no contêiner interno, mesmo o contêiner externo já
+permitindo quebra. Corrigido com uma única classe em `Toolbar.tsx`; revalidado nos mesmos 7
+fluxos + nos dois níveis de 3 materiais, sem overflow em nenhum. Máquinas usa um grid
+`grid-cols-2` (não a `Toolbar`) e nunca teve o problema, já que colunas de grid dividem a
+largura do contêiner automaticamente. Ver `03_DECISIONS.md` DEC-010-013.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
