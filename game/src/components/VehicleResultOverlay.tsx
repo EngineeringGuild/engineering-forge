@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+import { Stars } from './Stars';
 import type { VehicleTestResult } from '../state/vehicleStore';
 
 interface Props {
@@ -8,18 +10,6 @@ interface Props {
   onRetry: () => void;
   onNext: () => void;
   onLevelSelect: () => void;
-}
-
-const STAR_CHARS = ['☆', '☆', '☆'] as const;
-
-function Stars({ count }: { count: number }) {
-  return (
-    <div className="text-3xl tracking-widest text-warning">
-      {STAR_CHARS.map((_, i) => (
-        <span key={i}>{i < count ? '★' : '☆'}</span>
-      ))}
-    </div>
-  );
 }
 
 export function VehicleResultOverlay({
@@ -35,23 +25,50 @@ export function VehicleResultOverlay({
   const tooSlow = !stalled && result.analysis.finalSpeed < targetSpeed;
   const overBudget = !stalled && !tooSlow && result.cost > budget;
   const passed = result.passed;
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [result]);
+
+  const heading = stalled
+    ? { text: 'Stalled', className: 'text-danger' }
+    : tooSlow
+      ? { text: 'Too slow', className: 'text-danger' }
+      : overBudget
+        ? { text: 'Over budget', className: 'text-warning' }
+        : passed
+          ? { text: 'Target reached!', className: 'text-success' }
+          : null;
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="result-heading"
+    >
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center">
+        {heading && (
+          <h2
+            id="result-heading"
+            ref={headingRef}
+            tabIndex={-1}
+            className={`font-display text-2xl outline-none ${heading.className}`}
+          >
+            {heading.text}
+          </h2>
+        )}
+
         {stalled && (
-          <>
-            <h2 className="font-display text-2xl text-danger">Stalled</h2>
-            <p className="mt-2 text-sm text-fg-muted">
-              Gravity along the grade beat the force reaching the road — it never moved forward at
-              all. Pick a stronger engine or shed some mass.
-            </p>
-          </>
+          <p className="mt-2 text-sm text-fg-muted">
+            Gravity along the grade beat the force reaching the road — it never moved forward at
+            all. Pick a stronger engine or shed some mass.
+          </p>
         )}
 
         {tooSlow && (
           <>
-            <h2 className="font-display text-2xl text-danger">Too slow</h2>
             <p className="mt-2 text-sm text-fg-muted">
               Reached {result.analysis.finalSpeed.toFixed(1)} m/s — short of the{' '}
               {targetSpeed} m/s target. Pick a stronger engine or shed some mass.
@@ -66,18 +83,14 @@ export function VehicleResultOverlay({
         )}
 
         {!tooSlow && overBudget && (
-          <>
-            <h2 className="font-display text-2xl text-warning">Over budget</h2>
-            <p className="mt-2 text-sm text-fg-muted">
-              It reaches {result.analysis.finalSpeed.toFixed(1)} m/s — but cost ${result.cost} against
-              a ${budget} budget.
-            </p>
-          </>
+          <p className="mt-2 text-sm text-fg-muted">
+            It reaches {result.analysis.finalSpeed.toFixed(1)} m/s — but cost ${result.cost} against
+            a ${budget} budget.
+          </p>
         )}
 
         {passed && (
           <>
-            <h2 className="font-display text-2xl text-success">Target reached!</h2>
             <p className="mt-1 text-sm text-fg-muted">
               {result.analysis.finalSpeed.toFixed(1)} m/s, built for ${result.cost} of ${budget}.
             </p>

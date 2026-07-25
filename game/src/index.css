@@ -24,7 +24,10 @@
   --card: #11151b;
   --fg: #f2f6fa;
   --fg-muted: #aeb9c6;
-  --fg-subtle: #6b7686;
+  /* Bumped from the vendored #6b7686 (~3.8-4.1:1 on bg/surface-1) — every
+     use of this token is text-xs/text-sm, which needs 4.5:1 for WCAG AA.
+     #788393 clears 4.5:1 against both backgrounds this token appears on. */
+  --fg-subtle: #788393;
   --border: #1e2531;
   --input: #1e2531;
   --ring: #19c2d6;

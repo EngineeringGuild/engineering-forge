@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.9.0
+version: 0.10.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-25
@@ -23,6 +23,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4c | Endurecer pra produção: cobertura de teste na camada de scoring/custo (antes só os solvers de física tinham teste dedicado) | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-012) |
 | 4d | Endurecer pra produção: checagem de layout em viewport estreito (mobile), até então só verificado em desktop | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-013) |
 | 4e | Máquinas nível 2: mecanismo de inclinação/rampa + novo estado de falha "estolado" | Máquinas | ✅ concluído (DEC-010-014) |
+| 4f | Endurecer pra produção: passe de acessibilidade no chrome da UI (contraste, semântica de diálogo, `sr-only` em estado bloqueado/estrelas) — canvas SVG (posicionar/conectar nós por teclado) explicitamente **fora de escopo**, registrado como lacuna futura | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-015) — canvas keyboard-nav **não implementado**, ver nota abaixo |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -139,5 +140,35 @@ m/s). O teorema da Fase 4b ("chassi leve nunca perde pro pesado") foi generaliza
 também pra rampa — continua valendo. Jogado ponta a ponta no browser nas 5 combinações relevantes,
 todos os números batendo com o cálculo prévio, antes de commitar. Ver `03_DECISIONS.md`
 DEC-010-014, `02_ARCHITECTURE.md` §Máquinas.
+
+## Fase 4f — passe de acessibilidade no chrome da UI (concluída, com lacuna registrada)
+
+Escopo deliberadamente limitado ao "chrome" da interface (botões, textos, cores, semântica de
+diálogo) — não ao canvas de construção em si:
+
+1. **Contraste:** o token `--fg-subtle` (usado só em `text-xs`/`text-sm` — dica de custo por
+   peça, rodapé de instruções, notas de tração) só batia ~3,8-4,1:1 contra os fundos escuros do
+   skin, abaixo do 4,5:1 exigido pelo WCAG AA pra texto normal. Verificado por cálculo de
+   luminância relativa (fórmula WCAG, script), não só visualmente; subiu pra `#788393` (4,5-4,9:1
+   contra `bg`/`surface-1`).
+2. **Diálogos de resultado:** os três overlays (`ResultOverlay`, `CircuitResultOverlay`,
+   `VehicleResultOverlay`) ganharam `role="dialog"` + `aria-modal="true"` + `aria-labelledby` +
+   foco automático no heading ao montar — um usuário de leitor de tela agora é avisado do
+   resultado assim que ele aparece, não só quem enxerga a animação/cor.
+3. **Estrelas e estado bloqueado:** consolidados dois componentes até então triplicados
+   (`Stars`, usado pelos 3 overlays; `LevelSelectList`, usado pelas 3 telas de seleção de nível) —
+   a duplicação era exatamente o motivo pelo qual a correção de acessibilidade precisava ser
+   feita 3x; virou 1x. `Stars` ganhou `role="img"` + `aria-label` ("3 out of 3 stars"); itens de
+   nível bloqueados ganharam texto `sr-only` ("locked") — antes o único sinal de bloqueio era o
+   emoji 🔒, puramente decorativo pra quem não enxerga a tela.
+4. **Foco de teclado:** verificado no browser (Playwright) que o outline padrão do navegador já
+   é visível contra o fundo escuro do skin — não precisou de estilo customizado.
+5. **Lacuna explicitamente fora de escopo, não esquecida:** navegação por teclado no canvas SVG
+   (posicionar um nó, conectar dois nós, remover um membro — hoje só via clique/toque do mouse)
+   é um problema de design de interação bem maior e diferente — exigiria repensar o modelo de
+   interação inteiro do editor de treliça/circuito, não uma correção pontual. Registrado aqui
+   como trabalho futuro real, não como um item esquecido silenciosamente.
+
+Ver `03_DECISIONS.md` DEC-010-015.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
