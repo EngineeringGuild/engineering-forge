@@ -2,9 +2,10 @@ import { tutorial } from './tutorial';
 import { level1 } from './level1';
 import { level2 } from './level2';
 import { level3 } from './level3';
+import { level4 } from './level4';
 import type { CircuitLevelDef } from '../circuitTypes';
 
-export const CIRCUIT_LEVELS: CircuitLevelDef[] = [tutorial, level1, level2, level3];
+export const CIRCUIT_LEVELS: CircuitLevelDef[] = [tutorial, level1, level2, level3, level4];
 
 export function getCircuitLevel(id: string): CircuitLevelDef | undefined {
   return CIRCUIT_LEVELS.find((level) => level.id === id);

@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.6.0
+version: 0.7.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-25
+updated: 2026-07-26
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -77,6 +77,16 @@ Segundo pack, mesma ideia (`game/src/physics/circuit.ts`): a matriz de condutân
    10 W) — só apareceu jogando de ponta a ponta no browser, não no type-check. Corrigido subindo o
    rating do resistor grande; mantido aqui como lembrete de que os testes automatizados verificam a
    matemática do solver, não os números de cada nível — isso exige jogar.
+5. **Cargas em série vs. em paralelo:** até o nível 3, toda lâmpada dada era ou a única carga do
+   circuito, ou uma de várias em ramos **independentes** (cada uma com tensão de fonte inteira
+   sobre si, ramo próprio de volta à bateria — nível 1 "Two Bulbs"). O nível 4 ("One Path, Two
+   Bulbs") introduz o caso oposto: duas lâmpadas no **mesmo caminho de corrente**, uma depois da
+   outra — a mesma corrente atravessa as duas, e suas resistências se somam nesse caminho (3+3=6Ω),
+   ao contrário do caso paralelo onde cada carga via a tensão cheia da fonte. Resistor pequeno
+   (5Ω), que funcionava no tutorial pra uma lâmpada só, agora estoura as duas por excesso de
+   corrente — resistor grande (15Ω) é o que mantém ambas na faixa segura. Verificado por script
+   numérico antes de fixar sourceVoltage/valores (ver DEC-010-016), depois jogado ponta a ponta no
+   browser confirmando queima com resistor pequeno e "acende" com 3 estrelas usando o grande.
 
 Este par de solvers reaproveita o mesmo núcleo de álgebra linear (`physics/linalg.ts`).
 
