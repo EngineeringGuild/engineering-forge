@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.9.0
+version: 0.10.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-28
@@ -130,6 +130,15 @@ a partir do repouso é fechada com fórmulas diretas, não um sistema a resolver
    quanto pra F=ma — um combo motor+chassi que vencia uma distância facilmente sem carga pode
    falhar com ela a bordo, mesmo em pista plana (sem envolver o teto de tração nem a inclinação,
    que já têm suas próprias lições nos níveis anteriores).
+6. **Janela de velocidade (`maxSpeed`, opcional):** até aqui, todo nível só definia um **piso** de
+   velocidade (`targetSpeed`) — rápido demais nunca foi punido, só caro demais. `maxSpeed` (quando
+   definido) impõe também um **teto**: passar dele falha o nível tanto quanto ficar abaixo do piso.
+   Isso é uma dimensão de falha genuinamente nova (nenhum dos três packs tinha "rápido/forte
+   demais" como motivo de reprovação até agora, só de custo) e uma versão mais forte da lição do
+   teto de tração: aqui o motor mais forte não é só dinheiro desperdiçado, é a escolha **errada**.
+   `scoreVehicleAttempt` (`game/vehicleBuild.ts`) trata a janela como `[targetSpeed, maxSpeed ??
+   Infinity]`, ambos os limites inclusivos — omitir `maxSpeed` preserva o comportamento de todo
+   nível anterior (só piso, sem teto).
 
 Não compartilha o solver linear dos outros dois packs (não há sistema de equações aqui), mas segue
 o mesmo padrão de rigor: motor de física isolado e testável, `vehicle.test.ts` verifica a fórmula

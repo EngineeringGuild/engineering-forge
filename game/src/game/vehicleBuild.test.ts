@@ -72,6 +72,29 @@ describe('scoreVehicleAttempt', () => {
   it('passing the speed target exactly at the threshold counts as a pass', () => {
     expect(scoreVehicleAttempt(level, fakeAnalysis(level.targetSpeed), 50).passed).toBe(true);
   });
+
+  it('has no speed ceiling when maxSpeed is omitted — arbitrarily fast still passes', () => {
+    expect(scoreVehicleAttempt(level, fakeAnalysis(1000), 50).passed).toBe(true);
+  });
+
+  it('fails when finalSpeed exceeds maxSpeed, even though it clears targetSpeed', () => {
+    const windowedLevel: VehicleLevelDef = { ...level, maxSpeed: 25 };
+    expect(scoreVehicleAttempt(windowedLevel, fakeAnalysis(30), 50)).toEqual({
+      passed: false,
+      cost: 50,
+      stars: 0,
+    });
+  });
+
+  it('passes when finalSpeed lands inside [targetSpeed, maxSpeed]', () => {
+    const windowedLevel: VehicleLevelDef = { ...level, maxSpeed: 25 };
+    expect(scoreVehicleAttempt(windowedLevel, fakeAnalysis(22), 50).passed).toBe(true);
+  });
+
+  it('treats maxSpeed as inclusive, same as targetSpeed', () => {
+    const windowedLevel: VehicleLevelDef = { ...level, maxSpeed: 25 };
+    expect(scoreVehicleAttempt(windowedLevel, fakeAnalysis(25), 50).passed).toBe(true);
+  });
 });
 
 describe('runVehicleTest', () => {

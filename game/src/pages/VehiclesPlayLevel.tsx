@@ -58,8 +58,17 @@ export function VehiclesPlayLevel() {
       )}
 
       <p className="rounded-xl border border-border bg-surface-1 px-4 py-3 text-center text-sm text-fg-muted">
-        Reach <span className="text-fg">{level.targetSpeed} m/s</span> over a{' '}
-        <span className="text-fg">{level.distance}m</span> straight run, from a stop.
+        {level.maxSpeed !== undefined ? (
+          <>
+            Land between <span className="text-fg">{level.targetSpeed}</span> and{' '}
+            <span className="text-fg">{level.maxSpeed} m/s</span>
+          </>
+        ) : (
+          <>
+            Reach <span className="text-fg">{level.targetSpeed} m/s</span>
+          </>
+        )}{' '}
+        over a <span className="text-fg">{level.distance}m</span> straight run, from a stop.
         {Boolean(level.inclineDegrees) && (
           <>
             {' '}
@@ -143,6 +152,7 @@ export function VehiclesPlayLevel() {
         <VehicleResultOverlay
           result={testResult}
           targetSpeed={level.targetSpeed}
+          maxSpeed={level.maxSpeed}
           budget={level.budget}
           hasNext={Boolean(next)}
           onRetry={resetBuild}

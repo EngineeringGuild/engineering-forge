@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.13.0
+version: 0.14.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-28
@@ -27,6 +27,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4g | Circuitos nível 4: primeira topologia com duas cargas em série (mesmo caminho de corrente), não em ramos independentes | Circuitos | ✅ concluído (DEC-010-016) |
 | 4h | Máquinas nível 3: mecanismo de carga dada (`payloadMass`) — primeiro elemento dado/fixo do pack, mesmo padrão do tabuleiro/lâmpada dos outros dois | Máquinas | ✅ concluído (DEC-010-017) |
 | 4i | Estruturas nível 5 "The King Post": material compressão-only (`strut`), espelho do cabo tração-only | Estruturas | ✅ concluído (DEC-010-018) |
+| 4j | Máquinas nível 4 "The Sweet Spot": mecanismo de janela de velocidade (`maxSpeed`) — primeira vez que "rápido demais" reprova, não só "devagar/caro demais" | Máquinas | ✅ concluído (DEC-010-019) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -228,5 +229,22 @@ pontalete) confirmando que cada material falha na direção errada com sua próp
 distinta na UI (`ResultOverlay.tsx` ganhou um branch de mensagem específico pra `pulledApart`,
 espelhando o já existente pra `wentSlack`). Ver `03_DECISIONS.md` DEC-010-018,
 `02_ARCHITECTURE.md` §Estruturas.
+
+## Fase 4j — Máquinas nível 4, janela de velocidade (concluída)
+
+Até aqui, todo nível de Máquinas (e dos outros dois packs) só definia um **piso** — rápido demais
+nunca reprovava, só custava mais caro. Nível 4 ("The Sweet Spot") introduz `maxSpeed` (opcional):
+quando definido, ultrapassar esse teto reprova o nível tanto quanto ficar abaixo do piso — a
+primeira dimensão de falha "forte/rápido demais" em qualquer um dos três packs, e uma versão mais
+forte da lição do teto de tração (aqui o motor mais forte não é só dinheiro desperdiçado, é a
+escolha errada). Verificado por script numérico antes de fixar os números: das 6 combinações
+motor×chassi em pista plana de 100m, só motor grande + chassi pesado cai dentro da janela [20,25]
+m/s (22,36 m/s) — motor pequeno fica abaixo do piso em ambos os chassis (19,4 e 15,8 m/s), motor
+grande+chassi leve (27,4 m/s) e motor turbo em qualquer chassi (36,5 e 39,6 m/s) ultrapassam o
+teto. `maxSpeed` omitido preserva o comportamento de todo nível anterior (só piso, sem teto) —
+coberto por teste. Jogado ponta a ponta no browser nas 4 combinações relevantes (devagar demais,
+dentro da janela com 3 estrelas, duas variações "rápido demais" cada com sua própria mensagem),
+todos os números batendo com o cálculo prévio. Ver `03_DECISIONS.md` DEC-010-019,
+`02_ARCHITECTURE.md` §Máquinas.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
