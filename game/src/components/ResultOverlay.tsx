@@ -66,6 +66,12 @@ export function ResultOverlay({ result, budget, hasNext, onRetry, onNext, onLeve
                 push. Rework the shape so that member is in tension instead, or rebuild it in a
                 rigid material.
               </p>
+            ) : result.members.some((m) => m.pulledApart) ? (
+              <p className="mt-2 text-sm text-fg-muted">
+                A strut (shown in red) ended up under tension — struts rest in place and can only
+                push, never pull. Rework the shape so that member is in compression instead, or
+                rebuild it in a rigid material.
+              </p>
             ) : (
               <p className="mt-2 text-sm text-fg-muted">
                 At least one member (shown in red) took more force than it can carry. Add a member

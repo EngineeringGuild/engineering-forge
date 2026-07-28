@@ -23,6 +23,11 @@ export interface Material {
    * a nonlinear slack-cable re-solve, the same style of simplification as
    * the unmodeled buckling above. */
   tensionOnly?: boolean;
+  /** The mirror case: a strut resting in a socket rather than fastened at
+   * its ends — it can only push, never pull. A compression-only member that
+   * ends up in tension fails outright regardless of magnitude, the same
+   * hard-fail simplification as tensionOnly above, just the opposite sign. */
+  compressionOnly?: boolean;
 }
 
 export const MATERIALS: Record<string, Material> = {
@@ -53,6 +58,16 @@ export const MATERIALS: Record<string, Material> = {
     allowableStress: 600e6,
     costPerMeter: 8,
     tensionOnly: true,
+  },
+  strut: {
+    id: 'strut',
+    name: 'Strut',
+    color: '#7A8B99',
+    youngsModulus: 11e9,
+    area: 0.01,
+    allowableStress: 40e6,
+    costPerMeter: 4,
+    compressionOnly: true,
   },
 };
 

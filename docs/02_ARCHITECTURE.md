@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.8.0
+version: 0.9.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-26
+updated: 2026-07-28
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -55,6 +55,17 @@ Núcleo do jogo, isolado de UI e testável (`game/src/physics/`):
    do nível, revelando que as duas linhas até os pontos carregados ficam em tração (boas para
    cabo) mas as duas linhas até as ancoragens ficam em **compressão** (precisam de aço) — o
    oposto do que a intuição "toda diagonal de uma torre é um estai em tração" sugeriria.
+7. **Material compressão-only (`strut`), o espelho do cabo:** um escoramento apoiado num encaixe,
+   não fixado nas pontas — só empurra, nunca puxa. Mesma filosofia de simplificação do `cable`
+   (falha imediata e direta em vez de re-resolver um problema não-linear), só invertida: força
+   axial positiva (tração) num material `compressionOnly` = falha imediata, independente da
+   magnitude. Introduzido junto com o nível 5 "The King Post" (viga com um pontalete vertical
+   acima do ponto de carga): verificado rodando o solver antes de fixar os materiais, confirmando
+   que as duas pernas inclinadas até as ancoragens ficam em **compressão** (boas para strut) e o
+   pontalete vertical até o ponto de carga fica em **tração** (bom para cabo) — os papéis exatamente
+   opostos das linhas de "The Tower". Verificado por teste unitário (`truss.test.ts`) tanto no caso
+   "strut em compressão, ok" quanto "strut em tração, falha mesmo com carga mínima" — o par de
+   testes espelha exatamente os do cabo.
 
 ## Motor de física — análise nodal de circuitos DC
 

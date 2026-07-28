@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.12.0
+version: 0.13.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-26
+updated: 2026-07-28
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -26,6 +26,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4f | Endurecer pra produção: passe de acessibilidade no chrome da UI (contraste, semântica de diálogo, `sr-only` em estado bloqueado/estrelas) — canvas SVG (posicionar/conectar nós por teclado) explicitamente **fora de escopo**, registrado como lacuna futura | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-015) — canvas keyboard-nav **não implementado**, ver nota abaixo |
 | 4g | Circuitos nível 4: primeira topologia com duas cargas em série (mesmo caminho de corrente), não em ramos independentes | Circuitos | ✅ concluído (DEC-010-016) |
 | 4h | Máquinas nível 3: mecanismo de carga dada (`payloadMass`) — primeiro elemento dado/fixo do pack, mesmo padrão do tabuleiro/lâmpada dos outros dois | Máquinas | ✅ concluído (DEC-010-017) |
+| 4i | Estruturas nível 5 "The King Post": material compressão-only (`strut`), espelho do cabo tração-only | Estruturas | ✅ concluído (DEC-010-018) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -208,5 +209,24 @@ bem acima da força de qualquer motor do catálogo). Só motor turbo + chassi le
 32 m/s (36,5 m/s); turbo + chassi pesado chega perto mas fica abaixo (31,6 m/s). Jogado ponta a
 ponta no browser nas 4 combinações relevantes, todos os números batendo com o cálculo prévio. Ver
 `03_DECISIONS.md` DEC-010-017, `02_ARCHITECTURE.md` §Máquinas.
+
+## Fase 4i — Estruturas nível 5, material compressão-only (concluída)
+
+Novo material **`strut`**: o espelho exato do `cable` (DEC-010-009) — em vez de tração-only, é
+**compressão-only** (um escoramento apoiado num encaixe, não fixado nas pontas, então só empurra,
+nunca puxa). Mesma filosofia de simplificação (falha imediata e direta em vez de re-resolver um
+problema não-linear), só invertida: força axial positiva (tração) num material `compressionOnly`
+= falha imediata, independente da magnitude. Nível 5 ("The King Post") usa uma topologia clássica
+de engenharia real — uma viga com um pontalete vertical acima do ponto de carga e duas pernas
+inclinadas até as ancoragens — verificada rodando o próprio solver antes de fixar materiais/
+números, mesmo processo do "The Tower" (DEC-010-009): as duas pernas ficam em **compressão**
+(-33.333N cada, boas para `strut`) e o pontalete vertical fica em **tração** (+40.000N, bom pra
+`cable`) — os papéis exatamente opostos das linhas de "The Tower", um contraste didático
+deliberado que fecha o par cabo/strut como conceitos complementares. Solução correta custa $64 de
+$110 (3 estrelas); testado também trocando os materiais de propósito (cabo nas pernas, strut no
+pontalete) confirmando que cada material falha na direção errada com sua própria mensagem
+distinta na UI (`ResultOverlay.tsx` ganhou um branch de mensagem específico pra `pulledApart`,
+espelhando o já existente pra `wentSlack`). Ver `03_DECISIONS.md` DEC-010-018,
+`02_ARCHITECTURE.md` §Estruturas.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
