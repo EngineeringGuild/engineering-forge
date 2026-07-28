@@ -104,4 +104,15 @@ describe('runVehicleTest', () => {
     expect(analysis.finalSpeed).toBe(0);
     expect(score.passed).toBe(false);
   });
+
+  it('passes payloadMass through to the solver, dragging down a combo that would otherwise pass', () => {
+    // engine-large + chassis-light clears a 25 m/s target unloaded
+    // (~27.4 m/s), but not with a 400kg crate aboard (~22.4 m/s).
+    const unloadedLevel: VehicleLevelDef = { ...level, targetSpeed: 25, budget: 2500 };
+    const loadedLevel: VehicleLevelDef = { ...unloadedLevel, payloadMass: 400 };
+    const unloaded = runVehicleTest(unloadedLevel, 'engine-large', 'chassis-light');
+    const loaded = runVehicleTest(loadedLevel, 'engine-large', 'chassis-light');
+    expect(unloaded.score.passed).toBe(true);
+    expect(loaded.score.passed).toBe(false);
+  });
 });

@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.7.0
+version: 0.8.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-26
@@ -112,6 +112,13 @@ a partir do repouso é fechada com fórmulas diretas, não um sistema a resolver
    chassi leve nunca perde pro pesado"): o chassi que o motor consegue saturar primeiro nunca é
    superado pelo que ainda não saturou — testado explicitamente em `vehicle.test.ts` pra rampa,
    não só pra plano.
+5. **Carga dada (`payloadMass`, opcional, default 0 = nenhuma):** primeira vez que Máquinas tem um
+   elemento **dado/fixo** que o jogador precisa acomodar, não escolher — mesmo padrão do tabuleiro
+   com carga em Estruturas e da lâmpada em Circuitos, aplicado aqui à massa em vez de um elemento
+   espacial/elétrico. A massa da carga soma direto à massa do chassi, tanto pro teto de tração
+   quanto pra F=ma — um combo motor+chassi que vencia uma distância facilmente sem carga pode
+   falhar com ela a bordo, mesmo em pista plana (sem envolver o teto de tração nem a inclinação,
+   que já têm suas próprias lições nos níveis anteriores).
 
 Não compartilha o solver linear dos outros dois packs (não há sistema de equações aqui), mas segue
 o mesmo padrão de rigor: motor de física isolado e testável, `vehicle.test.ts` verifica a fórmula
