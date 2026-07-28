@@ -17,7 +17,10 @@ export function scoreVehicleAttempt(
   analysis: VehicleAnalysis,
   cost: number,
 ): VehicleStarResult {
-  const passed = analysis.finalSpeed >= level.targetSpeed && cost <= level.budget;
+  const withinSpeedWindow =
+    analysis.finalSpeed >= level.targetSpeed &&
+    analysis.finalSpeed <= (level.maxSpeed ?? Infinity);
+  const passed = withinSpeedWindow && cost <= level.budget;
   if (!passed) {
     return { passed: false, cost, stars: 0 };
   }

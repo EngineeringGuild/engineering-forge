@@ -8,6 +8,9 @@ export interface VehicleLevelDef {
   distance: number;
   /** Minimum speed the vehicle must reach at the end of the run, m/s. */
   targetSpeed: number;
+  /** Upper bound on final speed, m/s — arriving faster than this fails the
+   * run too. Omitted = no ceiling (every prior level's behavior). */
+  maxSpeed?: number;
   /** Grade of the run, degrees above horizontal. Omitted/0 = flat. */
   inclineDegrees?: number;
   /** Fixed cargo mass, kg, the level requires carrying — not a player pick. Omitted/0 = none. */

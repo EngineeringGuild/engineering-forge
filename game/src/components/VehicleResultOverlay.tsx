@@ -5,6 +5,7 @@ import type { VehicleTestResult } from '../state/vehicleStore';
 interface Props {
   result: VehicleTestResult;
   targetSpeed: number;
+  maxSpeed?: number;
   budget: number;
   hasNext: boolean;
   onRetry: () => void;
@@ -15,6 +16,7 @@ interface Props {
 export function VehicleResultOverlay({
   result,
   targetSpeed,
+  maxSpeed,
   budget,
   hasNext,
   onRetry,
@@ -23,7 +25,8 @@ export function VehicleResultOverlay({
 }: Props) {
   const stalled = result.analysis.stalled;
   const tooSlow = !stalled && result.analysis.finalSpeed < targetSpeed;
-  const overBudget = !stalled && !tooSlow && result.cost > budget;
+  const tooFast = !stalled && !tooSlow && maxSpeed !== undefined && result.analysis.finalSpeed > maxSpeed;
+  const overBudget = !stalled && !tooSlow && !tooFast && result.cost > budget;
   const passed = result.passed;
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -35,11 +38,13 @@ export function VehicleResultOverlay({
     ? { text: 'Stalled', className: 'text-danger' }
     : tooSlow
       ? { text: 'Too slow', className: 'text-danger' }
-      : overBudget
-        ? { text: 'Over budget', className: 'text-warning' }
-        : passed
-          ? { text: 'Target reached!', className: 'text-success' }
-          : null;
+      : tooFast
+        ? { text: 'Too fast', className: 'text-danger' }
+        : overBudget
+          ? { text: 'Over budget', className: 'text-warning' }
+          : passed
+            ? { text: 'Target reached!', className: 'text-success' }
+            : null;
 
   return (
     <div
@@ -82,7 +87,14 @@ export function VehicleResultOverlay({
           </>
         )}
 
-        {!tooSlow && overBudget && (
+        {tooFast && (
+          <p className="mt-2 text-sm text-fg-muted">
+            Reached {result.analysis.finalSpeed.toFixed(1)} m/s — past the {maxSpeed} m/s ceiling
+            for this run. Ease off: a weaker engine or a heavier chassis both bring it down.
+          </p>
+        )}
+
+        {!tooSlow && !tooFast && overBudget && (
           <p className="mt-2 text-sm text-fg-muted">
             It reaches {result.analysis.finalSpeed.toFixed(1)} m/s — but cost ${result.cost} against
             a ${budget} budget.
