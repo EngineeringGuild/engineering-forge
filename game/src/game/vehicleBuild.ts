@@ -36,6 +36,7 @@ export function runVehicleTest(
     CHASSIS[chassisId],
     level.distance,
     level.inclineDegrees,
+    level.payloadMass,
   );
   const cost = totalVehicleCost(engineId, chassisId);
   const score = scoreVehicleAttempt(level, analysis, cost);

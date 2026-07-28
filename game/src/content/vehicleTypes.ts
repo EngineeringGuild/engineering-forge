@@ -10,6 +10,8 @@ export interface VehicleLevelDef {
   targetSpeed: number;
   /** Grade of the run, degrees above horizontal. Omitted/0 = flat. */
   inclineDegrees?: number;
+  /** Fixed cargo mass, kg, the level requires carrying — not a player pick. Omitted/0 = none. */
+  payloadMass?: number;
   budget: number;
   unlockedEngines: string[];
   unlockedChassis: string[];

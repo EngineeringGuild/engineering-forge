@@ -66,6 +66,12 @@ export function VehiclesPlayLevel() {
             Uphill, at <span className="text-fg">{level.inclineDegrees}°</span>.
           </>
         )}
+        {Boolean(level.payloadMass) && (
+          <>
+            {' '}
+            Carrying a <span className="text-fg">{level.payloadMass}kg</span> crate.
+          </>
+        )}
       </p>
 
       <section>

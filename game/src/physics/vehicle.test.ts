@@ -86,4 +86,30 @@ describe('analyzeVehicle', () => {
     expect(heavy.tractionLimited).toBe(false);
     expect(light.finalSpeed).toBeGreaterThan(heavy.finalSpeed);
   });
+
+  it('is unaffected by payloadMass defaulting to 0 (same as omitting it)', () => {
+    const withDefault = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100, 0);
+    const explicitZero = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100, 0, 0);
+    expect(explicitZero).toEqual(withDefault);
+  });
+
+  it('adds payload mass onto the chassis for both the traction limit and F=ma', () => {
+    const unloaded = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100, 0, 0);
+    const loaded = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100, 0, 400);
+    const expectedTotalMass = CHASSIS['chassis-light'].mass + 400;
+    expect(loaded.tractionLimit).toBeCloseTo(0.8 * expectedTotalMass * 9.8, 6);
+    expect(loaded.acceleration).toBeCloseTo(ENGINES['engine-large'].force / expectedTotalMass, 6);
+    // Same engine, same chassis, but the extra mass drags the final speed down.
+    expect(loaded.finalSpeed).toBeLessThan(unloaded.finalSpeed);
+  });
+
+  it('a 400kg payload turns a comfortable pass into a fail for a combo that easily cleared the same distance unloaded', () => {
+    // engine-large + chassis-light reaches ~27.4 m/s over 100m unloaded — well
+    // past a 32 m/s target isn't even the point; the point is a 25 m/s target
+    // it clears unloaded now fails once the crate is aboard.
+    const unloaded = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100);
+    const loaded = analyzeVehicle(ENGINES['engine-large'], CHASSIS['chassis-light'], 100, 0, 400);
+    expect(unloaded.finalSpeed).toBeGreaterThan(25);
+    expect(loaded.finalSpeed).toBeLessThan(25);
+  });
 });

@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.11.0
+version: 0.12.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
 updated: 2026-07-26
@@ -25,6 +25,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4e | Máquinas nível 2: mecanismo de inclinação/rampa + novo estado de falha "estolado" | Máquinas | ✅ concluído (DEC-010-014) |
 | 4f | Endurecer pra produção: passe de acessibilidade no chrome da UI (contraste, semântica de diálogo, `sr-only` em estado bloqueado/estrelas) — canvas SVG (posicionar/conectar nós por teclado) explicitamente **fora de escopo**, registrado como lacuna futura | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-015) — canvas keyboard-nav **não implementado**, ver nota abaixo |
 | 4g | Circuitos nível 4: primeira topologia com duas cargas em série (mesmo caminho de corrente), não em ramos independentes | Circuitos | ✅ concluído (DEC-010-016) |
+| 4h | Máquinas nível 3: mecanismo de carga dada (`payloadMass`) — primeiro elemento dado/fixo do pack, mesmo padrão do tabuleiro/lâmpada dos outros dois | Máquinas | ✅ concluído (DEC-010-017) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -190,5 +191,22 @@ com o comprimento total construído, não com o número de segmentos — o mesmo
 uma solução física válida" já visto no nível 3 de Estruturas ("The Long Crossing"). Jogado ponta a
 ponta no browser confirmando queima com o resistor pequeno e "It lights up!" com 3 estrelas
 ($32 de $60) usando o grande. Ver `03_DECISIONS.md` DEC-010-016, `02_ARCHITECTURE.md` §Circuitos.
+
+## Fase 4h — Máquinas nível 3, carga dada (concluída)
+
+Depois que Circuitos alcançou Estruturas (5 níveis cada, Fase 4g), Máquinas voltou a ser o pack
+mais atrasado (só 3 níveis). Nível 3 ("Delivery Run") introduz o primeiro elemento **dado/fixo**
+que Máquinas já teve — até aqui, motor e chassi eram 100% escolha do jogador, sem nada equivalente
+ao tabuleiro-com-carga de Estruturas ou à lâmpada de Circuitos. `payloadMass` (opcional, default 0)
+representa uma carga fixa de 400kg que o jogador não escolhe, só acomoda: soma direto à massa do
+chassi tanto pro teto de tração quanto pra F=ma. Verificado por script numérico antes de fixar os
+números, numa pista **plana** (sem inclinação) pra isolar a lição só na massa, sem misturar com o
+teto de tração (já ensinado no nível 1) ou a inclinação (nível 2): motor grande + chassi leve, que
+vencia a mesma distância facilmente sem carga (~27,4 m/s), cai pra ~22,4 m/s com a carga a bordo —
+nenhum combo neste nível chega a ser limitado por tração (o teto com a carga somada, ~9,4kN, fica
+bem acima da força de qualquer motor do catálogo). Só motor turbo + chassi leve atinge a meta de
+32 m/s (36,5 m/s); turbo + chassi pesado chega perto mas fica abaixo (31,6 m/s). Jogado ponta a
+ponta no browser nas 4 combinações relevantes, todos os números batendo com o cálculo prévio. Ver
+`03_DECISIONS.md` DEC-010-017, `02_ARCHITECTURE.md` §Máquinas.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
