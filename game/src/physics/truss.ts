@@ -39,6 +39,9 @@ export interface MemberResult {
   /** True only when a tension-only member (a cable) failed because it ended
    * up in compression — distinct from an ordinary overload. */
   wentSlack: boolean;
+  /** True only when a compression-only member (a strut) failed because it
+   * ended up in tension — the mirror case of wentSlack. */
+  pulledApart: boolean;
 }
 
 export type TrussAnalysis =
@@ -146,13 +149,15 @@ export function analyzeTruss(model: TrussModel): TrussAnalysis {
     const capacity = materialCapacity(material);
     const utilization = Math.abs(axialForce) / capacity;
     const wentSlack = Boolean(material.tensionOnly) && axialForce < 0;
+    const pulledApart = Boolean(material.compressionOnly) && axialForce > 0;
     return {
       memberId: member.id,
       axialForce,
       capacity,
       utilization,
-      failed: wentSlack || utilization > 1,
+      failed: wentSlack || pulledApart || utilization > 1,
       wentSlack,
+      pulledApart,
     };
   });
 

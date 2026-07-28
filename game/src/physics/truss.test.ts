@@ -107,4 +107,37 @@ describe('analyzeTruss', () => {
     expect(ac.failed).toBe(true);
     expect(result.anyFailed).toBe(true);
   });
+
+  it('lets a strut stand in for a member that stays in compression', () => {
+    // AC carries compression in this A-frame — well within a strut's reach.
+    const truss = apexTruss(100);
+    truss.members = truss.members.map((m) =>
+      m.id === 'AC' ? { ...m, materialId: 'strut' } : m,
+    );
+    const result = analyzeTruss(truss);
+    expect(result.status).toBe('analyzed');
+    if (result.status !== 'analyzed') return;
+    const ac = result.members.find((m) => m.memberId === 'AC')!;
+    expect(ac.axialForce).toBeLessThan(0);
+    expect(ac.pulledApart).toBe(false);
+    expect(ac.failed).toBe(false);
+  });
+
+  it('fails a strut outright if it ends up in tension, regardless of magnitude — the mirror of the cable case', () => {
+    // AB carries tension in this A-frame. Even at a tiny load, a strut resting
+    // in its socket can't be pulled on.
+    const truss = apexTruss(1);
+    truss.members = truss.members.map((m) =>
+      m.id === 'AB' ? { ...m, materialId: 'strut' } : m,
+    );
+    const result = analyzeTruss(truss);
+    expect(result.status).toBe('analyzed');
+    if (result.status !== 'analyzed') return;
+    const ab = result.members.find((m) => m.memberId === 'AB')!;
+    expect(ab.axialForce).toBeGreaterThan(0);
+    expect(ab.utilization).toBeLessThan(0.01);
+    expect(ab.pulledApart).toBe(true);
+    expect(ab.failed).toBe(true);
+    expect(result.anyFailed).toBe(true);
+  });
 });
