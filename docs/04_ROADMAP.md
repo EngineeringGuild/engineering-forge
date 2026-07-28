@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.10.0
+version: 0.11.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-25
+updated: 2026-07-26
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -24,6 +24,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4d | Endurecer pra produção: checagem de layout em viewport estreito (mobile), até então só verificado em desktop | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-013) |
 | 4e | Máquinas nível 2: mecanismo de inclinação/rampa + novo estado de falha "estolado" | Máquinas | ✅ concluído (DEC-010-014) |
 | 4f | Endurecer pra produção: passe de acessibilidade no chrome da UI (contraste, semântica de diálogo, `sr-only` em estado bloqueado/estrelas) — canvas SVG (posicionar/conectar nós por teclado) explicitamente **fora de escopo**, registrado como lacuna futura | Estruturas, Circuitos, Máquinas | ✅ concluído (DEC-010-015) — canvas keyboard-nav **não implementado**, ver nota abaixo |
+| 4g | Circuitos nível 4: primeira topologia com duas cargas em série (mesmo caminho de corrente), não em ramos independentes | Circuitos | ✅ concluído (DEC-010-016) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -170,5 +171,24 @@ diálogo) — não ao canvas de construção em si:
    como trabalho futuro real, não como um item esquecido silenciosamente.
 
 Ver `03_DECISIONS.md` DEC-010-015.
+
+## Fase 4g — Circuitos nível 4, cargas em série (concluída)
+
+Até o nível 3, toda lâmpada dada num nível era ou a única carga do circuito (tutorial, nível 2,
+nível 3), ou uma de várias em **ramos independentes**, cada uma com a tensão cheia da fonte sobre
+si e seu próprio resistor (nível 1 "Two Bulbs"). O nível 4 ("One Path, Two Bulbs") introduz uma
+terceira topologia, nunca usada antes: duas lâmpadas no **mesmo caminho de corrente**, uma depois
+da outra. A mesma corrente atravessa as duas, e suas resistências se somam nesse caminho único
+(3+3=6Ω) — bem diferente do caso paralelo. Verificado por script numérico antes de fixar
+`sourceVoltage` (15V) e a topologia: o resistor pequeno (5Ω), que funcionava sozinho pra uma
+lâmpada no tutorial, agora estoura as duas (5,58 W contra o limite de 4 W cada) — quebra
+deliberadamente o hábito adquirido nos níveis anteriores, forçando o jogador a perceber que a
+resistência combinada das duas cargas mudou a conta. O resistor grande (15Ω) mantém ambas na
+faixa segura (1,53 W). Descoberta emergente aceita como válida (não um bug a esconder): dois
+resistores pequenos em série (10Ω) também passam e saem mais baratos, já que o custo escala só
+com o comprimento total construído, não com o número de segmentos — o mesmo espírito de "mais de
+uma solução física válida" já visto no nível 3 de Estruturas ("The Long Crossing"). Jogado ponta a
+ponta no browser confirmando queima com o resistor pequeno e "It lights up!" com 3 estrelas
+($32 de $60) usando o grande. Ver `03_DECISIONS.md` DEC-010-016, `02_ARCHITECTURE.md` §Circuitos.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
