@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 04_ROADMAP
-version: 0.14.0
+version: 0.15.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-28
+updated: 2026-07-29
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -28,6 +28,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4h | Máquinas nível 3: mecanismo de carga dada (`payloadMass`) — primeiro elemento dado/fixo do pack, mesmo padrão do tabuleiro/lâmpada dos outros dois | Máquinas | ✅ concluído (DEC-010-017) |
 | 4i | Estruturas nível 5 "The King Post": material compressão-only (`strut`), espelho do cabo tração-only | Estruturas | ✅ concluído (DEC-010-018) |
 | 4j | Máquinas nível 4 "The Sweet Spot": mecanismo de janela de velocidade (`maxSpeed`) — primeira vez que "rápido demais" reprova, não só "devagar/caro demais" | Máquinas | ✅ concluído (DEC-010-019) |
+| 4k | Circuitos nível 5 "Two Paths, One Bulb": primeira vez que nenhum resistor sozinho resolve o nível, exigindo dois caminhos em paralelo | Circuitos | ✅ concluído (DEC-010-020) |
 | 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
 
 ## Fase 1 — Estruturas (concluída)
@@ -246,5 +247,27 @@ coberto por teste. Jogado ponta a ponta no browser nas 4 combinações relevante
 dentro da janela com 3 estrelas, duas variações "rápido demais" cada com sua própria mensagem),
 todos os números batendo com o cálculo prévio. Ver `03_DECISIONS.md` DEC-010-019,
 `02_ARCHITECTURE.md` §Máquinas.
+
+## Fase 4k — Circuitos nível 5, dois caminhos obrigatórios (concluída)
+
+Nível 5 ("Two Paths, One Bulb") é o primeiro em Circuitos onde **nenhum resistor sozinho**
+resolve o nível — o pequeno (5Ω) e o grande (15Ω) deixam a lâmpada fraca demais, qualquer que
+seja a escolha. O nível 3 ("Splitting the Load") já usava resistores em paralelo, mas só
+disponibilizava o resistor grande (`unlockedMaterials` restrito) — aqui os dois ficam disponíveis
+e nenhum funciona isoladamente, forçando a combinação em paralelo pela primeira vez sem depender
+de restringir peças. Achado real durante o design: a primeira tentativa calculou a resistência
+equivalente com a fórmula idealizada de paralelo puro (`R1‖R2`), mas `circuitStore.ts` recusa uma
+segunda aresta entre o mesmo par de nós — na prática, "colocar dois resistores em paralelo" sempre
+exige um nó extra (joint) e um segmento de fio a mais em série em cada ramo, além do fio do
+caminho de retorno até o terra. Rodando o solver de verdade com a topologia exatamente como o
+jogador precisaria construir (não a fórmula idealizada), a lâmpada saiu fraca demais no primeiro
+cálculo de tensão — corrigido reajustando `sourceVoltage` até achar uma faixa onde nenhum resistor
+sozinho energiza a lâmpada o suficiente mas dois em paralelo (iguais ou diferentes) funcionam.
+Solução mais barata usa dois resistores pequenos ($41 de $70, 3 estrelas); misturar os dois
+valores também funciona, só custa mais ($50, 2 estrelas) — mesmo espírito de "mais de uma solução
+física válida" já visto nos níveis anteriores. Jogado ponta a ponta no browser nas 4 combinações
+relevantes (resistor pequeno sozinho, resistor grande sozinho, dois pequenos, misto), todos os
+números batendo com o cálculo prévio. Ver `03_DECISIONS.md` DEC-010-020, `02_ARCHITECTURE.md`
+§Circuitos (inclui a nota sobre a restrição real de "sem aresta duplicada" da UI).
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.

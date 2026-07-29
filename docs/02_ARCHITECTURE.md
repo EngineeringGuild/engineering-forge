@@ -1,10 +1,10 @@
 ---
 idea: IDEA-010
 doc: 02_ARCHITECTURE
-version: 0.10.0
+version: 0.11.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: draft
-updated: 2026-07-28
+updated: 2026-07-29
 linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-jogo-educacional-4f3eb9ffca14
 ---
 
@@ -98,6 +98,18 @@ Segundo pack, mesma ideia (`game/src/physics/circuit.ts`): a matriz de condutân
    corrente — resistor grande (15Ω) é o que mantém ambas na faixa segura. Verificado por script
    numérico antes de fixar sourceVoltage/valores (ver DEC-010-016), depois jogado ponta a ponta no
    browser confirmando queima com resistor pequeno e "acende" com 3 estrelas usando o grande.
+6. **Restrição real da UI: sem aresta duplicada entre o mesmo par de nós.** `circuitStore.ts`
+   (`addEdge`) recusa uma segunda conexão entre dois nós já ligados — então dois resistores nunca
+   ficam literalmente em paralelo puro (`R1‖R2` direto). Na prática, "colocar dois resistores em
+   paralelo" sempre significa: criar um nó extra (joint) e rotear um segundo caminho até ele, o que
+   soma um segmento de fio em série a esse ramo. Isso mudou o cálculo de resistência equivalente
+   real do nível 5 ("Two Paths, One Bulb") — a primeira tentativa (calculada como `R1‖R2` puro, sem
+   contar o fio extra do roteamento nem o fio do caminho de retorno até o terra) deixava a lâmpada
+   fraca demais; só apareceu rodando o solver de verdade com a topologia exatamente como o jogador
+   precisaria construí-la, não com a fórmula idealizada. Nível 5: nem o resistor pequeno nem o
+   grande sozinho energizam a lâmpada o suficiente (ambos fracos demais) — o jogador precisa
+   necessariamente de dois caminhos em paralelo; dois resistores pequenos é a solução mais barata
+   (3 estrelas), misturar os dois valores também funciona, só custa mais.
 
 Este par de solvers reaproveita o mesmo núcleo de álgebra linear (`physics/linalg.ts`).
 
