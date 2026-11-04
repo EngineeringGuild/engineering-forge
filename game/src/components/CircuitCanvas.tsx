@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CircuitLevelDef } from '../content/circuitTypes';
 import type { BuiltEdge } from '../game/circuitBuild';
+import { toCircuitModel } from '../game/circuitBuild';
 import type { BuiltNode } from '../game/build';
 import { COMPONENTS } from '../physics/components';
 import type { CircuitTestResult } from '../state/circuitStore';
 import { soundFx } from '../audio/soundFx';
+import { createMatterCircuitSimulation, type ArcSpark } from '../physics/matterCircuit';
 
 interface Point {
   x: number;
@@ -53,6 +55,17 @@ export function CircuitCanvas({
 
   // Animation phase for electron particle flow
   const [electronPhase, setElectronPhase] = useState(0);
+  const [switchState, setSwitchState] = useState<{
+    leverAngle: number;
+    contactClosed: boolean;
+    breakerTripped: boolean;
+    sparks: ArcSpark[];
+  }>({
+    leverAngle: -45,
+    contactClosed: false,
+    breakerTripped: false,
+    sparks: [],
+  });
 
   const allPoints = new Map<string, Point>();
   for (const n of level.fixedNodes) allPoints.set(n.id, n);
@@ -62,23 +75,64 @@ export function CircuitCanvas({
     testResult?.status === 'analyzed' ? testResult.edges.map((e) => [e.edgeId, e]) : [],
   );
 
-  // Sound and animation timer
+  // Matter.js electromechanical contact switch and breaker simulation
   useEffect(() => {
-    if (!isSimulating && !testResult) return;
+    if (!isSimulating) return;
 
-    if (isSimulating) {
-      soundFx.playElectricHum();
-      const timer = setTimeout(() => {
-        if (testResult?.status === 'analyzed' && testResult.anyBurnedOut) {
-          soundFx.playSpark();
-        }
+    const model = toCircuitModel(level, builtNodes, builtEdges);
+    const sim = createMatterCircuitSimulation(model);
+    sim.toggleSwitch(true);
+
+    let animId: number;
+    let lastTime: number | null = null;
+    let startTime: number | null = null;
+    let playedContactSound = false;
+    let playedBreakerSound = false;
+
+    const frame = (timestamp: number) => {
+      if (startTime === null) {
+        startTime = timestamp;
+        lastTime = timestamp;
+      }
+      const dt = lastTime !== null ? Math.min(50, timestamp - lastTime) : 16.6;
+      lastTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      const state = sim.step(dt);
+      setSwitchState({
+        leverAngle: state.leverAngleDegrees,
+        contactClosed: state.isContactClosed,
+        breakerTripped: state.breakerTripped,
+        sparks: state.arcSparks,
+      });
+
+      if (state.isContactClosed && !playedContactSound) {
+        soundFx.playSnapNode();
+        soundFx.playElectricHum();
+        playedContactSound = true;
+      }
+
+      if (state.breakerTripped && !playedBreakerSound) {
+        soundFx.playBreak();
+        soundFx.playSpark();
+        playedBreakerSound = true;
+      }
+
+      if (elapsed < 2000) {
+        animId = requestAnimationFrame(frame);
+      } else {
         if (onSimulationFinish) {
           onSimulationFinish();
         }
-      }, 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [isSimulating, testResult, onSimulationFinish]);
+      }
+    };
+
+    animId = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(animId);
+      sim.destroy();
+    };
+  }, [isSimulating, level, builtNodes, builtEdges, testResult, onSimulationFinish]);
 
   // Continuous animation loop for electron particles
   useEffect(() => {
@@ -139,8 +193,33 @@ export function CircuitCanvas({
 
   const hasCurrent = testResult?.status === 'analyzed' && testResult.edges.some((e) => e.current > 0.001);
 
+  const isBreakerTripped = isSimulating
+    ? switchState.breakerTripped
+    : Boolean(testResult?.status === 'analyzed' && testResult.anyBurnedOut);
+  const isContactClosed = isSimulating ? switchState.contactClosed : Boolean(testResult);
+  const leverAngle = isSimulating ? switchState.leverAngle : testResult ? 0 : -45;
+  const sparks = isSimulating ? switchState.sparks : [];
+
   return (
     <div className="relative w-full h-full">
+      {/* Electromechanical Breaker HUD */}
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-xl bg-surface-2/85 backdrop-blur border border-border/80 px-3 py-1.5 font-mono text-xs shadow-md pointer-events-none">
+        <span className="text-fg-muted">Breaker:</span>
+        {isBreakerTripped ? (
+          <span className="flex items-center gap-1 text-danger font-semibold">
+            ⚡ TRIPPED (Overcurrent)
+          </span>
+        ) : isContactClosed ? (
+          <span className="flex items-center gap-1 text-success font-semibold">
+            ● CLOSED (Conducting)
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-fg-subtle">
+            ○ OPEN ({leverAngle.toFixed(0)}°)
+          </span>
+        )}
+      </div>
+
       <svg
         ref={svgRef}
         viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
@@ -156,6 +235,18 @@ export function CircuitCanvas({
         {/* Grid dots */}
         {gridDots.map((d, i) => (
           <circle key={i} cx={d.x} cy={d.y} r={0.02} fill="var(--border)" />
+        ))}
+
+        {/* Matter.js Arc Flash Sparks */}
+        {sparks.map((s, idx) => (
+          <circle
+            key={`spark-${idx}`}
+            cx={vbX + (s.x / 400) * vbW}
+            cy={vbY + (s.y / 300) * vbH}
+            r={s.size * 0.012}
+            fill="#ffdd00"
+            opacity={s.life}
+          />
         ))}
 
         {/* Given (free) load edges, e.g. the bulb */}

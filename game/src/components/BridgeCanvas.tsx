@@ -3,10 +3,8 @@ import type { LevelDef } from '../content/types';
 import type { BuiltMember, BuiltNode } from '../game/build';
 import { MATERIALS } from '../physics/materials';
 import type { TestResult } from '../state/gameStore';
-import {
-  computeDynamicTrussSimulation,
-  type DynamicSimulationTrajectory,
-} from '../physics/trussDynamic';
+import type { DynamicSimulationTrajectory } from '../physics/trussDynamic';
+import { computeMatterTrussTrajectory } from '../physics/matterTruss';
 import { toTrussModel } from '../game/build';
 import { soundFx } from '../audio/soundFx';
 
@@ -66,11 +64,11 @@ export function BridgeCanvas({
     return map;
   }, [level.fixedNodes, builtNodes]);
 
-  // Compute dynamic trajectory when in simulation or test mode
+  // Compute dynamic trajectory when in simulation or test mode using Matter.js physics engine
   const trajectory: DynamicSimulationTrajectory | null = useMemo(() => {
     if (!testResult && !isSimulating) return null;
     const model = toTrussModel(level, builtNodes, builtMembers);
-    return computeDynamicTrussSimulation(level, model, 36);
+    return computeMatterTrussTrajectory(level, model, 36);
   }, [level, builtNodes, builtMembers, testResult, isSimulating]);
 
   const animIdRef = useRef<number>(0);

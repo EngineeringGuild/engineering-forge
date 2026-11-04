@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { VehicleLevelDef } from '../content/vehicleTypes';
 import type { VehicleTestResult } from '../state/vehicleStore';
 import { soundFx } from '../audio/soundFx';
+import { createMatterVehicleSimulation } from '../physics/matterVehicle';
+import { ENGINES, CHASSIS } from '../physics/vehicleParts';
 
 interface Props {
   level: VehicleLevelDef;
@@ -14,7 +16,7 @@ interface Props {
 
 export function VehicleTrackCanvas({
   level,
-  selectedEngineId: _selectedEngineId,
+  selectedEngineId,
   selectedChassisId,
   testResult,
   isSimulating,
@@ -39,39 +41,49 @@ export function VehicleTrackCanvas({
       return;
     }
 
-    // Run dynamic test drive animation
-    const duration = isStalled ? 1500 : 2600;
+    const engineDef = ENGINES[selectedEngineId] || ENGINES['engine-small'];
+    const chassisDef = CHASSIS[selectedChassisId] || CHASSIS['chassis-light'];
+    const sim = createMatterVehicleSimulation(
+      engineDef,
+      chassisDef,
+      level.distance,
+      incline,
+      level.payloadMass,
+    );
+
+    let lastTimestamp: number | null = null;
     startTimestampRef.current = null;
 
     const frame = (timestamp: number) => {
-      if (startTimestampRef.current === null) startTimestampRef.current = timestamp;
-      const elapsed = timestamp - startTimestampRef.current;
-      const p = Math.min(1, elapsed / duration);
-
-      if (isStalled) {
-        // Stalls and rolls back or stops
-        const stalledP = Math.min(0.12, p * 0.15);
-        setAnimProgress(stalledP);
-        setAnimSpeed(0);
-      } else {
-        // Quadratic acceleration motion: s(t) ~ t^2
-        const accelP = Math.pow(p, 1.6);
-        setAnimProgress(accelP);
-        setAnimSpeed(accelP * finalSpeed);
-        setWheelRotation((r) => (r + 14 * p) % 360);
-
-        if (!soundTriggeredRef.current.rev) {
-          soundFx.playEngineRev(Math.min(1, finalSpeed / (level.targetSpeed || 30)));
-          soundTriggeredRef.current.rev = true;
-        }
-
-        if (isTractionLimited && !soundTriggeredRef.current.screech && p > 0.2) {
-          soundFx.playTireScreech();
-          soundTriggeredRef.current.screech = true;
-        }
+      if (startTimestampRef.current === null) {
+        startTimestampRef.current = timestamp;
+        lastTimestamp = timestamp;
       }
 
-      if (p < 1) {
+      const dt = lastTimestamp !== null ? Math.min(50, timestamp - lastTimestamp) : 16.6;
+      lastTimestamp = timestamp;
+
+      // Step Matter.js physics engine
+      const state = sim.step(dt);
+
+      const p = Math.min(1, Math.max(0, state.distanceTraveled / level.distance));
+      setAnimProgress(p);
+      setAnimSpeed(state.speed);
+      setWheelRotation((state.wheelRotationRad * 180) / Math.PI);
+
+      if (state.speed > 0.5 && !soundTriggeredRef.current.rev) {
+        soundFx.playEngineRev(Math.min(1, state.speed / (level.targetSpeed || 30)));
+        soundTriggeredRef.current.rev = true;
+      }
+
+      if (state.isTractionLimited && !soundTriggeredRef.current.screech && p > 0.1) {
+        soundFx.playTireScreech();
+        soundTriggeredRef.current.screech = true;
+      }
+
+      const isDone = state.reachedFinish || (state.isStalled && state.timeSeconds > 1.6);
+
+      if (!isDone) {
         animIdRef.current = requestAnimationFrame(frame);
       } else {
         if (onSimulationFinish) {
@@ -81,8 +93,20 @@ export function VehicleTrackCanvas({
     };
 
     animIdRef.current = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(animIdRef.current);
-  }, [isSimulating, testResult, finalSpeed, isStalled, isTractionLimited, level.targetSpeed, onSimulationFinish]);
+    return () => {
+      cancelAnimationFrame(animIdRef.current);
+      sim.destroy();
+    };
+  }, [
+    isSimulating,
+    selectedEngineId,
+    selectedChassisId,
+    level.distance,
+    incline,
+    level.payloadMass,
+    level.targetSpeed,
+    onSimulationFinish,
+  ]);
 
   const progress = isSimulating ? animProgress : (testResult ? 1 : 0);
   const currentSpeed = isSimulating ? animSpeed : (testResult ? finalSpeed : 0);

@@ -33,5 +33,11 @@
   },
   "bugs": {
     "url": "https://github.com/EngineeringGuild/engineering-forge/issues"
+  },
+  "dependencies": {
+    "matter-js": "^0.20.0"
+  },
+  "devDependencies": {
+    "@types/matter-js": "^0.20.2"
   }
 }

@@ -1,4 +1,5 @@
-import { analyzeVehicle, type VehicleAnalysis } from '../physics/vehicle';
+import type { VehicleAnalysis } from '../physics/vehicle';
+import { analyzeVehicleWithMatter } from '../physics/matterVehicle';
 import { CHASSIS, ENGINES } from '../physics/vehicleParts';
 import type { VehicleLevelDef } from '../content/vehicleTypes';
 
@@ -34,7 +35,7 @@ export function runVehicleTest(
   engineId: string,
   chassisId: string,
 ): { analysis: VehicleAnalysis; cost: number; score: VehicleStarResult } {
-  const analysis = analyzeVehicle(
+  const analysis = analyzeVehicleWithMatter(
     ENGINES[engineId],
     CHASSIS[chassisId],
     level.distance,
