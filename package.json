@@ -4,13 +4,16 @@
   "private": true,
   "description": "A physics puzzle game that teaches real engineering — build it, test it, let the physics decide.",
   "type": "module",
+  "workspaces": [
+    "game"
+  ],
   "scripts": {
-    "dev": "cd game && npm run dev",
-    "build": "cd game && npm run build",
-    "test": "cd game && npm run test",
-    "lint": "cd game && npm run lint",
-    "type-check": "cd game && npm run type-check",
-    "setup": "cd game && npm install"
+    "dev": "npm run dev --workspace=@engineering-forge/game",
+    "build": "npm run build --workspace=@engineering-forge/game",
+    "test": "npm run test --workspace=@engineering-forge/game",
+    "lint": "npm run lint --workspace=@engineering-forge/game",
+    "type-check": "npm run type-check --workspace=@engineering-forge/game",
+    "setup": "npm install"
   },
   "keywords": [
     "education",
