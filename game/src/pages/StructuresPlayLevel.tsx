@@ -12,6 +12,8 @@ export function StructuresPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
   const navigate = useNavigate();
   const [showHint, setShowHint] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   const level = levelId ? getLevel(levelId) : undefined;
   const isLevelUnlocked = useGameStore((s) => s.isLevelUnlocked);
@@ -54,6 +56,23 @@ export function StructuresPlayLevel() {
     }
   }
 
+  const handleTest = () => {
+    setIsSimulating(true);
+    setShowResult(false);
+    runTest();
+  };
+
+  const handleSimulationFinish = () => {
+    setIsSimulating(false);
+    setShowResult(true);
+  };
+
+  const handleReset = () => {
+    setIsSimulating(false);
+    setShowResult(false);
+    resetBuild();
+  };
+
   return (
     <div className="mx-auto flex h-svh max-w-4xl flex-col gap-4 p-4">
       <header className="flex items-center justify-between">
@@ -84,6 +103,8 @@ export function StructuresPlayLevel() {
           builtMembers={builtMembers}
           pendingNodeId={pendingNodeId}
           testResult={testResult}
+          isSimulating={isSimulating}
+          onSimulationFinish={handleSimulationFinish}
           onAddNode={addNode}
           onSelectNode={handleSelectNode}
           onRemoveNode={removeNode}
@@ -103,18 +124,18 @@ export function StructuresPlayLevel() {
         selectedMaterial={selectedMaterial}
         unlockedMaterials={level.unlockedMaterials}
         onSelectMaterial={setSelectedMaterial}
-        onTest={runTest}
-        onReset={resetBuild}
-        testing={false}
+        onTest={handleTest}
+        onReset={handleReset}
+        testing={isSimulating}
         testLabel="Test Bridge"
       />
 
-      {testResult && (
+      {showResult && testResult && (
         <ResultOverlay
           result={testResult}
           budget={level.budget}
           hasNext={Boolean(next)}
-          onRetry={resetBuild}
+          onRetry={handleReset}
           onNext={() => next && navigate(`/structures/level/${next}`)}
           onLevelSelect={() => navigate('/structures')}
         />

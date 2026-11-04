@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Stars } from './Stars';
 import type { TestResult } from '../state/gameStore';
+import { soundFx } from '../audio/soundFx';
 
 interface Props {
   result: TestResult;
@@ -19,7 +20,12 @@ export function ResultOverlay({ result, budget, hasNext, onRetry, onNext, onLeve
 
   useEffect(() => {
     headingRef.current?.focus();
-  }, [result]);
+    if (passed && result.status === 'analyzed') {
+      soundFx.playVictory(result.stars);
+    } else {
+      soundFx.playFail();
+    }
+  }, [result, passed]);
 
   const heading = unstable
     ? { text: 'Unstable structure', className: 'text-danger' }

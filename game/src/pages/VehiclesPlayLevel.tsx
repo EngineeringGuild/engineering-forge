@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { VehicleResultOverlay } from '../components/VehicleResultOverlay';
+import { VehicleTrackCanvas } from '../components/VehicleTrackCanvas';
 import { getVehicleLevel, nextVehicleLevelId } from '../content/vehicleLevels';
 import { totalVehicleCost } from '../game/vehicleBuild';
 import { CHASSIS, ENGINES } from '../physics/vehicleParts';
 import { useVehicleStore } from '../state/vehicleStore';
+import { soundFx } from '../audio/soundFx';
 
 export function VehiclesPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
   const navigate = useNavigate();
   const [showHint, setShowHint] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   const level = levelId ? getVehicleLevel(levelId) : undefined;
   const isLevelUnlocked = useVehicleStore((s) => s.isLevelUnlocked);
@@ -36,6 +40,34 @@ export function VehiclesPlayLevel() {
   const overBudget = cost > level.budget;
   const next = nextVehicleLevelId(level.id);
 
+  const handleSelectEngine = (id: string) => {
+    soundFx.playSnapNode();
+    setSelectedEngine(id);
+  };
+
+  const handleSelectChassis = (id: string) => {
+    soundFx.playSnapNode();
+    setSelectedChassis(id);
+  };
+
+  const handleTestDrive = () => {
+    setIsSimulating(true);
+    setShowResult(false);
+    runTest();
+  };
+
+  const handleSimulationFinish = () => {
+    setIsSimulating(false);
+    setShowResult(true);
+  };
+
+  const handleReset = () => {
+    soundFx.playSnapNode();
+    setIsSimulating(false);
+    setShowResult(false);
+    resetBuild();
+  };
+
   return (
     <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-4 p-4">
       <header className="flex items-center justify-between">
@@ -56,6 +88,16 @@ export function VehiclesPlayLevel() {
           {level.hint}
         </p>
       )}
+
+      {/* Dynamic Runway Track Canvas */}
+      <VehicleTrackCanvas
+        level={level}
+        selectedEngineId={selectedEngine}
+        selectedChassisId={selectedChassis}
+        testResult={testResult}
+        isSimulating={isSimulating}
+        onSimulationFinish={handleSimulationFinish}
+      />
 
       <p className="rounded-xl border border-border bg-surface-1 px-4 py-3 text-center text-sm text-fg-muted">
         {level.maxSpeed !== undefined ? (
@@ -92,7 +134,7 @@ export function VehiclesPlayLevel() {
             return (
               <button
                 key={id}
-                onClick={() => setSelectedEngine(id)}
+                onClick={() => handleSelectEngine(id)}
                 className={`rounded-xl border p-4 text-left transition-colors ${
                   active ? 'border-accent bg-accent/10' : 'border-border bg-surface-1 hover:border-accent'
                 }`}
@@ -115,7 +157,7 @@ export function VehiclesPlayLevel() {
             return (
               <button
                 key={id}
-                onClick={() => setSelectedChassis(id)}
+                onClick={() => handleSelectChassis(id)}
                 className={`rounded-xl border p-4 text-left transition-colors ${
                   active ? 'border-accent bg-accent/10' : 'border-border bg-surface-1 hover:border-accent'
                 }`}
@@ -131,31 +173,32 @@ export function VehiclesPlayLevel() {
 
       <div className="mt-auto flex items-center gap-4 rounded-xl border border-border bg-surface-1 px-4 py-3">
         <div className="font-mono text-sm">
-          <span className={overBudget ? 'text-danger' : 'text-fg-muted'}>${cost}</span>
+          <span className={overBudget ? 'text-danger font-semibold' : 'text-fg-muted'}>${cost}</span>
           <span className="text-fg-subtle"> / ${level.budget}</span>
         </div>
         <button
-          onClick={resetBuild}
-          className="ml-auto rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg"
+          onClick={handleReset}
+          className="ml-auto rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg transition-colors"
         >
           Reset
         </button>
         <button
-          onClick={runTest}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90"
+          onClick={handleTestDrive}
+          disabled={isSimulating}
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
-          Test Drive
+          {isSimulating ? 'Driving…' : 'Test Drive'}
         </button>
       </div>
 
-      {testResult && (
+      {showResult && testResult && (
         <VehicleResultOverlay
           result={testResult}
           targetSpeed={level.targetSpeed}
           maxSpeed={level.maxSpeed}
           budget={level.budget}
           hasNext={Boolean(next)}
-          onRetry={resetBuild}
+          onRetry={handleReset}
           onNext={() => next && navigate(`/machines/level/${next}`)}
           onLevelSelect={() => navigate('/machines')}
         />
@@ -163,3 +206,4 @@ export function VehiclesPlayLevel() {
     </div>
   );
 }
+

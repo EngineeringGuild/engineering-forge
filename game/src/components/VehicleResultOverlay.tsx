@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Stars } from './Stars';
 import type { VehicleTestResult } from '../state/vehicleStore';
+import { soundFx } from '../audio/soundFx';
 
 interface Props {
   result: VehicleTestResult;
@@ -32,7 +33,12 @@ export function VehicleResultOverlay({
 
   useEffect(() => {
     headingRef.current?.focus();
-  }, [result]);
+    if (passed) {
+      soundFx.playVictory(result.stars);
+    } else {
+      soundFx.playFail();
+    }
+  }, [result, passed]);
 
   const heading = stalled
     ? { text: 'Stalled', className: 'text-danger' }

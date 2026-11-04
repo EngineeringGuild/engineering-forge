@@ -21,6 +21,7 @@ máquinas — e a física decide se aguentam. Ver `01_VISION.md` para o pitch co
 | [04_ROADMAP](04_ROADMAP.md) | Fases ↔ Linear, packs de conteúdo | draft |
 | [05_MARKETING](05_MARKETING.md) | Posicionamento, funil, aquisição | draft |
 | [06_OPERATIONS](06_OPERATIONS.md) | Deploy, ambientes, custos, KPIs | draft |
+| [07_MASTER_PLAN_GAME_ENGINE](07_MASTER_PLAN_GAME_ENGINE.md) | Master Plan evolutivo v1.0–v4.0: da ferramenta ao jogo vivo para formar crianças | approved |
 
 ## Onde as coisas estão
 

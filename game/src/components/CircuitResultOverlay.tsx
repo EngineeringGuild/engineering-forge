@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Stars } from './Stars';
 import type { CircuitTestResult } from '../state/circuitStore';
+import { soundFx } from '../audio/soundFx';
 
 interface Props {
   result: CircuitTestResult;
@@ -26,7 +27,12 @@ export function CircuitResultOverlay({
 
   useEffect(() => {
     headingRef.current?.focus();
-  }, [result]);
+    if (passed && result.status === 'analyzed') {
+      soundFx.playVictory(result.stars);
+    } else {
+      soundFx.playFail();
+    }
+  }, [result, passed]);
 
   const heading = open
     ? { text: 'Open circuit', className: 'text-danger' }

@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { soundFx } from '../audio/soundFx';
+
 export interface PickableMaterial {
   id: string;
   name: string;
@@ -31,6 +34,25 @@ export function Toolbar({
   testLabel = 'Test',
 }: Props) {
   const overBudget = cost > budget;
+  const [muted, setMuted] = useState(() => soundFx.getMuted());
+
+  const handleToggleSound = () => {
+    const isMuted = soundFx.toggleMute();
+    setMuted(isMuted);
+    if (!isMuted) {
+      soundFx.playSnapNode();
+    }
+  };
+
+  const handleMaterialClick = (id: string) => {
+    soundFx.playSnapNode();
+    onSelectMaterial(id);
+  };
+
+  const handleResetClick = () => {
+    soundFx.playSnapNode();
+    onReset();
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-xl bg-surface-1 border border-border px-4 py-3">
@@ -41,7 +63,7 @@ export function Toolbar({
           return (
             <button
               key={id}
-              onClick={() => onSelectMaterial(id)}
+              onClick={() => handleMaterialClick(id)}
               className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 active
                   ? 'border-accent bg-accent/10 text-fg'
@@ -61,25 +83,34 @@ export function Toolbar({
         })}
       </div>
 
-      <div className="ml-auto flex items-center gap-4">
+      <div className="ml-auto flex items-center gap-3">
+        <button
+          onClick={handleToggleSound}
+          title={muted ? 'Unmute sound effects' : 'Mute sound effects'}
+          aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-fg-muted hover:text-fg hover:border-accent transition-colors"
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
+
         <div className="font-mono text-sm">
-          <span className={overBudget ? 'text-danger' : 'text-fg-muted'}>
+          <span className={overBudget ? 'text-danger font-semibold' : 'text-fg-muted'}>
             ${cost.toFixed(0)}
           </span>
           <span className="text-fg-subtle"> / ${budget}</span>
         </div>
         <button
-          onClick={onReset}
-          className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg"
+          onClick={handleResetClick}
+          className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg transition-colors"
         >
           Reset
         </button>
         <button
           onClick={onTest}
           disabled={testing}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
-          {testing ? 'Testing…' : testLabel}
+          {testing ? 'Simulating…' : testLabel}
         </button>
       </div>
     </div>
