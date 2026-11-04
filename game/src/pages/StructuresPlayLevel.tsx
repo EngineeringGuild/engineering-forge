@@ -31,6 +31,7 @@ export function StructuresPlayLevel() {
   const setSelectedMaterial = useGameStore((s) => s.setSelectedMaterial);
   const setPendingNode = useGameStore((s) => s.setPendingNode);
   const runTest = useGameStore((s) => s.runTest);
+  const clearTestResult = useGameStore((s) => s.clearTestResult);
   const resetBuild = useGameStore((s) => s.resetBuild);
 
   useEffect(() => {
@@ -65,6 +66,12 @@ export function StructuresPlayLevel() {
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+  };
+
+  const handleResetSimulation = () => {
+    setIsSimulating(false);
+    setShowResult(false);
+    clearTestResult();
   };
 
   const handleReset = () => {
@@ -105,6 +112,7 @@ export function StructuresPlayLevel() {
           testResult={testResult}
           isSimulating={isSimulating}
           onSimulationFinish={handleSimulationFinish}
+          onResetSimulation={handleResetSimulation}
           onAddNode={addNode}
           onSelectNode={handleSelectNode}
           onRemoveNode={removeNode}
@@ -126,6 +134,7 @@ export function StructuresPlayLevel() {
         onSelectMaterial={setSelectedMaterial}
         onTest={handleTest}
         onReset={handleReset}
+        onResetSimulation={handleResetSimulation}
         testing={isSimulating}
         testLabel="Test Bridge"
       />

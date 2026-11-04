@@ -30,6 +30,7 @@ export interface MatterCircuitSimulation {
   pivotConstraint: Matter.Constraint;
   step: (deltaTimeMs?: number) => MatterCircuitState;
   toggleSwitch: (targetClosed: boolean) => void;
+  resetBodies: () => void;
   destroy: () => void;
 }
 
@@ -244,6 +245,27 @@ export function createMatterCircuitSimulation(
     };
   };
 
+  const initialLeverPos = {
+    x: pivotX + (leverLength / 2) * Math.cos(-Math.PI / 4),
+    y: pivotY + (leverLength / 2) * Math.sin(-Math.PI / 4),
+  };
+
+  const resetBodies = () => {
+    // Reset switch lever to initial open angle (-45 deg) and zero velocities
+    Body.setPosition(leverBody, initialLeverPos);
+    Body.setVelocity(leverBody, { x: 0, y: 0 });
+    Body.setAngularVelocity(leverBody, 0);
+    Body.setAngle(leverBody, -Math.PI / 4);
+    leverBody.force.x = 0;
+    leverBody.force.y = 0;
+
+    isTargetingClosed = false;
+    isContactClosed = false;
+    breakerTripped = false;
+    simulatedTimeMs = 0;
+    arcSparks = [];
+  };
+
   const destroy = () => {
     Composite.clear(world, false, true);
     Engine.clear(engine);
@@ -257,6 +279,7 @@ export function createMatterCircuitSimulation(
     pivotConstraint,
     step,
     toggleSwitch,
+    resetBodies,
     destroy,
   };
 }

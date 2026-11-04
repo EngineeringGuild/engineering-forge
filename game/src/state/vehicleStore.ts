@@ -28,6 +28,7 @@ interface VehicleState {
   setSelectedEngine: (engineId: string) => void;
   setSelectedChassis: (chassisId: string) => void;
   runTest: () => void;
+  clearTestResult: () => void;
   resetBuild: () => void;
 }
 
@@ -83,6 +84,7 @@ export const useVehicleStore = create<VehicleState>()(
         }
       },
 
+      clearTestResult: () => set({ testResult: null }),
       resetBuild: () => set({ testResult: null }),
     }),
     {

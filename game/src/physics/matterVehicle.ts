@@ -36,6 +36,7 @@ export interface MatterVehicleSimulation {
     telemetry: MatterVehicleState[];
     totalTimeSeconds: number;
   };
+  resetBodies: () => void;
   destroy: () => void;
 }
 
@@ -241,6 +242,40 @@ export function createMatterVehicleSimulation(
     };
   };
 
+  const initialChassisPos = { x: startX, y: startY - 20 };
+  const initialWheelRearPos = { x: startX - 22, y: startY - 5 };
+  const initialWheelFrontPos = { x: startX + 22, y: startY - 5 };
+
+  const resetBodies = () => {
+    // Reset vehicle chassis and wheels to starting line and zero velocities
+    Body.setPosition(chassisBody, initialChassisPos);
+    Body.setVelocity(chassisBody, { x: 0, y: 0 });
+    Body.setAngularVelocity(chassisBody, 0);
+    Body.setAngle(chassisBody, -thetaRad);
+    chassisBody.force.x = 0;
+    chassisBody.force.y = 0;
+
+    Body.setPosition(wheelRearBody, initialWheelRearPos);
+    Body.setVelocity(wheelRearBody, { x: 0, y: 0 });
+    Body.setAngularVelocity(wheelRearBody, 0);
+    Body.setAngle(wheelRearBody, 0);
+    wheelRearBody.force.x = 0;
+    wheelRearBody.force.y = 0;
+
+    Body.setPosition(wheelFrontBody, initialWheelFrontPos);
+    Body.setVelocity(wheelFrontBody, { x: 0, y: 0 });
+    Body.setAngularVelocity(wheelFrontBody, 0);
+    Body.setAngle(wheelFrontBody, 0);
+    wheelFrontBody.force.x = 0;
+    wheelFrontBody.force.y = 0;
+
+    totalSimulatedTimeMs = 0;
+    distanceAlongTrackMeters = 0;
+    currentSpeedMps = 0;
+    wheelRotationRad = 0;
+    reachedFinish = false;
+  };
+
   const destroy = () => {
     Composite.clear(world, false, true);
     Engine.clear(engine);
@@ -256,6 +291,7 @@ export function createMatterVehicleSimulation(
     trackBody,
     step,
     runUntilFinish,
+    resetBodies,
     destroy,
   };
 }

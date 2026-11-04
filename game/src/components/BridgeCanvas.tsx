@@ -21,6 +21,7 @@ interface Props {
   testResult: TestResult | null;
   isSimulating?: boolean;
   onSimulationFinish?: () => void;
+  onResetSimulation?: () => void;
   onAddNode: (x: number, y: number) => void;
   onSelectNode: (nodeId: string) => void;
   onRemoveNode: (nodeId: string) => void;
@@ -42,6 +43,7 @@ export function BridgeCanvas({
   testResult,
   isSimulating = false,
   onSimulationFinish,
+  onResetSimulation,
   onAddNode,
   onSelectNode,
   onRemoveNode,
@@ -476,6 +478,19 @@ export function BridgeCanvas({
               </strong>
             </span>
 
+            {onResetSimulation && (
+              <button
+                onClick={() => {
+                  soundFx.playSnapNode();
+                  setAnimProgress(0);
+                  onResetSimulation();
+                }}
+                className="rounded px-2 py-1 bg-surface-2 text-fg hover:border-accent border border-border"
+                title="Reset simulation to initial position without clearing bridge"
+              >
+                ↺ Reset Sim
+              </button>
+            )}
             <button
               onClick={() => setIsPaused((v) => !v)}
               className="rounded px-2 py-1 bg-surface-2 text-fg hover:border-accent border border-border"

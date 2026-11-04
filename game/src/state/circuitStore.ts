@@ -48,6 +48,7 @@ interface CircuitState {
   setSelectedMaterial: (materialId: string) => void;
   setPendingNode: (nodeId: string | null) => void;
   runTest: () => void;
+  clearTestResult: () => void;
   resetBuild: () => void;
 }
 
@@ -171,6 +172,7 @@ export const useCircuitStore = create<CircuitState>()(
         }
       },
 
+      clearTestResult: () => set({ testResult: null }),
       resetBuild: () =>
         set({ builtNodes: [], builtEdges: [], pendingNodeId: null, testResult: null, nextId: 0 }),
     }),

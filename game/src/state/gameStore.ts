@@ -39,6 +39,7 @@ interface GameState {
   setSelectedMaterial: (materialId: string) => void;
   setPendingNode: (nodeId: string | null) => void;
   runTest: () => void;
+  clearTestResult: () => void;
   resetBuild: () => void;
 }
 
@@ -162,6 +163,8 @@ export const useGameStore = create<GameState>()(
           });
         }
       },
+
+      clearTestResult: () => set({ testResult: null }),
 
       resetBuild: () =>
         set({ builtNodes: [], builtMembers: [], pendingNodeId: null, testResult: null, nextId: 0 }),

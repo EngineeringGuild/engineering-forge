@@ -21,6 +21,7 @@ interface Props {
   testResult: CircuitTestResult | null;
   isSimulating?: boolean;
   onSimulationFinish?: () => void;
+  onResetSimulation?: () => void;
   onAddNode: (x: number, y: number) => void;
   onSelectNode: (nodeId: string) => void;
   onRemoveNode: (nodeId: string) => void;
@@ -49,9 +50,11 @@ export function CircuitCanvas({
   onSelectNode,
   onRemoveNode,
   onRemoveEdge,
+  onResetSimulation,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const { buildArea, gridSize } = level;
+  const simRef = useRef<ReturnType<typeof createMatterCircuitSimulation> | null>(null);
 
   // Animation phase for electron particle flow
   const [electronPhase, setElectronPhase] = useState(0);
@@ -67,6 +70,22 @@ export function CircuitCanvas({
     sparks: [],
   });
 
+  const handleResetSimulationClick = () => {
+    soundFx.playSnapNode();
+    if (simRef.current) {
+      simRef.current.resetBodies();
+    }
+    setSwitchState({
+      leverAngle: -45,
+      contactClosed: false,
+      breakerTripped: false,
+      sparks: [],
+    });
+    if (onResetSimulation) {
+      onResetSimulation();
+    }
+  };
+
   const allPoints = new Map<string, Point>();
   for (const n of level.fixedNodes) allPoints.set(n.id, n);
   for (const n of builtNodes) allPoints.set(n.id, n);
@@ -81,22 +100,25 @@ export function CircuitCanvas({
 
     const model = toCircuitModel(level, builtNodes, builtEdges);
     const sim = createMatterCircuitSimulation(model);
+    simRef.current = sim;
     sim.toggleSwitch(true);
 
-    let animId: number;
-    let lastTime: number | null = null;
-    let startTime: number | null = null;
-    let playedContactSound = false;
-    let playedBreakerSound = false;
+    const tracker = {
+      animId: 0,
+      lastTime: null as number | null,
+      startTime: null as number | null,
+      playedContactSound: false,
+      playedBreakerSound: false,
+    };
 
     const frame = (timestamp: number) => {
-      if (startTime === null) {
-        startTime = timestamp;
-        lastTime = timestamp;
+      if (tracker.startTime === null) {
+        tracker.startTime = timestamp;
+        tracker.lastTime = timestamp;
       }
-      const dt = lastTime !== null ? Math.min(50, timestamp - lastTime) : 16.6;
-      lastTime = timestamp;
-      const elapsed = timestamp - startTime;
+      const dt = tracker.lastTime !== null ? Math.min(50, timestamp - tracker.lastTime) : 16.6;
+      tracker.lastTime = timestamp;
+      const elapsed = timestamp - tracker.startTime;
 
       const state = sim.step(dt);
       setSwitchState({
@@ -106,20 +128,20 @@ export function CircuitCanvas({
         sparks: state.arcSparks,
       });
 
-      if (state.isContactClosed && !playedContactSound) {
+      if (state.isContactClosed && !tracker.playedContactSound) {
         soundFx.playSnapNode();
         soundFx.playElectricHum();
-        playedContactSound = true;
+        tracker.playedContactSound = true;
       }
 
-      if (state.breakerTripped && !playedBreakerSound) {
+      if (state.breakerTripped && !tracker.playedBreakerSound) {
         soundFx.playBreak();
         soundFx.playSpark();
-        playedBreakerSound = true;
+        tracker.playedBreakerSound = true;
       }
 
       if (elapsed < 2000) {
-        animId = requestAnimationFrame(frame);
+        tracker.animId = requestAnimationFrame(frame);
       } else {
         if (onSimulationFinish) {
           onSimulationFinish();
@@ -127,9 +149,9 @@ export function CircuitCanvas({
       }
     };
 
-    animId = requestAnimationFrame(frame);
+    tracker.animId = requestAnimationFrame(frame);
     return () => {
-      cancelAnimationFrame(animId);
+      cancelAnimationFrame(tracker.animId);
       sim.destroy();
     };
   }, [isSimulating, level, builtNodes, builtEdges, testResult, onSimulationFinish]);
@@ -203,7 +225,7 @@ export function CircuitCanvas({
   return (
     <div className="relative w-full h-full">
       {/* Electromechanical Breaker HUD */}
-      <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-xl bg-surface-2/85 backdrop-blur border border-border/80 px-3 py-1.5 font-mono text-xs shadow-md pointer-events-none">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-xl bg-surface-2/85 backdrop-blur border border-border/80 px-3 py-1.5 font-mono text-xs shadow-md">
         <span className="text-fg-muted">Breaker:</span>
         {isBreakerTripped ? (
           <span className="flex items-center gap-1 text-danger font-semibold">
@@ -217,6 +239,15 @@ export function CircuitCanvas({
           <span className="flex items-center gap-1 text-fg-subtle">
             ○ OPEN ({leverAngle.toFixed(0)}°)
           </span>
+        )}
+        {onResetSimulation && (
+          <button
+            onClick={handleResetSimulationClick}
+            title="Reset Matter.js switch contacts and breaker mechanism"
+            className="ml-2 rounded px-2 py-0.5 bg-surface-1 hover:bg-surface-2 text-fg hover:border-accent border border-border text-xs transition-colors"
+          >
+            ↺ Reset Sim
+          </button>
         )}
       </div>
 

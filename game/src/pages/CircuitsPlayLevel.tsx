@@ -31,6 +31,7 @@ export function CircuitsPlayLevel() {
   const setSelectedMaterial = useCircuitStore((s) => s.setSelectedMaterial);
   const setPendingNode = useCircuitStore((s) => s.setPendingNode);
   const runTest = useCircuitStore((s) => s.runTest);
+  const clearTestResult = useCircuitStore((s) => s.clearTestResult);
   const resetBuild = useCircuitStore((s) => s.resetBuild);
 
   useEffect(() => {
@@ -65,6 +66,12 @@ export function CircuitsPlayLevel() {
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+  };
+
+  const handleResetSimulation = () => {
+    setIsSimulating(false);
+    setShowResult(false);
+    clearTestResult();
   };
 
   const handleReset = () => {
@@ -105,6 +112,7 @@ export function CircuitsPlayLevel() {
           testResult={testResult}
           isSimulating={isSimulating}
           onSimulationFinish={handleSimulationFinish}
+          onResetSimulation={handleResetSimulation}
           onAddNode={addNode}
           onSelectNode={handleSelectNode}
           onRemoveNode={removeNode}
@@ -126,6 +134,7 @@ export function CircuitsPlayLevel() {
         onSelectMaterial={setSelectedMaterial}
         onTest={handleTest}
         onReset={handleReset}
+        onResetSimulation={handleResetSimulation}
         testing={isSimulating}
         testLabel="Test Circuit"
       />

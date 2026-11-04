@@ -17,6 +17,7 @@ interface Props {
   onSelectMaterial: (materialId: string) => void;
   onTest: () => void;
   onReset: () => void;
+  onResetSimulation?: () => void;
   testing: boolean;
   testLabel?: string;
 }
@@ -30,6 +31,7 @@ export function Toolbar({
   onSelectMaterial,
   onTest,
   onReset,
+  onResetSimulation,
   testing,
   testLabel = 'Test',
 }: Props) {
@@ -99,11 +101,24 @@ export function Toolbar({
           </span>
           <span className="text-fg-subtle"> / ${budget}</span>
         </div>
+        {onResetSimulation && (
+          <button
+            onClick={() => {
+              soundFx.playSnapNode();
+              onResetSimulation();
+            }}
+            title="Reset Matter.js physics simulation to initial state without clearing build"
+            className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg hover:border-accent transition-colors flex items-center gap-1.5"
+          >
+            <span>↺</span> Reset Simulation
+          </button>
+        )}
         <button
           onClick={handleResetClick}
           className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg transition-colors"
+          title="Clear player-built structure"
         >
-          Reset
+          Reset Build
         </button>
         <button
           onClick={onTest}

@@ -78,6 +78,25 @@ describe('Matter.js Physics Engine Integration', () => {
       expect(trajectory.frames.length).toBe(21);
       expect(trajectory.frames[0].cartPos.x).toBeLessThan(trajectory.frames[20].cartPos.x);
     });
+
+    it('resets all Matter.js bodies and constraints to initial state upon resetBodies()', () => {
+      const sim = createMatterTrussSimulation(testLevel, strongModel, 10000);
+      const initialPos = { ...sim.nodeBodies.get('C')!.position };
+
+      // Step physics multiple times so cart drives and nodes deflect
+      for (let i = 0; i < 10; i++) sim.step(16.66);
+
+      // Trigger reset
+      sim.resetBodies();
+
+      const resetPos = sim.nodeBodies.get('C')!.position;
+      expect(resetPos.x).toBeCloseTo(initialPos.x, 2);
+      expect(resetPos.y).toBeCloseTo(initialPos.y, 2);
+      expect(sim.nodeBodies.get('C')!.velocity.x).toBe(0);
+      expect(sim.nodeBodies.get('C')!.velocity.y).toBe(0);
+
+      sim.destroy();
+    });
   });
 
   describe('MatterVehicle (Vehicles & Drag Strip)', () => {
@@ -145,6 +164,29 @@ describe('Matter.js Physics Engine Integration', () => {
       expect(analysis.finalSpeed).toBeGreaterThan(0);
       expect(typeof analysis.tractionLimited).toBe('boolean');
     });
+
+    it('resets vehicle bodies to initial position and zero velocity with resetBodies()', () => {
+      const sim = createMatterVehicleSimulation(
+        ENGINES['engine-small'],
+        CHASSIS['chassis-light'],
+        50,
+      );
+
+      // Step physics so car moves
+      for (let i = 0; i < 15; i++) sim.step(16.66);
+
+      // Trigger reset
+      sim.resetBodies();
+
+      expect(sim.chassisBody.position.x).toBe(100);
+      expect(sim.chassisBody.velocity.x).toBe(0);
+      expect(sim.chassisBody.velocity.y).toBe(0);
+      expect(sim.chassisBody.angularVelocity).toBe(0);
+
+      const state = sim.step(16.66);
+      expect(state.distanceTraveled).toBeLessThan(0.1);
+      sim.destroy();
+    });
   });
 
   describe('MatterCircuit (Electromechanical Switch & Breaker)', () => {
@@ -206,6 +248,26 @@ describe('Matter.js Physics Engine Integration', () => {
       }
 
       expect(tripped).toBe(true);
+      sim.destroy();
+    });
+
+    it('resets switch lever body to initial open position and zero velocity with resetBodies()', () => {
+      const sim = createMatterCircuitSimulation(testCircuit);
+      sim.toggleSwitch(true);
+
+      for (let i = 0; i < 30; i++) sim.step(16.66);
+
+      // Trigger reset
+      sim.resetBodies();
+
+      expect(sim.leverBody.angle).toBeCloseTo(-Math.PI / 4, 2);
+      expect(sim.leverBody.velocity.x).toBe(0);
+      expect(sim.leverBody.velocity.y).toBe(0);
+      expect(sim.leverBody.angularVelocity).toBe(0);
+
+      const stateAfterReset = sim.step(16.66);
+      expect(stateAfterReset.isContactClosed).toBe(false);
+      expect(stateAfterReset.breakerTripped).toBe(false);
       sim.destroy();
     });
   });

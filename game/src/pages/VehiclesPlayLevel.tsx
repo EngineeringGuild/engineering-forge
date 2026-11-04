@@ -25,6 +25,7 @@ export function VehiclesPlayLevel() {
   const setSelectedEngine = useVehicleStore((s) => s.setSelectedEngine);
   const setSelectedChassis = useVehicleStore((s) => s.setSelectedChassis);
   const runTest = useVehicleStore((s) => s.runTest);
+  const clearTestResult = useVehicleStore((s) => s.clearTestResult);
   const resetBuild = useVehicleStore((s) => s.resetBuild);
 
   useEffect(() => {
@@ -59,6 +60,13 @@ export function VehiclesPlayLevel() {
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+  };
+
+  const handleResetSimulation = () => {
+    soundFx.playSnapNode();
+    setIsSimulating(false);
+    setShowResult(false);
+    clearTestResult();
   };
 
   const handleReset = () => {
@@ -97,6 +105,7 @@ export function VehiclesPlayLevel() {
         testResult={testResult}
         isSimulating={isSimulating}
         onSimulationFinish={handleSimulationFinish}
+        onResetSimulation={handleResetSimulation}
       />
 
       <p className="rounded-xl border border-border bg-surface-1 px-4 py-3 text-center text-sm text-fg-muted">
@@ -176,19 +185,29 @@ export function VehiclesPlayLevel() {
           <span className={overBudget ? 'text-danger font-semibold' : 'text-fg-muted'}>${cost}</span>
           <span className="text-fg-subtle"> / ${level.budget}</span>
         </div>
-        <button
-          onClick={handleReset}
-          className="ml-auto rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg transition-colors"
-        >
-          Reset
-        </button>
-        <button
-          onClick={handleTestDrive}
-          disabled={isSimulating}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {isSimulating ? 'Driving…' : 'Test Drive'}
-        </button>
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            onClick={handleResetSimulation}
+            className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg hover:border-accent transition-colors flex items-center gap-1.5"
+            title="Reset Matter.js vehicle bodies to starting position without changing configuration"
+          >
+            <span>↺</span> Reset Simulation
+          </button>
+          <button
+            onClick={handleReset}
+            className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg transition-colors"
+            title="Reset selected parts"
+          >
+            Reset Parts
+          </button>
+          <button
+            onClick={handleTestDrive}
+            disabled={isSimulating}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {isSimulating ? 'Driving…' : 'Test Drive'}
+          </button>
+        </div>
       </div>
 
       {showResult && testResult && (

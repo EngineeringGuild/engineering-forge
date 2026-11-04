@@ -19,6 +19,7 @@ export interface MatterTrussSimulation {
     failedMemberId: string | null;
     isCollapsed: boolean;
   };
+  resetBodies: () => void;
   destroy: () => void;
 }
 
@@ -261,6 +262,64 @@ export function createMatterTrussSimulation(
     };
   };
 
+  const initialNodePositions = new Map<string, { x: number; y: number }>();
+  for (const [id, body] of nodeBodies.entries()) {
+    initialNodePositions.set(id, { x: body.position.x, y: body.position.y });
+  }
+
+  const initialChassisPos = { x: chassis.position.x, y: chassis.position.y };
+  const initialWheelFrontPos = { x: wheelFront.position.x, y: wheelFront.position.y };
+  const initialWheelRearPos = { x: wheelRear.position.x, y: wheelRear.position.y };
+  const allMemberConstraints = new Map(memberConstraints);
+
+  const resetBodies = () => {
+    // Reset all node bodies to initial coordinates and zero velocities
+    for (const [id, body] of nodeBodies.entries()) {
+      const initPos = initialNodePositions.get(id);
+      if (initPos) {
+        Body.setPosition(body, initPos);
+        Body.setVelocity(body, { x: 0, y: 0 });
+        Body.setAngularVelocity(body, 0);
+        Body.setAngle(body, 0);
+        body.force.x = 0;
+        body.force.y = 0;
+      }
+    }
+
+    // Reset vehicle chassis and wheels to initial state
+    Body.setPosition(chassis, initialChassisPos);
+    Body.setVelocity(chassis, { x: 0, y: 0 });
+    Body.setAngularVelocity(chassis, 0);
+    Body.setAngle(chassis, 0);
+    chassis.force.x = 0;
+    chassis.force.y = 0;
+
+    Body.setPosition(wheelFront, initialWheelFrontPos);
+    Body.setVelocity(wheelFront, { x: 0, y: 0 });
+    Body.setAngularVelocity(wheelFront, 0);
+    Body.setAngle(wheelFront, 0);
+    wheelFront.force.x = 0;
+    wheelFront.force.y = 0;
+
+    Body.setPosition(wheelRear, initialWheelRearPos);
+    Body.setVelocity(wheelRear, { x: 0, y: 0 });
+    Body.setAngularVelocity(wheelRear, 0);
+    Body.setAngle(wheelRear, 0);
+    wheelRear.force.x = 0;
+    wheelRear.force.y = 0;
+
+    // Restore any removed / snapped member constraints
+    for (const [mId, constraint] of allMemberConstraints.entries()) {
+      if (!memberConstraints.has(mId)) {
+        memberConstraints.set(mId, constraint);
+        Composite.add(world, constraint);
+      }
+    }
+
+    failedMemberId = null;
+    isCollapsed = false;
+  };
+
   const destroy = () => {
     Composite.clear(world, false, true);
     Engine.clear(engine);
@@ -273,6 +332,7 @@ export function createMatterTrussSimulation(
     memberConstraints,
     vehicleComposite,
     step,
+    resetBodies,
     destroy,
   };
 }

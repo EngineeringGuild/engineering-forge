@@ -12,6 +12,7 @@ interface Props {
   testResult: VehicleTestResult | null;
   isSimulating: boolean;
   onSimulationFinish?: () => void;
+  onResetSimulation?: () => void;
 }
 
 export function VehicleTrackCanvas({
@@ -21,6 +22,7 @@ export function VehicleTrackCanvas({
   testResult,
   isSimulating,
   onSimulationFinish,
+  onResetSimulation,
 }: Props) {
   const [animProgress, setAnimProgress] = useState(0); // 0 to 1
   const [animSpeed, setAnimSpeed] = useState(0); // m/s
@@ -28,6 +30,20 @@ export function VehicleTrackCanvas({
   const soundTriggeredRef = useRef<{ rev: boolean; screech: boolean }>({ rev: false, screech: false });
   const animIdRef = useRef<number>(0);
   const startTimestampRef = useRef<number | null>(null);
+  const simRef = useRef<ReturnType<typeof createMatterVehicleSimulation> | null>(null);
+
+  const handleResetSimulationClick = () => {
+    soundFx.playSnapNode();
+    if (simRef.current) {
+      simRef.current.resetBodies();
+    }
+    setAnimProgress(0);
+    setAnimSpeed(0);
+    setWheelRotation(0);
+    if (onResetSimulation) {
+      onResetSimulation();
+    }
+  };
 
   const finalSpeed = testResult?.analysis.finalSpeed ?? 0;
   const isStalled = testResult?.analysis.stalled ?? false;
@@ -50,6 +66,7 @@ export function VehicleTrackCanvas({
       incline,
       level.payloadMass,
     );
+    simRef.current = sim;
 
     let lastTimestamp: number | null = null;
     startTimestampRef.current = null;
@@ -149,6 +166,15 @@ export function VehicleTrackCanvas({
             <span className="text-fg-muted">
               Slope: <strong className="text-fg">{incline}°</strong>
             </span>
+          )}
+          {onResetSimulation && (
+            <button
+              onClick={handleResetSimulationClick}
+              title="Reset Matter.js vehicle bodies to starting line"
+              className="rounded px-2.5 py-1 bg-surface-1 hover:bg-surface-2 text-fg hover:border-accent border border-border text-xs transition-colors flex items-center gap-1 font-sans"
+            >
+              <span>↺</span> Reset Simulation
+            </button>
           )}
         </div>
       </div>
