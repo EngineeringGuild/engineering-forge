@@ -12,6 +12,9 @@ export interface DynamicTrussFrame {
   maxUtilization: number;
   failedMemberId: string | null;
   isCollapsed: boolean;
+  supportReactions?: Record<string, { rx: number; ry: number }>;
+  maxDeflectionMm?: number;
+  activeLoadN?: number;
 }
 
 export interface DynamicSimulationTrajectory {

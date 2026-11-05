@@ -16,6 +16,9 @@ export interface MatterTrussSimulation {
     cartPos: { x: number; y: number };
     nodePositions: Record<string, { x: number; y: number }>;
     memberStresses: Record<string, number>;
+    memberForces: Record<string, number>;
+    supportReactions: Record<string, { rx: number; ry: number }>;
+    maxDeflectionMm: number;
     failedMemberId: string | null;
     isCollapsed: boolean;
   };
@@ -209,6 +212,7 @@ export function createMatterTrussSimulation(
 
     // Compute constraint forces and check for breakage
     const memberStresses: Record<string, number> = {};
+    const memberForces: Record<string, number> = {};
 
     for (const [memberId, constraint] of memberConstraints.entries()) {
       if (!constraint.bodyA || !constraint.bodyB) continue;
@@ -225,6 +229,7 @@ export function createMatterTrussSimulation(
       const capacityN = material.allowableStress * material.area;
       const util = Math.abs(axialForceN) / capacityN;
       memberStresses[memberId] = util;
+      memberForces[memberId] = axialForceN;
 
       const cableCompression = Boolean(material.tensionOnly) && elongationMeters < -0.005;
       const strutTension = Boolean(material.compressionOnly) && elongationMeters > 0.005;
@@ -239,13 +244,47 @@ export function createMatterTrussSimulation(
       }
     }
 
-    // Extract current node positions
+    // Extract current node positions and compute bridge deflection
     const nodePositions: Record<string, { x: number; y: number }> = {};
+    let maxDeflectionMm = 0;
     for (const [id, body] of nodeBodies.entries()) {
-      nodePositions[id] = {
-        x: body.position.x / SCALE,
-        y: body.position.y / SCALE,
-      };
+      const currentX = body.position.x / SCALE;
+      const currentY = body.position.y / SCALE;
+      nodePositions[id] = { x: currentX, y: currentY };
+
+      const origNode = model.nodes.find((n) => n.id === id);
+      if (origNode && origNode.support !== 'pin') {
+        const deflectionMm = Math.max(0, (currentY - origNode.y) * 1000);
+        if (deflectionMm > maxDeflectionMm) {
+          maxDeflectionMm = deflectionMm;
+        }
+      }
+    }
+
+    // Compute support reaction forces (equilibrium of joints at supports)
+    const supportReactions: Record<string, { rx: number; ry: number }> = {};
+    for (const fixed of level.fixedNodes) {
+      if (fixed.support === 'none') continue;
+      let rx = 0;
+      let ry = 0;
+      for (const m of model.members) {
+        if (m.nodeA === fixed.id || m.nodeB === fixed.id) {
+          const otherId = m.nodeA === fixed.id ? m.nodeB : m.nodeA;
+          const posSelf = nodePositions[fixed.id] || fixed;
+          const posOther = nodePositions[otherId];
+          if (!posOther) continue;
+          const dist = Math.hypot(posOther.x - posSelf.x, posOther.y - posSelf.y);
+          if (dist > 1e-4) {
+            const ux = (posOther.x - posSelf.x) / dist;
+            const uy = (posOther.y - posSelf.y) / dist;
+            const f = memberForces[m.id] || 0;
+            // Internal tension pulls away from support; reaction counters it
+            rx -= f * ux;
+            ry -= f * uy;
+          }
+        }
+      }
+      supportReactions[fixed.id] = { rx, ry };
     }
 
     const cartPos = {
@@ -257,6 +296,9 @@ export function createMatterTrussSimulation(
       cartPos,
       nodePositions,
       memberStresses,
+      memberForces,
+      supportReactions,
+      maxDeflectionMm,
       failedMemberId,
       isCollapsed,
     };
@@ -367,14 +409,18 @@ export function computeMatterTrussTrajectory(
       const memDef = model.members.find((m) => m.id === mId);
       const mat = memDef ? MATERIALS[memDef.materialId] : MATERIALS.wood;
       const capacity = mat.allowableStress * mat.area;
+      const signedForce = stepState.memberForces[mId] !== undefined
+        ? stepState.memberForces[mId]
+        : util * capacity;
+
       memberResults[mId] = {
         memberId: mId,
-        axialForce: util * capacity,
+        axialForce: signedForce,
         capacity,
         utilization: util,
         failed: stepState.failedMemberId === mId,
-        wentSlack: false,
-        pulledApart: false,
+        wentSlack: Boolean(mat.tensionOnly) && signedForce < -10,
+        pulledApart: Boolean(mat.compressionOnly) && signedForce > 10,
       };
     }
 
@@ -405,6 +451,9 @@ export function computeMatterTrussTrajectory(
       maxUtilization: stepMaxUtil,
       failedMemberId: stepState.failedMemberId,
       isCollapsed: stepState.isCollapsed,
+      supportReactions: stepState.supportReactions,
+      maxDeflectionMm: stepState.maxDeflectionMm,
+      activeLoadN: vehicleLoadN,
     });
   }
 

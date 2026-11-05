@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import type { LevelDef } from '../content/types';
 import type { BuiltMember, BuiltNode } from '../game/build';
 import { MATERIALS } from '../physics/materials';
@@ -7,6 +7,9 @@ import type { DynamicSimulationTrajectory } from '../physics/trussDynamic';
 import { computeMatterTrussTrajectory } from '../physics/matterTruss';
 import { toTrussModel } from '../game/build';
 import { soundFx } from '../audio/soundFx';
+import { getStressHeatmapRgb } from '../physics/heatmap';
+import { SimulationControlPanel } from './SimulationControlPanel';
+import { RealTimeMetricsOverlay } from './RealTimeMetricsOverlay';
 
 interface Point {
   x: number;
@@ -28,11 +31,15 @@ interface Props {
   onRemoveMember: (memberId: string) => void;
 }
 
-function stressColor(utilization: number, failed: boolean): string {
-  if (failed) return 'var(--danger)';
-  if (utilization > 0.8) return 'var(--danger)';
-  if (utilization > 0.6) return 'var(--warning)';
-  return 'var(--success)';
+function getMemberColor(
+  utilization: number,
+  failed: boolean,
+  materialColor: string,
+  heatmap: boolean,
+): string {
+  if (failed) return '#ef4444';
+  if (!heatmap) return materialColor;
+  return getStressHeatmapRgb(utilization, failed);
 }
 
 export function BridgeCanvas({
@@ -56,6 +63,9 @@ export function BridgeCanvas({
   const [animProgress, setAnimProgress] = useState(0); // 0 to 1
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
+  const [heatmapEnabled, setHeatmapEnabled] = useState(true);
+  const [vectorsEnabled, setVectorsEnabled] = useState(true);
+  const [metricsEnabled, setMetricsEnabled] = useState(true);
   const soundPlayedRef = useRef<{ creak: boolean; snap: boolean }>({ creak: false, snap: false });
 
   // Base coordinates mapping
@@ -75,6 +85,45 @@ export function BridgeCanvas({
 
   const animIdRef = useRef<number>(0);
   const startTimestampRef = useRef<number | null>(null);
+  const animProgressRef = useRef(animProgress);
+  useEffect(() => {
+    animProgressRef.current = animProgress;
+  }, [animProgress]);
+
+  const handleResetSimulation = useCallback(() => {
+    setAnimProgress(0);
+    setIsPaused(false);
+    startTimestampRef.current = null;
+    soundPlayedRef.current = { creak: false, snap: false };
+    onResetSimulation?.();
+  }, [onResetSimulation]);
+
+  const handleScrub = useCallback((p: number) => {
+    setIsPaused(true);
+    setAnimProgress(p);
+    startTimestampRef.current = null;
+  }, []);
+
+  // Keyboard controls for rapid inspection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space' && (isSimulating || testResult)) {
+        e.preventDefault();
+        setIsPaused((v) => !v);
+      } else if ((e.key === 'r' || e.key === 'R') && (isSimulating || testResult)) {
+        handleResetSimulation();
+      } else if (e.key === 'h' || e.key === 'H') {
+        setHeatmapEnabled((v) => !v);
+      } else if (e.key === 'v' || e.key === 'V') {
+        setVectorsEnabled((v) => !v);
+      } else if (e.key === 'm' || e.key === 'M') {
+        setMetricsEnabled((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSimulating, testResult, handleResetSimulation]);
 
   // Animation loop when simulating
   useEffect(() => {
@@ -84,7 +133,6 @@ export function BridgeCanvas({
       return;
     }
 
-    startTimestampRef.current = null;
     const duration = (trajectory.durationSeconds * 1000) / playbackSpeed;
 
     const frame = (timestamp: number) => {
@@ -93,9 +141,11 @@ export function BridgeCanvas({
         return;
       }
 
-      if (startTimestampRef.current === null) startTimestampRef.current = timestamp;
+      if (startTimestampRef.current === null) {
+        startTimestampRef.current = timestamp - animProgressRef.current * duration;
+      }
       const elapsed = timestamp - startTimestampRef.current;
-      const p = Math.min(1, elapsed / duration);
+      const p = Math.min(1, Math.max(0, elapsed / duration));
       setAnimProgress(p);
 
       // Sound triggers based on simulation state
@@ -232,7 +282,7 @@ export function BridgeCanvas({
           const b = displayPoints.get(m.nodeB)!;
           const result = currentFrame?.memberResults[m.id];
           const color = result
-            ? stressColor(result.utilization, result.failed)
+            ? getMemberColor(result.utilization, result.failed, MATERIALS.wood.color, heatmapEnabled)
             : MATERIALS.wood.color;
           return (
             <line
@@ -257,7 +307,9 @@ export function BridgeCanvas({
           const result = currentFrame?.memberResults[m.id];
           const material = MATERIALS[m.materialId];
           const isFailed = result?.failed || currentFrame?.failedMemberId === m.id;
-          const color = result ? stressColor(result.utilization, isFailed) : material.color;
+          const color = result
+            ? getMemberColor(result.utilization, isFailed, material.color, heatmapEnabled)
+            : material.color;
 
           return (
             <g key={m.id}>
@@ -297,6 +349,107 @@ export function BridgeCanvas({
           );
         })}
 
+        {/* Active Member Force Vectors (Tension & Compression) */}
+        {(isSimulating || testResult) &&
+          vectorsEnabled &&
+          [...level.deckMembers, ...builtMembers].map((m) => {
+            const a = displayPoints.get(m.nodeA);
+            const b = displayPoints.get(m.nodeB);
+            if (!a || !b) return null;
+            const res = currentFrame?.memberResults[m.id];
+            if (!res || Math.abs(res.axialForce) < 15) return null;
+
+            const isTension = res.axialForce > 0;
+            const mag = Math.abs(res.axialForce);
+            const mx = (a.x + b.x) / 2;
+            const my = (a.y + b.y) / 2;
+            const len = Math.hypot(b.x - a.x, b.y - a.y);
+            if (len < 0.35) return null;
+
+            const ux = (b.x - a.x) / len;
+            const uy = (b.y - a.y) / len;
+            const nx = -uy;
+            const ny = ux;
+
+            const arrowLen = Math.min(len * 0.22, 0.35);
+            const arrowColor = isTension ? '#38bdf8' : '#f97316';
+            const marker = isTension ? 'url(#arrow-tension)' : 'url(#arrow-compression)';
+            const forceLabel = (mag >= 1000 ? `${(mag / 1000).toFixed(1)}k` : `${Math.round(mag)}`) + (isTension ? 'T' : 'C');
+
+            return (
+              <g key={`vec-${m.id}`} className="pointer-events-none select-none">
+                {isTension ? (
+                  <>
+                    <line
+                      x1={a.x + ux * 0.12}
+                      y1={a.y + uy * 0.12}
+                      x2={a.x + ux * (0.12 + arrowLen)}
+                      y2={a.y + uy * (0.12 + arrowLen)}
+                      stroke={arrowColor}
+                      strokeWidth={0.035}
+                      markerEnd={marker}
+                    />
+                    <line
+                      x1={b.x - ux * 0.12}
+                      y1={b.y - uy * 0.12}
+                      x2={b.x - ux * (0.12 + arrowLen)}
+                      y2={b.y - uy * (0.12 + arrowLen)}
+                      stroke={arrowColor}
+                      strokeWidth={0.035}
+                      markerEnd={marker}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <line
+                      x1={mx - ux * 0.08}
+                      y1={my - uy * 0.08}
+                      x2={mx - ux * (0.08 + arrowLen)}
+                      y2={my - uy * (0.08 + arrowLen)}
+                      stroke={arrowColor}
+                      strokeWidth={0.035}
+                      markerEnd={marker}
+                    />
+                    <line
+                      x1={mx + ux * 0.08}
+                      y1={my + uy * 0.08}
+                      x2={mx + ux * (0.08 + arrowLen)}
+                      y2={my + uy * (0.08 + arrowLen)}
+                      stroke={arrowColor}
+                      strokeWidth={0.035}
+                      markerEnd={marker}
+                    />
+                  </>
+                )}
+                {/* Vector magnitude badge */}
+                <g transform={`translate(${mx + nx * 0.16}, ${my + ny * 0.16})`}>
+                  <rect
+                    x={-0.34}
+                    y={-0.11}
+                    width={0.68}
+                    height={0.22}
+                    rx={0.04}
+                    fill="#020617"
+                    fillOpacity={0.9}
+                    stroke={arrowColor}
+                    strokeWidth={0.012}
+                  />
+                  <text
+                    x={0}
+                    y={0.045}
+                    fontSize={0.105}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    fill={arrowColor}
+                  >
+                    {forceLabel}
+                  </text>
+                </g>
+              </g>
+            );
+          })}
+
         {/* Anchors (pin / roller) */}
         {level.fixedNodes
           .filter((n) => n.support !== 'none')
@@ -323,6 +476,56 @@ export function BridgeCanvas({
               />
             </g>
           ))}
+
+        {/* Support reaction force vectors */}
+        {(isSimulating || testResult) &&
+          vectorsEnabled &&
+          currentFrame?.supportReactions &&
+          level.fixedNodes
+            .filter((n) => n.support !== 'none')
+            .map((n) => {
+              const pt = displayPoints.get(n.id) ?? n;
+              const r = currentFrame.supportReactions?.[n.id];
+              if (!r) return null;
+              const ryMag = Math.abs(r.ry);
+              if (ryMag < 50) return null;
+              const arrowHeight = Math.min(1.0, Math.max(0.35, (ryMag / 10000) * 0.7));
+              return (
+                <g key={`react-vec-${n.id}`} className="pointer-events-none select-none">
+                  <line
+                    x1={pt.x}
+                    y1={pt.y + 0.6 + arrowHeight}
+                    x2={pt.x}
+                    y2={pt.y + 0.6}
+                    stroke="#10b981"
+                    strokeWidth={0.05}
+                    markerEnd="url(#arrow-reaction)"
+                  />
+                  <rect
+                    x={pt.x - 0.42}
+                    y={pt.y + 0.65 + arrowHeight}
+                    width={0.84}
+                    height={0.22}
+                    rx={0.04}
+                    fill="#020617"
+                    fillOpacity={0.9}
+                    stroke="#10b981"
+                    strokeWidth={0.012}
+                  />
+                  <text
+                    x={pt.x}
+                    y={pt.y + 0.8 + arrowHeight}
+                    fontSize={0.105}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    fill="#10b981"
+                  >
+                    {(ryMag / 1000).toFixed(1)}kN ↑
+                  </text>
+                </g>
+              );
+            })}
 
         {/* Dynamic Vehicle / Cart Crossing the Deck */}
         {(isSimulating || testResult) && cartPos && (
@@ -384,6 +587,43 @@ export function BridgeCanvas({
             >
               FORGE
             </text>
+
+            {/* Live Vehicle Weight Force Vector */}
+            {vectorsEnabled && (
+              <g className="pointer-events-none select-none">
+                <line
+                  x1={0}
+                  y1={-0.05}
+                  x2={0}
+                  y2={0.55}
+                  stroke="#f59e0b"
+                  strokeWidth={0.05}
+                  markerEnd="url(#arrow-load)"
+                />
+                <rect
+                  x={0.06}
+                  y={0.2}
+                  width={0.68}
+                  height={0.2}
+                  rx={0.03}
+                  fill="#020617"
+                  fillOpacity={0.92}
+                  stroke="#f59e0b"
+                  strokeWidth={0.012}
+                />
+                <text
+                  x={0.4}
+                  y={0.34}
+                  fontSize={0.095}
+                  fontFamily="monospace"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                  fill="#f59e0b"
+                >
+                  10.0kN ↓
+                </text>
+              </g>
+            )}
           </g>
         )}
 
@@ -411,6 +651,18 @@ export function BridgeCanvas({
         <defs>
           <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto">
             <path d="M0,0 L6,0 L3,6 z" fill="var(--accent)" />
+          </marker>
+          <marker id="arrow-tension" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 z" fill="#38bdf8" />
+          </marker>
+          <marker id="arrow-compression" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 z" fill="#f97316" />
+          </marker>
+          <marker id="arrow-reaction" markerWidth="5" markerHeight="5" refX="2.5" refY="1" orient="auto">
+            <path d="M0,5 L5,5 L2.5,0 z" fill="#10b981" />
+          </marker>
+          <marker id="arrow-load" markerWidth="5" markerHeight="5" refX="2.5" refY="4" orient="auto">
+            <path d="M0,0 L5,0 L2.5,5 z" fill="#f59e0b" />
           </marker>
         </defs>
 
@@ -449,62 +701,38 @@ export function BridgeCanvas({
         })}
       </svg>
 
-      {/* Floating Simulation HUD Overlay */}
-      {isSimulating && (
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between rounded-xl bg-surface-1/90 border border-border/80 px-4 py-2.5 backdrop-blur-md shadow-lg text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-accent animate-pulse" />
-            <span className="text-fg font-semibold uppercase tracking-wider">
-              {currentFrame?.isCollapsed ? '⚠️ Collapse Detected' : '🚚 Crossing Bridge'}
-            </span>
-            <span className="text-fg-subtle">
-              ({Math.round(animProgress * 100)}%)
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-fg-muted">
-              Peak Stress:{' '}
-              <strong
-                className={
-                  (currentFrame?.maxUtilization ?? 0) > 0.8
-                    ? 'text-danger font-bold'
-                    : (currentFrame?.maxUtilization ?? 0) > 0.6
-                    ? 'text-warning'
-                    : 'text-success'
-                }
-              >
-                {Math.round((currentFrame?.maxUtilization ?? 0) * 100)}%
-              </strong>
-            </span>
-
-            {onResetSimulation && (
-              <button
-                onClick={() => {
-                  soundFx.playSnapNode();
-                  setAnimProgress(0);
-                  onResetSimulation();
-                }}
-                className="rounded px-2 py-1 bg-surface-2 text-fg hover:border-accent border border-border"
-                title="Reset simulation to initial position without clearing bridge"
-              >
-                ↺ Reset Sim
-              </button>
-            )}
-            <button
-              onClick={() => setIsPaused((v) => !v)}
-              className="rounded px-2 py-1 bg-surface-2 text-fg hover:border-accent border border-border"
-            >
-              {isPaused ? '▶ Play' : '⏸ Pause'}
-            </button>
-            <button
-              onClick={() => setPlaybackSpeed((s) => (s === 1 ? 2 : 1))}
-              className="rounded px-2 py-1 bg-surface-2 text-fg hover:border-accent border border-border"
-            >
-              {playbackSpeed}x
-            </button>
-          </div>
+      {/* Simulation Control Panel & Playback Inspection */}
+      {(isSimulating || testResult) && (
+        <div className="absolute top-3 left-3 right-3 z-10">
+          <SimulationControlPanel
+            isSimulating={isSimulating}
+            isPaused={isPaused}
+            playbackSpeed={playbackSpeed}
+            animProgress={animProgress}
+            heatmapEnabled={heatmapEnabled}
+            vectorsEnabled={vectorsEnabled}
+            metricsEnabled={metricsEnabled}
+            durationSeconds={trajectory?.durationSeconds ?? 3.2}
+            onTogglePlayPause={() => setIsPaused((v) => !v)}
+            onReset={handleResetSimulation}
+            onSpeedChange={setPlaybackSpeed}
+            onScrub={handleScrub}
+            onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+            onToggleVectors={() => setVectorsEnabled((v) => !v)}
+            onToggleMetrics={() => setMetricsEnabled((v) => !v)}
+          />
         </div>
+      )}
+
+      {/* Real-Time Metrics & Force Telemetry Overlay */}
+      {(isSimulating || testResult) && metricsEnabled && (
+        <RealTimeMetricsOverlay
+          currentFrame={currentFrame}
+          builtMembers={builtMembers}
+          isSimulating={isSimulating}
+          heatmapEnabled={heatmapEnabled}
+          vectorsEnabled={vectorsEnabled}
+        />
       )}
     </div>
   );
