@@ -1,9 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { VehicleLevelDef } from '../content/vehicleTypes';
 import type { VehicleTestResult } from '../state/vehicleStore';
 import { soundFx } from '../audio/soundFx';
 import { createMatterVehicleSimulation } from '../physics/matterVehicle';
 import { ENGINES, CHASSIS } from '../physics/vehicleParts';
+import { SimulationControlPanel } from './SimulationControlPanel';
+import { VehicleRealTimeMetricsOverlay } from './VehicleRealTimeMetricsOverlay';
+import {
+  calculateAerodynamicDrag,
+  calculateInclineForces,
+  type VehicleTelemetry,
+} from '../physics/engine/PhysicsMetricsContract';
 
 interface Props {
   level: VehicleLevelDef;
@@ -27,12 +34,18 @@ export function VehicleTrackCanvas({
   const [animProgress, setAnimProgress] = useState(0); // 0 to 1
   const [animSpeed, setAnimSpeed] = useState(0); // m/s
   const [wheelRotation, setWheelRotation] = useState(0); // degrees
+  const [isPaused, setIsPaused] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [heatmapEnabled, setHeatmapEnabled] = useState(true);
+  const [vectorsEnabled, setVectorsEnabled] = useState(true);
+  const [metricsEnabled, setMetricsEnabled] = useState(true);
+  const [liveTelemetry, setLiveTelemetry] = useState<VehicleTelemetry | null>(null);
+
   const soundTriggeredRef = useRef<{ rev: boolean; screech: boolean }>({ rev: false, screech: false });
   const animIdRef = useRef<number>(0);
-  const startTimestampRef = useRef<number | null>(null);
   const simRef = useRef<ReturnType<typeof createMatterVehicleSimulation> | null>(null);
 
-  const handleResetSimulationClick = () => {
+  const handleResetSimulationClick = useCallback(() => {
     soundFx.playSnapNode();
     if (simRef.current) {
       simRef.current.resetBodies();
@@ -40,25 +53,47 @@ export function VehicleTrackCanvas({
     setAnimProgress(0);
     setAnimSpeed(0);
     setWheelRotation(0);
+    setIsPaused(false);
     if (onResetSimulation) {
       onResetSimulation();
     }
-  };
+  }, [onResetSimulation]);
 
   const finalSpeed = testResult?.analysis.finalSpeed ?? 0;
   const isStalled = testResult?.analysis.stalled ?? false;
   const isTractionLimited = testResult?.analysis.tractionLimited ?? false;
   const incline = level.inclineDegrees ?? 0;
 
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space' && (isSimulating || testResult)) {
+        e.preventDefault();
+        setIsPaused((v) => !v);
+      } else if ((e.key === 'r' || e.key === 'R') && (isSimulating || testResult)) {
+        handleResetSimulationClick();
+      } else if (e.key === 'h' || e.key === 'H') {
+        setHeatmapEnabled((v) => !v);
+      } else if (e.key === 'v' || e.key === 'V') {
+        setVectorsEnabled((v) => !v);
+      } else if (e.key === 'm' || e.key === 'M') {
+        setMetricsEnabled((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSimulating, testResult, handleResetSimulationClick]);
+
   useEffect(() => {
     if (!isSimulating) {
       soundTriggeredRef.current = { rev: false, screech: false };
-      startTimestampRef.current = null;
       return;
     }
 
     const engineDef = ENGINES[selectedEngineId] || ENGINES['engine-small'];
     const chassisDef = CHASSIS[selectedChassisId] || CHASSIS['chassis-light'];
+    const totalMass = chassisDef.mass + (level.payloadMass || 0);
     const sim = createMatterVehicleSimulation(
       engineDef,
       chassisDef,
@@ -69,16 +104,20 @@ export function VehicleTrackCanvas({
     simRef.current = sim;
 
     let lastTimestamp: number | null = null;
-    startTimestampRef.current = null;
 
     const frame = (timestamp: number) => {
-      if (startTimestampRef.current === null) {
-        startTimestampRef.current = timestamp;
+      if (isPaused) {
+        animIdRef.current = requestAnimationFrame(frame);
+        return;
+      }
+
+      if (lastTimestamp === null) {
         lastTimestamp = timestamp;
       }
 
-      const dt = lastTimestamp !== null ? Math.min(50, timestamp - lastTimestamp) : 16.6;
+      const rawDt = Math.min(50, timestamp - lastTimestamp);
       lastTimestamp = timestamp;
+      const dt = rawDt * playbackSpeed;
 
       // Step Matter.js physics engine
       const state = sim.step(dt);
@@ -87,6 +126,29 @@ export function VehicleTrackCanvas({
       setAnimProgress(p);
       setAnimSpeed(state.speed);
       setWheelRotation((state.wheelRotationRad * 180) / Math.PI);
+
+      // Compute physical telemetry contracts
+      const dragN = calculateAerodynamicDrag(state.speed);
+      const inclineForces = calculateInclineForces(totalMass, incline);
+      const powerW = state.effectiveForceN * state.speed;
+
+      setLiveTelemetry({
+        speedMps: state.speed,
+        speedKmh: state.speed * 3.6,
+        accelerationMps2: state.acceleration,
+        gForce: state.acceleration / 9.80665,
+        thrustN: state.effectiveForceN,
+        normalForceN: state.normalForceN,
+        tractionLimitN: state.tractionLimitN,
+        gripRatio: state.effectiveForceN / (state.tractionLimitN || 1),
+        isTractionLimited: state.isTractionLimited,
+        aerodynamicDragN: dragN,
+        slopeForceN: inclineForces.slopeGravityN,
+        powerWatt: powerW,
+        powerHp: powerW / 745.7,
+        kineticEnergyJoule: 0.5 * totalMass * state.speed * state.speed,
+        isStalled: state.isStalled,
+      });
 
       if (state.speed > 0.5 && !soundTriggeredRef.current.rev) {
         soundFx.playEngineRev(Math.min(1, state.speed / (level.targetSpeed || 30)));
@@ -116,6 +178,8 @@ export function VehicleTrackCanvas({
     };
   }, [
     isSimulating,
+    isPaused,
+    playbackSpeed,
     selectedEngineId,
     selectedChassisId,
     level.distance,
@@ -127,6 +191,7 @@ export function VehicleTrackCanvas({
 
   const progress = isSimulating ? animProgress : (testResult ? 1 : 0);
   const currentSpeed = isSimulating ? animSpeed : (testResult ? finalSpeed : 0);
+  const totalDuration = finalSpeed > 0 ? (2 * level.distance) / finalSpeed : 3.5;
 
   // Viewbox coordinates: track runs from 0 to 600, y from 0 to 220
   const trackStartX = 60;
@@ -137,47 +202,31 @@ export function VehicleTrackCanvas({
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl border border-border bg-surface-1 p-3">
-      {/* Dynamic Telemetry HUD */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-2/60 border border-border/60 px-4 py-2 font-mono text-xs">
-        <div className="flex items-center gap-3">
-          <span className="text-fg-muted">
-            Speed:{' '}
-            <strong className="text-base text-accent">
-              {currentSpeed.toFixed(1)} <span className="text-xs">m/s</span>
-            </strong>
-          </span>
-          <span className="text-fg-subtle">
-            (Target: {level.targetSpeed} m/s{level.maxSpeed ? ` - ${level.maxSpeed} m/s` : ''})
-          </span>
+      {/* Simulation Control Panel & Transport */}
+      {(isSimulating || testResult) && (
+        <div className="mb-2">
+          <SimulationControlPanel
+            isSimulating={isSimulating}
+            isPaused={isPaused}
+            playbackSpeed={playbackSpeed}
+            animProgress={animProgress}
+            heatmapEnabled={heatmapEnabled}
+            vectorsEnabled={vectorsEnabled}
+            metricsEnabled={metricsEnabled}
+            durationSeconds={totalDuration}
+            onTogglePlayPause={() => setIsPaused((v) => !v)}
+            onReset={handleResetSimulationClick}
+            onSpeedChange={setPlaybackSpeed}
+            onScrub={(p) => {
+              setIsPaused(true);
+              setAnimProgress(p);
+            }}
+            onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+            onToggleVectors={() => setVectorsEnabled((v) => !v)}
+            onToggleMetrics={() => setMetricsEnabled((v) => !v)}
+          />
         </div>
-
-        <div className="flex items-center gap-2">
-          {isTractionLimited && (
-            <span className="rounded bg-warning/20 text-warning px-2 py-0.5 border border-warning/40">
-              ⚠️ Traction Slip
-            </span>
-          )}
-          {isStalled && (
-            <span className="rounded bg-danger/20 text-danger px-2 py-0.5 border border-danger/40">
-              ⛔ Stalled
-            </span>
-          )}
-          {incline > 0 && (
-            <span className="text-fg-muted">
-              Slope: <strong className="text-fg">{incline}°</strong>
-            </span>
-          )}
-          {onResetSimulation && (
-            <button
-              onClick={handleResetSimulationClick}
-              title="Reset Matter.js vehicle bodies to starting line"
-              className="rounded px-2.5 py-1 bg-surface-1 hover:bg-surface-2 text-fg hover:border-accent border border-border text-xs transition-colors flex items-center gap-1 font-sans"
-            >
-              <span>↺</span> Reset Simulation
-            </button>
-          )}
-        </div>
-      </div>
+      )}
 
       <svg viewBox="0 0 600 210" className="w-full h-48 select-none touch-none">
         <defs>
@@ -191,6 +240,18 @@ export function VehicleTrackCanvas({
             <rect y="4" width="4" height="4" fill="#000000" />
             <rect x="4" y="4" height="4" fill="#ffffff" />
           </pattern>
+          <marker id="arrow-thrust" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 z" fill="#06b6d4" />
+          </marker>
+          <marker id="arrow-normal" markerWidth="6" markerHeight="6" refX="3" refY="1" orient="auto">
+            <path d="M0,6 L6,6 L3,0 z" fill="#10b981" />
+          </marker>
+          <marker id="arrow-slope" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+            <path d="M6,0 L0,3 L6,6 z" fill="#f97316" />
+          </marker>
+          <marker id="arrow-drag" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+            <path d="M6,0 L0,3 L6,6 z" fill="#f59e0b" />
+          </marker>
         </defs>
 
         {/* Sky / Grid Background */}
@@ -277,6 +338,21 @@ export function VehicleTrackCanvas({
             opacity="0.8"
           />
 
+          {/* Speed Indicator Badge */}
+          {(isSimulating || testResult) && (
+            <text
+              x="2"
+              y="-10"
+              fontSize="6"
+              fontFamily="monospace"
+              fontWeight="bold"
+              fill="var(--fg)"
+              textAnchor="middle"
+            >
+              {(currentSpeed * 3.6).toFixed(0)} km/h
+            </text>
+          )}
+
           {/* Payload Crate */}
           {Boolean(level.payloadMass) && (
             <g transform="translate(-16, -18)">
@@ -288,21 +364,109 @@ export function VehicleTrackCanvas({
             </g>
           )}
 
-          {/* Rear Wheel */}
+          {/* Rear Wheel (with Heatmap Color) */}
           <g transform={`translate(-10, 8) rotate(${wheelRotation})`}>
-            <circle r="6.5" fill="var(--surface-1)" stroke="var(--fg)" strokeWidth="1.5" />
+            <circle
+              r="6.5"
+              fill="var(--surface-1)"
+              stroke={!heatmapEnabled ? 'var(--fg)' : isTractionLimited ? '#f59e0b' : isStalled ? '#ef4444' : '#10b981'}
+              strokeWidth="2"
+            />
             <line x1="-5" y1="0" x2="5" y2="0" stroke="var(--fg-muted)" strokeWidth="1" />
             <line x1="0" y1="-5" x2="0" y2="5" stroke="var(--fg-muted)" strokeWidth="1" />
           </g>
 
-          {/* Front Wheel */}
+          {/* Front Wheel (with Heatmap Color) */}
           <g transform={`translate(16, 8) rotate(${wheelRotation})`}>
-            <circle r="6.5" fill="var(--surface-1)" stroke="var(--fg)" strokeWidth="1.5" />
+            <circle
+              r="6.5"
+              fill="var(--surface-1)"
+              stroke={!heatmapEnabled ? 'var(--fg)' : isTractionLimited ? '#f59e0b' : isStalled ? '#ef4444' : '#10b981'}
+              strokeWidth="2"
+            />
             <line x1="-5" y1="0" x2="5" y2="0" stroke="var(--fg-muted)" strokeWidth="1" />
             <line x1="0" y1="-5" x2="0" y2="5" stroke="var(--fg-muted)" strokeWidth="1" />
           </g>
+
+          {/* Active Force Vectors on Vehicle */}
+          {vectorsEnabled && (isSimulating || testResult) && (
+            <g className="pointer-events-none select-none">
+              {/* Thrust Vector Arrow (Forward Cyan) */}
+              <line
+                x1="22"
+                y1="0"
+                x2="48"
+                y2="0"
+                stroke="#06b6d4"
+                strokeWidth="2"
+                markerEnd="url(#arrow-thrust)"
+              />
+              <rect x="25" y="-14" width="28" height="10" rx="2" fill="#020617" fillOpacity="0.9" stroke="#06b6d4" strokeWidth="0.8" />
+              <text x="39" y="-6.5" fontSize="6.5" fontFamily="monospace" fontWeight="bold" fill="#06b6d4" textAnchor="middle">
+                {((liveTelemetry?.thrustN ?? 4500) / 1000).toFixed(1)}k
+              </text>
+
+              {/* Normal Force Vector Arrow (Perpendicular Up Emerald) */}
+              <line
+                x1="3"
+                y1="8"
+                x2="3"
+                y2="-24"
+                stroke="#10b981"
+                strokeWidth="2"
+                markerEnd="url(#arrow-normal)"
+              />
+              <rect x="-10" y="-36" width="26" height="10" rx="2" fill="#020617" fillOpacity="0.9" stroke="#10b981" strokeWidth="0.8" />
+              <text x="3" y="-28.5" fontSize="6.5" fontFamily="monospace" fontWeight="bold" fill="#10b981" textAnchor="middle">
+                {((liveTelemetry?.normalForceN ?? 8000) / 1000).toFixed(1)}k
+              </text>
+
+              {/* Incline Slope Gravity Force Vector (Backward Down Slope Orange) */}
+              {incline > 0 && (
+                <>
+                  <line
+                    x1="-20"
+                    y1="0"
+                    x2="-44"
+                    y2="0"
+                    stroke="#f97316"
+                    strokeWidth="1.8"
+                    markerEnd="url(#arrow-slope)"
+                  />
+                  <rect x="-48" y="-14" width="26" height="10" rx="2" fill="#020617" fillOpacity="0.9" stroke="#f97316" strokeWidth="0.8" />
+                  <text x="-35" y="-6.5" fontSize="6.5" fontFamily="monospace" fontWeight="bold" fill="#f97316" textAnchor="middle">
+                    {((liveTelemetry?.slopeForceN ?? 1500) / 1000).toFixed(1)}k
+                  </text>
+                </>
+              )}
+
+              {/* Aerodynamic Drag Force Vector (Backward Amber) */}
+              {(liveTelemetry?.aerodynamicDragN ?? 0) > 10 && (
+                <line
+                  x1="-20"
+                  y1="-6"
+                  x2="-38"
+                  y2="-6"
+                  stroke="#f59e0b"
+                  strokeWidth="1.5"
+                  markerEnd="url(#arrow-drag)"
+                />
+              )}
+            </g>
+          )}
         </g>
       </svg>
+
+      {/* Real-Time Vehicle Telemetry Overlay */}
+      {(isSimulating || testResult) && metricsEnabled && (
+        <VehicleRealTimeMetricsOverlay
+          telemetry={liveTelemetry}
+          isSimulating={isSimulating}
+          heatmapEnabled={heatmapEnabled}
+          vectorsEnabled={vectorsEnabled}
+          targetSpeedKmh={level.targetSpeed ? level.targetSpeed * 3.6 : 100}
+        />
+      )}
     </div>
   );
 }

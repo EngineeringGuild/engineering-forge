@@ -4,7 +4,7 @@ interface SimulationControlPanelProps {
   isSimulating: boolean;
   isPaused: boolean;
   playbackSpeed: number;
-  animProgress: number; // 0 to 1
+  animProgress?: number; // 0 to 1
   heatmapEnabled: boolean;
   vectorsEnabled: boolean;
   metricsEnabled: boolean;
@@ -12,7 +12,7 @@ interface SimulationControlPanelProps {
   onTogglePlayPause: () => void;
   onReset: () => void;
   onSpeedChange: (speed: number) => void;
-  onScrub: (progress: number) => void;
+  onScrub?: (progress: number) => void;
   onToggleHeatmap: () => void;
   onToggleVectors: () => void;
   onToggleMetrics: () => void;
@@ -22,7 +22,7 @@ export function SimulationControlPanel({
   isSimulating,
   isPaused,
   playbackSpeed,
-  animProgress,
+  animProgress = 0,
   heatmapEnabled,
   vectorsEnabled,
   metricsEnabled,
@@ -101,24 +101,26 @@ export function SimulationControlPanel({
       </div>
 
       {/* Interactive Timeline Scrubber */}
-      <div className="flex flex-1 min-w-[180px] items-center gap-2 px-1">
-        <span className="text-[11px] text-fg-muted min-w-[32px] text-right">
-          {currentTime}s
-        </span>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(animProgress * 100)}
-          onChange={(e) => onScrub(Number(e.target.value) / 100)}
-          className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-surface-3 accent-accent"
-          aria-label="Simulation progress scrubber"
-          title="Drag to scrub through simulation time"
-        />
-        <span className="text-[11px] text-fg-subtle min-w-[32px]">
-          {totalTime}s
-        </span>
-      </div>
+      {onScrub !== undefined && animProgress !== undefined && (
+        <div className="flex flex-1 min-w-[180px] items-center gap-2 px-1">
+          <span className="text-[11px] text-fg-muted min-w-[32px] text-right">
+            {currentTime}s
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(animProgress * 100)}
+            onChange={(e) => onScrub(Number(e.target.value) / 100)}
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-surface-3 accent-accent"
+            aria-label="Simulation progress scrubber"
+            title="Drag to scrub through simulation time"
+          />
+          <span className="text-[11px] text-fg-subtle min-w-[32px]">
+            {totalTime}s
+          </span>
+        </div>
+      )}
 
       {/* Feature Toggles: Heatmap, Force Vectors, Real-Time Metrics */}
       <div className="flex items-center gap-1.5">

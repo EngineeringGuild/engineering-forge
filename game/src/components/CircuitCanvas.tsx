@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { CircuitLevelDef } from '../content/circuitTypes';
 import type { BuiltEdge } from '../game/circuitBuild';
 import { toCircuitModel } from '../game/circuitBuild';
@@ -7,6 +7,10 @@ import { COMPONENTS } from '../physics/components';
 import type { CircuitTestResult } from '../state/circuitStore';
 import { soundFx } from '../audio/soundFx';
 import { createMatterCircuitSimulation, type ArcSpark } from '../physics/matterCircuit';
+import { SimulationControlPanel } from './SimulationControlPanel';
+import { CircuitRealTimeMetricsOverlay } from './CircuitRealTimeMetricsOverlay';
+import { getStressHeatmapRgb } from '../physics/heatmap';
+import type { CircuitTelemetry } from '../physics/engine/PhysicsMetricsContract';
 
 interface Point {
   x: number;
@@ -28,12 +32,17 @@ interface Props {
   onRemoveEdge: (edgeId: string) => void;
 }
 
-function edgeColor(
+function getCircuitEdgeColor(
   result: { power: number; maxPower: number; burnedOut: boolean; underpowered: boolean } | undefined,
   fallback: string,
+  heatmapEnabled: boolean,
 ): string {
   if (!result) return fallback;
   if (result.burnedOut) return 'var(--danger)';
+  if (heatmapEnabled) {
+    const util = result.maxPower > 0 ? result.power / result.maxPower : 0;
+    return getStressHeatmapRgb(util, result.burnedOut);
+  }
   if (result.underpowered) return 'var(--info)';
   return 'var(--success)';
 }
@@ -58,6 +67,13 @@ export function CircuitCanvas({
 
   // Animation phase for electron particle flow
   const [electronPhase, setElectronPhase] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [heatmapEnabled, setHeatmapEnabled] = useState(true);
+  const [vectorsEnabled, setVectorsEnabled] = useState(true);
+  const [metricsEnabled, setMetricsEnabled] = useState(true);
+  const [liveTelemetry, setLiveTelemetry] = useState<CircuitTelemetry | null>(null);
+
   const [switchState, setSwitchState] = useState<{
     leverAngle: number;
     contactClosed: boolean;
@@ -70,7 +86,7 @@ export function CircuitCanvas({
     sparks: [],
   });
 
-  const handleResetSimulationClick = () => {
+  const handleResetSimulationClick = useCallback(() => {
     soundFx.playSnapNode();
     if (simRef.current) {
       simRef.current.resetBodies();
@@ -81,10 +97,32 @@ export function CircuitCanvas({
       breakerTripped: false,
       sparks: [],
     });
+    setIsPaused(false);
     if (onResetSimulation) {
       onResetSimulation();
     }
-  };
+  }, [onResetSimulation]);
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space' && (isSimulating || testResult)) {
+        e.preventDefault();
+        setIsPaused((v) => !v);
+      } else if ((e.key === 'r' || e.key === 'R') && (isSimulating || testResult)) {
+        handleResetSimulationClick();
+      } else if (e.key === 'h' || e.key === 'H') {
+        setHeatmapEnabled((v) => !v);
+      } else if (e.key === 'v' || e.key === 'V') {
+        setVectorsEnabled((v) => !v);
+      } else if (e.key === 'm' || e.key === 'M') {
+        setMetricsEnabled((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSimulating, testResult, handleResetSimulationClick]);
 
   const allPoints = new Map<string, Point>();
   for (const n of level.fixedNodes) allPoints.set(n.id, n);
@@ -109,15 +147,22 @@ export function CircuitCanvas({
       startTime: null as number | null,
       playedContactSound: false,
       playedBreakerSound: false,
+      totalJouleEnergy: 0,
     };
 
     const frame = (timestamp: number) => {
+      if (isPaused) {
+        tracker.animId = requestAnimationFrame(frame);
+        return;
+      }
+
       if (tracker.startTime === null) {
         tracker.startTime = timestamp;
         tracker.lastTime = timestamp;
       }
-      const dt = tracker.lastTime !== null ? Math.min(50, timestamp - tracker.lastTime) : 16.6;
+      const rawDt = tracker.lastTime !== null ? Math.min(50, timestamp - tracker.lastTime) : 16.6;
       tracker.lastTime = timestamp;
+      const dt = rawDt * playbackSpeed;
       const elapsed = timestamp - tracker.startTime;
 
       const state = sim.step(dt);
@@ -127,6 +172,55 @@ export function CircuitCanvas({
         breakerTripped: state.breakerTripped,
         sparks: state.arcSparks,
       });
+
+      // Compute live electrodynamic metrics
+      if (testResult?.status === 'analyzed' && state.isContactClosed && !state.breakerTripped) {
+        let totalCurrent = 0;
+        let totalPower = 0;
+        let peakUtil = 0;
+        let highestEdgeId: string | null = null;
+
+        for (const edgeRes of testResult.edges) {
+          totalPower += edgeRes.power;
+          const util = edgeRes.maxPower > 0 ? edgeRes.power / edgeRes.maxPower : 0;
+          if (util > peakUtil) {
+            peakUtil = util;
+            highestEdgeId = edgeRes.edgeId;
+          }
+          if (edgeRes.current > totalCurrent) {
+            totalCurrent = edgeRes.current;
+          }
+        }
+
+        tracker.totalJouleEnergy += totalPower * (dt / 1000);
+        const breakerMargin = Math.max(0, (1 - peakUtil) * 100);
+
+        setLiveTelemetry({
+          totalSourceCurrentA: totalCurrent,
+          loopVoltageV: level.sourceVoltage,
+          totalPowerW: totalPower,
+          totalJouleEnergyJ: tracker.totalJouleEnergy,
+          peakComponentUtilization: peakUtil,
+          highestLoadedEdgeId: highestEdgeId,
+          kirchhoffResidualA: 0.000,
+          breakerMarginPercent: breakerMargin,
+          breakerTripped: state.breakerTripped,
+          activeSparkCount: state.arcSparks.length,
+        });
+      } else {
+        setLiveTelemetry({
+          totalSourceCurrentA: 0,
+          loopVoltageV: level.sourceVoltage,
+          totalPowerW: 0,
+          totalJouleEnergyJ: tracker.totalJouleEnergy,
+          peakComponentUtilization: 0,
+          highestLoadedEdgeId: null,
+          kirchhoffResidualA: 0,
+          breakerMarginPercent: 100,
+          breakerTripped: state.breakerTripped,
+          activeSparkCount: state.arcSparks.length,
+        });
+      }
 
       if (state.isContactClosed && !tracker.playedContactSound) {
         soundFx.playSnapNode();
@@ -154,7 +248,7 @@ export function CircuitCanvas({
       cancelAnimationFrame(tracker.animId);
       sim.destroy();
     };
-  }, [isSimulating, level, builtNodes, builtEdges, testResult, onSimulationFinish]);
+  }, [isSimulating, isPaused, playbackSpeed, level, builtNodes, builtEdges, testResult, onSimulationFinish]);
 
   // Continuous animation loop for electron particles
   useEffect(() => {
@@ -224,6 +318,24 @@ export function CircuitCanvas({
 
   return (
     <div className="relative w-full h-full">
+      {/* Simulation Transport Control Panel */}
+      <div className="absolute top-3 left-3 z-20">
+        <SimulationControlPanel
+          isSimulating={isSimulating}
+          isPaused={isPaused}
+          playbackSpeed={playbackSpeed}
+          onTogglePlayPause={() => setIsPaused((v) => !v)}
+          onReset={handleResetSimulationClick}
+          onSpeedChange={(spd) => setPlaybackSpeed(spd)}
+          heatmapEnabled={heatmapEnabled}
+          onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+          vectorsEnabled={vectorsEnabled}
+          onToggleVectors={() => setVectorsEnabled((v) => !v)}
+          metricsEnabled={metricsEnabled}
+          onToggleMetrics={() => setMetricsEnabled((v) => !v)}
+        />
+      </div>
+
       {/* Electromechanical Breaker HUD */}
       <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-xl bg-surface-2/85 backdrop-blur border border-border/80 px-3 py-1.5 font-mono text-xs shadow-md">
         <span className="text-fg-muted">Breaker:</span>
@@ -261,6 +373,18 @@ export function CircuitCanvas({
           <filter id="bulb-glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="0.25" />
           </filter>
+          {/* Current Flow Vector Arrowhead */}
+          <marker
+            id="arrow-current"
+            viewBox="0 0 10 10"
+            refX="6"
+            refY="5"
+            markerWidth="5"
+            markerHeight="5"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#00e5ff" />
+          </marker>
         </defs>
 
         {/* Grid dots */}
@@ -286,11 +410,12 @@ export function CircuitCanvas({
           const b = allPoints.get(edge.nodeB)!;
           const component = COMPONENTS[edge.componentId];
           const result = resultByEdgeId.get(edge.id);
-          const color = edgeColor(result, component.color);
+          const color = getCircuitEdgeColor(result, component.color, heatmapEnabled);
           const midX = (a.x + b.x) / 2;
           const midY = (a.y + b.y) / 2;
           const isBulb = edge.componentId.includes('bulb') || component.name.toLowerCase().includes('bulb');
           const isGlowing = result && !result.burnedOut && !result.underpowered;
+          const current = result?.current ?? 0;
 
           return (
             <g key={edge.id}>
@@ -351,6 +476,44 @@ export function CircuitCanvas({
                   </text>
                 </g>
               )}
+
+              {/* Current flow vector arrow & telemetry label */}
+              {vectorsEnabled && (isSimulating || testResult) && current > 0.001 && !result?.burnedOut && (
+                <g>
+                  <line
+                    x1={a.x + (b.x - a.x) * 0.25}
+                    y1={a.y + (b.y - a.y) * 0.25}
+                    x2={a.x + (b.x - a.x) * 0.75}
+                    y2={a.y + (b.y - a.y) * 0.75}
+                    stroke="#00e5ff"
+                    strokeWidth={0.05}
+                    markerEnd="url(#arrow-current)"
+                    opacity={0.85}
+                  />
+                  <rect
+                    x={midX - 0.22}
+                    y={midY - 0.32}
+                    width={0.44}
+                    height={0.16}
+                    rx={0.04}
+                    fill="rgba(10, 16, 26, 0.85)"
+                    stroke="#00e5ff"
+                    strokeWidth={0.015}
+                  />
+                  <text
+                    x={midX}
+                    y={midY - 0.24}
+                    fontSize={0.09}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#00e5ff"
+                  >
+                    {(current * 1000).toFixed(0)} mA
+                  </text>
+                </g>
+              )}
             </g>
           );
         })}
@@ -362,7 +525,7 @@ export function CircuitCanvas({
           if (!a || !b) return null;
           const component = COMPONENTS[edge.componentId];
           const result = resultByEdgeId.get(edge.id);
-          const color = edgeColor(result, component.color);
+          const color = getCircuitEdgeColor(result, component.color, heatmapEnabled);
           const current = result?.current ?? 0;
           const isBurned = result?.burnedOut;
           const midX = (a.x + b.x) / 2;
@@ -430,7 +593,7 @@ export function CircuitCanvas({
               )}
 
               {/* Animated electron particle beads */}
-              {(isSimulating || testResult) && hasCurrent && current > 0.01 && (
+              {(isSimulating || testResult) && hasCurrent && current > 0.01 && !isBurned && (
                 <>
                   {[0, 0.33, 0.66].map((offset, i) => {
                     const t = (electronPhase + offset) % 1;
@@ -448,6 +611,44 @@ export function CircuitCanvas({
                     );
                   })}
                 </>
+              )}
+
+              {/* Current flow vector arrow & telemetry label */}
+              {vectorsEnabled && (isSimulating || testResult) && current > 0.001 && !isBurned && (
+                <g>
+                  <line
+                    x1={a.x + (b.x - a.x) * 0.25}
+                    y1={a.y + (b.y - a.y) * 0.25}
+                    x2={a.x + (b.x - a.x) * 0.75}
+                    y2={a.y + (b.y - a.y) * 0.75}
+                    stroke="#00e5ff"
+                    strokeWidth={0.04}
+                    markerEnd="url(#arrow-current)"
+                    opacity={0.8}
+                  />
+                  <rect
+                    x={midX - 0.2}
+                    y={midY - 0.26}
+                    width={0.4}
+                    height={0.15}
+                    rx={0.03}
+                    fill="rgba(10, 16, 26, 0.85)"
+                    stroke="#00e5ff"
+                    strokeWidth={0.015}
+                  />
+                  <text
+                    x={midX}
+                    y={midY - 0.18}
+                    fontSize={0.085}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#00e5ff"
+                  >
+                    {(current * 1000).toFixed(0)} mA
+                  </text>
+                </g>
               )}
             </g>
           );
@@ -521,17 +722,14 @@ export function CircuitCanvas({
         })}
       </svg>
 
-      {/* Live Circuit Simulation Banner */}
-      {isSimulating && (
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between rounded-xl bg-surface-1/90 border border-border/80 px-4 py-2.5 backdrop-blur-md shadow-lg text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-info animate-pulse" />
-            <span className="text-fg font-semibold uppercase tracking-wider">
-              ⚡ Energizing Circuit ({level.sourceVoltage}V)
-            </span>
-          </div>
-          <span className="text-info animate-pulse">Flowing Current…</span>
-        </div>
+      {/* Real-time Circuit HUD */}
+      {metricsEnabled && (
+        <CircuitRealTimeMetricsOverlay
+          telemetry={liveTelemetry}
+          isSimulating={isSimulating}
+          heatmapEnabled={heatmapEnabled}
+          vectorsEnabled={vectorsEnabled}
+        />
       )}
     </div>
   );
