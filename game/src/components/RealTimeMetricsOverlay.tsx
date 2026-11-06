@@ -169,6 +169,16 @@ export function RealTimeMetricsOverlay({
               {criticalForceInfo.formatted}
             </span>
           </div>
+
+          {/* Phase 2: Euler Column Buckling Instability Status (AISC 360-16) */}
+          {criticalForceInfo.type === 'compression' && criticalMaterial && (
+            <div className="mt-1.5 pt-1 border-t border-border/40 flex items-center justify-between text-[9px]">
+              <span className="text-fg-subtle">Euler Stability:</span>
+              <span className={`font-semibold ${criticalUtil > 0.9 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                {criticalUtil > 1.0 ? '⚡ BUCKLING INSTABILITY' : criticalUtil > 0.85 ? '⚠ NEAR BUCKLING LIMIT' : 'STABLE (λ < λ_crit)'}
+              </span>
+            </div>
+          )}
         </div>
       )}
 

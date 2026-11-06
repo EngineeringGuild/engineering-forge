@@ -1,5 +1,5 @@
 import { solveLinearSystem } from './linalg';
-import { axialStiffness, materialCapacity, MATERIALS } from './materials';
+import { axialStiffness, materialCapacity, eulerBucklingCapacity, MATERIALS } from './materials';
 
 export type SupportType = 'none' | 'pin' | 'roller';
 
@@ -42,6 +42,10 @@ export interface MemberResult {
   /** True only when a compression-only member (a strut) failed because it
    * ended up in tension — the mirror case of wentSlack. */
   pulledApart: boolean;
+  /** Phase 2: Euler Column Buckling Instability (AISC 360-16 / ASME III) */
+  eulerCriticalLoad?: number;
+  isBuckled?: boolean;
+  slendernessRatio?: number;
 }
 
 export type TrussAnalysis =
@@ -147,17 +151,41 @@ export function analyzeTruss(model: TrussModel): TrussAnalysis {
       geo.c * (u[2 * b] - u[2 * a]) + geo.s * (u[2 * b + 1] - u[2 * a + 1]);
     const axialForce = geo.k * elongation;
     const capacity = materialCapacity(material);
-    const utilization = Math.abs(axialForce) / capacity;
+    let utilization = Math.abs(axialForce) / capacity;
     const wentSlack = Boolean(material.tensionOnly) && axialForce < 0;
     const pulledApart = Boolean(material.compressionOnly) && axialForce > 0;
+
+    // Phase 2: Euler Column Buckling for compression members (axialForce < 0)
+    let eulerCriticalLoad: number | undefined;
+    let slendernessRatio: number | undefined;
+    let isBuckled = false;
+
+    if (axialForce < -1e-6 && geo.len > 0) {
+      eulerCriticalLoad = eulerBucklingCapacity(material, geo.len);
+      const r = Math.sqrt((material.area * material.area / 12) / material.area);
+      slendernessRatio = geo.len / r;
+
+      const compressiveForce = Math.abs(axialForce);
+      if (compressiveForce > eulerCriticalLoad) {
+        isBuckled = true;
+        const bucklingUtilization = compressiveForce / eulerCriticalLoad;
+        if (bucklingUtilization > utilization) {
+          utilization = bucklingUtilization;
+        }
+      }
+    }
+
     return {
       memberId: member.id,
       axialForce,
       capacity,
       utilization,
-      failed: wentSlack || pulledApart || utilization > 1,
+      failed: wentSlack || pulledApart || isBuckled || utilization > 1,
       wentSlack,
       pulledApart,
+      eulerCriticalLoad,
+      isBuckled,
+      slendernessRatio,
     };
   });
 

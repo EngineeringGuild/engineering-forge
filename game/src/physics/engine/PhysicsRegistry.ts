@@ -44,14 +44,14 @@ export const PHYSICAL_CONSTANTS: Record<string, PhysicalConstant> = {
 export interface MaterialSpecification {
   id: string;
   name: string;
-  category: 'metal' | 'polymer' | 'timber' | 'composite';
-  youngsModulusGPa: number;
-  yieldStrengthMPa: number;
-  ultimateStrengthMPa: number;
-  allowableStressMPa: number;
-  poissonsRatio: number;
-  densityKgM3: number;
-  thermalExpansionPpmK: number;
+  category: 'metal' | 'polymer' | 'timber' | 'composite' | 'ceramic_concrete';
+  youngsModulusGPa: number; // Modulus of Elasticity (E)
+  yieldStrengthMPa: number; // Yield point or compressive strength
+  ultimateStrengthMPa: number; // Ultimate tensile/compressive strength
+  allowableStressMPa: number; // ASME design basis allowable stress
+  poissonsRatio: number; // Poisson's ratio (nu)
+  densityKgM3: number; // Mass density (rho)
+  thermalExpansionPpmK: number; // Coefficient of Linear Thermal Expansion (alpha in 10^-6 / K)
   asmeSafetyFactor: number;
   standardCitation: string;
   basis: 'LOCKED' | 'DERIVADO' | 'ESTIMATE' | 'REFERENCIA';
@@ -71,6 +71,81 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     thermalExpansionPpmK: 12.0,
     asmeSafetyFactor: 1.56,
     standardCitation: 'ASTM A36/A36M-19; ASME BPVC Section II-D Table 1A',
+    basis: 'REFERENCIA',
+  },
+  stainless_steel_304: {
+    id: 'stainless_steel_304',
+    name: 'Austenitic Stainless Steel (AISI 304 / ASTM A240)',
+    category: 'metal',
+    youngsModulusGPa: 193,
+    yieldStrengthMPa: 205,
+    ultimateStrengthMPa: 515,
+    allowableStressMPa: 138,
+    poissonsRatio: 0.29,
+    densityKgM3: 8000,
+    thermalExpansionPpmK: 17.2,
+    asmeSafetyFactor: 1.48,
+    standardCitation: 'ASTM A240 / ASME BPVC Section II-D Table 1A',
+    basis: 'REFERENCIA',
+  },
+  aluminum_6061_t6: {
+    id: 'aluminum_6061_t6',
+    name: 'Structural Aluminum Alloy (6061-T6 / ASTM B221)',
+    category: 'metal',
+    youngsModulusGPa: 68.9,
+    yieldStrengthMPa: 276,
+    ultimateStrengthMPa: 310,
+    allowableStressMPa: 110,
+    poissonsRatio: 0.33,
+    densityKgM3: 2700,
+    thermalExpansionPpmK: 23.6,
+    asmeSafetyFactor: 2.5,
+    standardCitation: 'ASTM B221-21 / Aluminum Design Manual (ADM-2020)',
+    basis: 'REFERENCIA',
+  },
+  structural_concrete_c30: {
+    id: 'structural_concrete_c30',
+    name: 'Reinforced Structural Concrete (Class C30/37 / ACI 318)',
+    category: 'ceramic_concrete',
+    youngsModulusGPa: 32.8,
+    yieldStrengthMPa: 30, // Specified 28-day cylinder compressive strength (f'c)
+    ultimateStrengthMPa: 38,
+    allowableStressMPa: 13.5, // 0.45 * f'c ACI allowable working stress
+    poissonsRatio: 0.20,
+    densityKgM3: 2400,
+    thermalExpansionPpmK: 10.0,
+    asmeSafetyFactor: 2.22,
+    standardCitation: 'ACI 318-19 Building Code Requirements for Structural Concrete / EN 1992-1-1',
+    basis: 'REFERENCIA',
+  },
+  titanium_ti6al4v: {
+    id: 'titanium_ti6al4v',
+    name: 'Titanium Grade 5 (Ti-6Al-4V / ASTM B265)',
+    category: 'metal',
+    youngsModulusGPa: 113.8,
+    yieldStrengthMPa: 880,
+    ultimateStrengthMPa: 950,
+    allowableStressMPa: 450,
+    poissonsRatio: 0.34,
+    densityKgM3: 4430,
+    thermalExpansionPpmK: 8.6,
+    asmeSafetyFactor: 1.95,
+    standardCitation: 'ASTM B265 / MIL-HDBK-5J Metallic Materials for Aerospace Vehicles',
+    basis: 'REFERENCIA',
+  },
+  copper_c11000: {
+    id: 'copper_c11000',
+    name: 'Electrolytic Tough Pitch Copper (ETP C11000 / ASTM B152)',
+    category: 'metal',
+    youngsModulusGPa: 117,
+    yieldStrengthMPa: 69,
+    ultimateStrengthMPa: 220,
+    allowableStressMPa: 46,
+    poissonsRatio: 0.34,
+    densityKgM3: 8940,
+    thermalExpansionPpmK: 16.5,
+    asmeSafetyFactor: 1.50,
+    standardCitation: 'ASTM B152 / CDA Standards Handbook for Copper Alloy C11000',
     basis: 'REFERENCIA',
   },
   structural_timber_df: {

@@ -112,4 +112,21 @@ describe('analyzeVehicle', () => {
     expect(unloaded.finalSpeed).toBeGreaterThan(25);
     expect(loaded.finalSpeed).toBeLessThan(25);
   });
+
+  it('Phase 2: calculates Pacejka Magic Formula longitudinal tire slip curves', async () => {
+    const { calculatePacejkaTraction } = await import('./vehicle');
+    const normalForce = 8000; // 8 kN normal force on wheels
+    // At zero slip, traction force is zero
+    expect(calculatePacejkaTraction(normalForce, 0)).toBe(0);
+
+    // At optimal slip (kappa ~ 0.12 - 0.18), traction approaches peak value (D = mu_peak * F_N = 0.85 * 8000 = 6800 N)
+    const peakForce = calculatePacejkaTraction(normalForce, 0.15);
+    expect(peakForce).toBeGreaterThan(6000);
+    expect(peakForce).toBeLessThanOrEqual(6800);
+
+    // Beyond optimal slip (excessive wheelspin, kappa > 0.4), force gently drops off (classic Pacejka curve)
+    const spinningForce = calculatePacejkaTraction(normalForce, 0.8);
+    expect(spinningForce).toBeLessThan(peakForce);
+    expect(spinningForce).toBeGreaterThan(0);
+  });
 });

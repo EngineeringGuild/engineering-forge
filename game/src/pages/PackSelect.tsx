@@ -36,6 +36,13 @@ const PACKS: PackCard[] = [
     tagline: 'Spec an engine and chassis. Newton decides how fast it goes.',
     status: 'available',
   },
+  {
+    id: 'lab',
+    path: '/lab',
+    name: 'Materials Lab',
+    tagline: 'Test beam bending, elasticity, density & Euler buckling in real-time.',
+    status: 'available',
+  },
 ];
 
 export function PackSelect() {
@@ -112,14 +119,20 @@ export function PackSelect() {
                 {available ? (
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-mono font-medium ${
-                      allCompleted
+                      pack.id === 'lab'
+                        ? 'bg-accent/20 text-accent border border-accent/40'
+                        : allCompleted
                         ? 'bg-success/20 text-success border border-success/40'
                         : completed > 0
                         ? 'bg-surface-2 text-fg border border-border'
                         : 'bg-surface-2/60 text-fg-subtle border border-border/40'
                     }`}
                   >
-                    {allCompleted ? '✓ Completed' : `${completed}/${total} Levels`}
+                    {pack.id === 'lab'
+                      ? '🔬 Test Bench'
+                      : allCompleted
+                      ? '✓ Completed'
+                      : `${completed}/${total} Levels`}
                   </span>
                 ) : (
                   <span className="rounded-full border border-border px-2 py-1 text-xs text-fg-subtle">

@@ -75,6 +75,18 @@ export function materialCapacity(material: Material): number {
   return material.allowableStress * material.area;
 }
 
+/**
+ * Phase 2: Euler Column Buckling Capacity (AISC 360-16 / ASME III)
+ * P_cr = (pi^2 * E * I) / (K * L)^2
+ * Assumes pin-ended column (K = 1.0) and square cross section: I = A^2 / 12
+ */
+export function eulerBucklingCapacity(material: Material, length: number, kFactor: number = 1.0): number {
+  if (length <= 0) return Infinity;
+  const I = (material.area * material.area) / 12;
+  const effectiveLength = kFactor * length;
+  return (Math.PI * Math.PI * material.youngsModulus * I) / (effectiveLength * effectiveLength);
+}
+
 export function axialStiffness(material: Material, length: number): number {
   return (material.youngsModulus * material.area) / length;
 }

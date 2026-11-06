@@ -140,4 +140,27 @@ describe('analyzeTruss', () => {
     expect(ab.failed).toBe(true);
     expect(result.anyFailed).toBe(true);
   });
+
+  it('fails slender compressive members by Euler column buckling before material yield', () => {
+    // In apexTruss, members AC and BC carry compression = P * sqrt(13)/6.
+    // Length of AC = sqrt(2^2 + 3^2) = sqrt(13) ~ 3.605m.
+    // If AC is made of wood: E = 11 GPa, area = 0.01 m², yield capacity = 400,000 N.
+    // Euler critical buckling load: P_cr = (pi^2 * 11e9 * (0.01^2 / 12)) / 13 ~ 69.58 kN.
+    // At P = 120 kN: compressive load on AC = 120,000 * sqrt(13)/6 ~ 72.11 kN.
+    // 72.11 kN < 400 kN (well below yield!), BUT 72.11 kN > 69.58 kN (buckled!)
+    const truss = apexTruss(120_000);
+    truss.members = truss.members.map((m) =>
+      m.id === 'AC' ? { ...m, materialId: 'wood' } : m,
+    );
+    const result = analyzeTruss(truss);
+    expect(result.status).toBe('analyzed');
+    if (result.status !== 'analyzed') return;
+
+    const ac = result.members.find((m) => m.memberId === 'AC')!;
+    expect(ac.axialForce).toBeLessThan(0);
+    expect(ac.isBuckled).toBe(true);
+    expect(ac.failed).toBe(true);
+    expect(ac.eulerCriticalLoad).toBeCloseTo(69584, -2);
+    expect(result.anyFailed).toBe(true);
+  });
 });

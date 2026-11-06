@@ -13,6 +13,32 @@ export interface VehicleAnalysis {
   finalSpeed: number;
   /** True when gravity along the grade outweighs the force reaching the road — the vehicle can't move forward at all. */
   stalled: boolean;
+  /** Phase 2: Pacejka Magic Formula Longitudinal Slip Ratio (0 to 1+) */
+  slipRatio?: number;
+}
+
+/**
+ * Phase 2: Pacejka Magic Formula Tire Longitudinal Force Model:
+ * F_x(kappa) = D * sin(C * arctan(B * kappa - E * (B * kappa - arctan(B * kappa))))
+ * where:
+ *   B = Stiffness factor (typically 10)
+ *   C = Shape factor (typically 1.65)
+ *   D = Peak value = mu_peak * F_N
+ *   E = Curvature factor (typically -1.0)
+ *   kappa = Longitudinal slip ratio (wheel angular velocity vs vehicle linear velocity)
+ */
+export function calculatePacejkaTraction(
+  normalForceN: number,
+  slipRatio: number,
+  peakFrictionMu: number = 0.85,
+  B = 10,
+  C = 1.65,
+  E = -1.0,
+): number {
+  const D = peakFrictionMu * normalForceN;
+  const B_kappa = B * slipRatio;
+  const inner = B_kappa - E * (B_kappa - Math.atan(B_kappa));
+  return D * Math.sin(C * Math.atan(inner));
 }
 
 /**
@@ -42,12 +68,17 @@ export function analyzeVehicle(
 ): VehicleAnalysis {
   const theta = (inclineDegrees * Math.PI) / 180;
   const totalMass = chassis.mass + payloadMass;
-  const tractionLimit = TIRE_GRIP * totalMass * GRAVITY * Math.cos(theta);
+  const normalForce = totalMass * GRAVITY * Math.cos(theta);
+  const tractionLimit = TIRE_GRIP * normalForce;
   const effectiveForce = Math.min(engine.force, tractionLimit);
   const gravityAlongSlope = totalMass * GRAVITY * Math.sin(theta);
   const acceleration = (effectiveForce - gravityAlongSlope) / totalMass;
   const stalled = acceleration <= 0;
   const finalSpeed = stalled ? 0 : Math.sqrt(2 * acceleration * distance);
+
+  // Phase 2: Compute longitudinal slip ratio
+  const slipRatio = normalForce > 0 ? Math.min(1.0, engine.force / (1.2 * tractionLimit)) : 1.0;
+
   return {
     effectiveForce,
     tractionLimit,
@@ -55,5 +86,6 @@ export function analyzeVehicle(
     acceleration,
     finalSpeed,
     stalled,
+    slipRatio,
   };
 }

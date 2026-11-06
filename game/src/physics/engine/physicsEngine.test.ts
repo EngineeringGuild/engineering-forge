@@ -155,4 +155,186 @@ describe('PhysicsEngineRegistry (Centralized Manager)', () => {
     expect(steepSlope?.isStalled).toBe(true);
     expect(steepSlope?.netAccelerationMps2).toBe(0);
   });
+
+  it('provides structured library of common engineering materials with elasticity, density, and thermal expansion', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    const allSpecs = physicsRegistry.getAllCertifiedSpecs();
+    expect(allSpecs.length).toBeGreaterThanOrEqual(7);
+
+    // Aluminum 6061-T6
+    const alu = physicsRegistry.getCertifiedSpec('aluminum_6061_t6');
+    expect(alu).toBeDefined();
+    expect(alu?.youngsModulusGPa).toBeCloseTo(68.9);
+    expect(alu?.densityKgM3).toBe(2700);
+    expect(alu?.thermalExpansionPpmK).toBeCloseTo(23.6);
+    expect(alu?.standardCitation).toContain('ASTM B221');
+
+    // Structural Concrete C30/37
+    const concrete = physicsRegistry.getCertifiedSpec('structural_concrete_c30');
+    expect(concrete).toBeDefined();
+    expect(concrete?.category).toBe('ceramic_concrete');
+    expect(concrete?.youngsModulusGPa).toBeCloseTo(32.8);
+    expect(concrete?.densityKgM3).toBe(2400);
+    expect(concrete?.thermalExpansionPpmK).toBeCloseTo(10.0);
+    expect(concrete?.standardCitation).toContain('ACI 318');
+
+    // Stainless Steel 304
+    const stainless = physicsRegistry.getCertifiedSpec('stainless_steel_304');
+    expect(stainless).toBeDefined();
+    expect(stainless?.densityKgM3).toBe(8000);
+    expect(stainless?.thermalExpansionPpmK).toBeCloseTo(17.2);
+
+    // Filter by category
+    const metals = physicsRegistry.getCertifiedSpecsByCategory('metal');
+    expect(metals.some((m) => m.id === 'aluminum_6061_t6')).toBe(true);
+    expect(metals.some((m) => m.id === 'structural_steel_a36')).toBe(true);
+
+    const ceramics = physicsRegistry.getCertifiedSpecsByCategory('ceramic_concrete');
+    expect(ceramics.length).toBe(1);
+    expect(ceramics[0].id).toBe('structural_concrete_c30');
+
+    // Thermal expansion calculation:
+    // A 10m aluminum beam heated by 50 Kelvin:
+    // delta_L = 23.6e-6 * 10 * 50 = 0.0118 m (11.8 mm)
+    const thermalAlu = physicsRegistry.calculateThermalDeformation('aluminum_6061_t6', 10, 50);
+    expect(thermalAlu).toBeCloseTo(0.0118, 4);
+
+    // Concrete 10m bridge pier heated by 40 Kelvin:
+    // delta_L = 10.0e-6 * 10 * 40 = 0.004 m (4.0 mm)
+    const thermalConcrete = physicsRegistry.calculateThermalDeformation('structural_concrete_c30', 10, 40);
+    expect(thermalConcrete).toBeCloseTo(0.004, 4);
+  });
+
+  it('evaluates Phase 2 Euler Column Buckling with critical load and slenderness ratio', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Wood member: E = 11 GPa, area = 0.01 m², allowable stress = 40 MPa, capacity = 400 kN
+    // Square cross-section: b = sqrt(0.01) = 0.1m, I = (0.1)^4 / 12 = 8.333e-6 m^4
+    // Length L = 4.0m
+    // Euler critical load: P_cr = (pi^2 * E * I) / L^2 = (pi^2 * 11e9 * 8.333e-6) / 16 ~ 56.54 kN
+    // Note that Euler buckling load (56.5 kN) is MUCH LESS than yield capacity (400 kN)!
+    // Under 30 kN compression:
+    const eval30 = physicsRegistry.evaluateStructuralMember('wood', -30_000, 4.0);
+    expect(eval30).not.toBeNull();
+    expect(eval30?.eulerCriticalLoadN).toBeCloseTo(56543, -2);
+    expect(eval30?.isBuckled).toBe(false);
+    expect(eval30?.slendernessRatio).toBeGreaterThan(100);
+
+    // Under 70 kN compression: exceeds P_cr (56.5 kN) -> BUCKLED!
+    const eval70 = physicsRegistry.evaluateStructuralMember('wood', -70_000, 4.0);
+    expect(eval70?.isBuckled).toBe(true);
+    expect(eval70?.isFailing).toBe(true);
+  });
+
+  it('evaluates Phase 2 Beam Bending (Euler-Bernoulli simple support)', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Steel beam A36: E = 200 GPa, allowable = 160 MPa, density = 7850 kg/m³
+    // Span = 6.0m, Width = 0.12m, Height = 0.24m
+    // Center point load = 20 kN
+    const bending = physicsRegistry.evaluateBeamBending('structural_steel_a36', 6.0, 20_000, 0.12, 0.24);
+    expect(bending).not.toBeNull();
+    expect(bending?.maxDeflectionM).toBeGreaterThan(0);
+    expect(bending?.maxBendingStressPa).toBeGreaterThan(0);
+    expect(bending?.safetyFactor).toBeGreaterThan(1.0);
+    expect(bending?.isFailing).toBe(false);
+  });
+});
+
+describe('PhysicsMediator (UI Reactive Synchronizer)', () => {
+  it('synchronizes test bench parameters and notifies subscribers', async () => {
+    const { physicsMediator } = await import('./PhysicsMediator');
+    let notificationCount = 0;
+    const unsubscribe = physicsMediator.subscribe(() => {
+      notificationCount++;
+    });
+
+    physicsMediator.updateTestBenchState({ spanLengthM: 8.0 });
+    expect(physicsMediator.getTestBenchState().spanLengthM).toBe(8.0);
+    expect(notificationCount).toBeGreaterThan(0);
+
+    // Evaluating active beam returns consistent mechanical calculations
+    const evalActive = physicsMediator.evaluateActiveBeam();
+    expect(evalActive).not.toBeNull();
+    expect(evalActive?.maxDeflectionM).toBeGreaterThan(0);
+
+    // Column buckling evaluation through mediator
+    const bucklingCheck = physicsMediator.evaluateColumnBuckling('wood', 80_000, 4.0);
+    expect(bucklingCheck?.isBuckled).toBe(true);
+
+    unsubscribe();
+  });
+
+  it('synchronizes custom materials and prevents cyclic state updates', async () => {
+    const { physicsMediator } = await import('./PhysicsMediator');
+
+    physicsMediator.updateTestBenchState({
+      customModulusGPa: 150,
+      customDensityKgM3: 6500,
+      customThermalExpansionPpmK: 14.5,
+    });
+    const registered = physicsMediator.getTestBenchState();
+    expect(registered.customModulusGPa).toBe(150);
+    expect(registered.customDensityKgM3).toBe(6500);
+
+    // Should evaluate active beam with the updated custom material specs
+    const evaluated = physicsMediator.evaluateActiveBeam();
+    expect(evaluated).not.toBeNull();
+    expect(evaluated?.maxDeflectionM).toBeGreaterThan(0);
+  });
+});
+
+describe('Phase 2 Continuum Mechanics & Dynamics Formulations', () => {
+  it('validates Euler Buckling critical loads across boundary conditions (K-factor)', async () => {
+    const { eulerBucklingCapacity, MATERIALS } = await import('../materials');
+    const wood = MATERIALS.wood; // E = 11 GPa, area = 0.01 m²
+    const L = 3.0; // 3 meters
+
+    // Pinned-Pinned: K = 1.0 -> P_cr = pi^2 * E * I / L^2
+    const pcrPinned = eulerBucklingCapacity(wood, L, 1.0);
+    const expectedPinned = (Math.PI ** 2 * 11e9 * (0.01 ** 2 / 12)) / (L ** 2);
+    expect(pcrPinned).toBeCloseTo(expectedPinned, 1);
+
+    // Fixed-Fixed: K = 0.5 -> Effective length is L/2, so critical load is 4x higher
+    const pcrFixed = eulerBucklingCapacity(wood, L, 0.5);
+    expect(pcrFixed).toBeCloseTo(expectedPinned * 4, 1);
+
+    // Cantilever (Fixed-Free): K = 2.0 -> Effective length is 2L, critical load is 1/4th
+    const pcrCantilever = eulerBucklingCapacity(wood, L, 2.0);
+    expect(pcrCantilever).toBeCloseTo(expectedPinned / 4, 1);
+  });
+
+  it('validates Euler-Bernoulli beam deflection against analytical textbook solution', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    const L = 4.0;   // 4 meters
+    const P = 10_000; // 10 kN center point load
+    const b = 0.1;   // 100 mm width
+    const h = 0.2;   // 200 mm height
+
+    const result = physicsRegistry.evaluateBeamBending('structural_steel_a36', L, P, b, h);
+    expect(result).not.toBeNull();
+    // Center deflection should be non-zero and physically reasonable (~1mm to 2mm for steel)
+    expect(result?.maxDeflectionM).toBeGreaterThan(0.0005);
+    expect(result?.maxDeflectionM).toBeLessThan(0.005);
+    expect(result?.maxBendingStressPa).toBeGreaterThan(10e6); // > 10 MPa
+    expect(result?.safetyFactor).toBeGreaterThan(1.0);
+  });
+
+  it('validates Pacejka Magic Formula curve properties (peak grip, slip plateau)', async () => {
+    const { calculatePacejkaTraction } = await import('../vehicle');
+    const normalForce = 10_000; // 10 kN
+    const muPeak = 0.85;
+
+    // 1. Slip = 0 -> Force = 0
+    expect(calculatePacejkaTraction(normalForce, 0, muPeak)).toBe(0);
+
+    // 2. Optimal grip between 12% and 18% slip
+    const fAt15 = calculatePacejkaTraction(normalForce, 0.15, muPeak);
+    const fAt5 = calculatePacejkaTraction(normalForce, 0.05, muPeak);
+    const fAt60 = calculatePacejkaTraction(normalForce, 0.60, muPeak);
+
+    expect(fAt15).toBeGreaterThan(fAt5);
+    expect(fAt15).toBeGreaterThan(fAt60);
+    // Peak grip at 15% slip develops > 8 kN for 10 kN normal force
+    expect(fAt15).toBeGreaterThan(8000);
+    expect(fAt15).toBeLessThanOrEqual(muPeak * normalForce);
+  });
 });

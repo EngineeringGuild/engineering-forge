@@ -6,12 +6,14 @@ import { CircuitsLevelSelect } from './pages/CircuitsLevelSelect';
 import { CircuitsPlayLevel } from './pages/CircuitsPlayLevel';
 import { VehiclesLevelSelect } from './pages/VehiclesLevelSelect';
 import { VehiclesPlayLevel } from './pages/VehiclesPlayLevel';
+import { LabPage } from './pages/LabPage';
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<PackSelect />} />
+        <Route path="/lab" element={<LabPage />} />
         <Route path="/structures" element={<StructuresLevelSelect />} />
         <Route path="/structures/level/:levelId" element={<StructuresPlayLevel />} />
         <Route path="/circuits" element={<CircuitsLevelSelect />} />

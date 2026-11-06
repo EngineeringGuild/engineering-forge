@@ -33,6 +33,21 @@ export interface MechanicalEvaluation {
   safetyFactor: number;
   isFailing: boolean;
   deformationM: number;
+  /** Phase 2: Euler Column Buckling (AISC 360-16 / ASME III) */
+  eulerCriticalLoadN?: number;
+  slendernessRatio?: number;
+  isBuckled?: boolean;
+}
+
+export interface BeamBendingEvaluation {
+  maxDeflectionM: number;
+  maxMomentNm: number;
+  maxBendingStressPa: number;
+  allowableStressPa: number;
+  utilization: number;
+  safetyFactor: number;
+  isFailing: boolean;
+  weightN: number;
 }
 
 export interface ElectricalEvaluation {
@@ -55,8 +70,11 @@ export interface MachineTractionEvaluation {
   isStalled: boolean;
 }
 
+export type PhysicsRegistryListener = (eventType: 'material_updated' | 'constant_updated' | 'component_updated') => void;
+
 export class PhysicsEngineRegistry {
   private static instance: PhysicsEngineRegistry | null = null;
+  private listeners: Set<PhysicsRegistryListener> = new Set();
 
   // Internal registries
   private constants: Map<string, PhysicalConstant> = new Map();
@@ -143,10 +161,6 @@ export class PhysicsEngineRegistry {
     return this.getConstantValue('AIR_DENSITY_SEA_LEVEL', 1.225);
   }
 
-  public registerConstant(key: string, constant: PhysicalConstant): void {
-    this.constants.set(key, constant);
-  }
-
   public getAllConstants(): Record<string, PhysicalConstant> {
     const result: Record<string, PhysicalConstant> = {};
     for (const [k, v] of this.constants.entries()) {
@@ -163,10 +177,6 @@ export class PhysicsEngineRegistry {
     return this.structuralMaterials.get(id);
   }
 
-  public registerStructuralMaterial(material: Material): void {
-    this.structuralMaterials.set(material.id, material);
-  }
-
   public getAllStructuralMaterials(): Material[] {
     return Array.from(this.structuralMaterials.values());
   }
@@ -175,32 +185,119 @@ export class PhysicsEngineRegistry {
     return this.certifiedSpecs.get(id);
   }
 
-  public registerCertifiedSpec(spec: MaterialSpecification): void {
-    this.certifiedSpecs.set(spec.id, spec);
+  public getAllCertifiedSpecs(): MaterialSpecification[] {
+    return Array.from(this.certifiedSpecs.values());
+  }
+
+  public getCertifiedSpecsByCategory(
+    category: MaterialSpecification['category'],
+  ): MaterialSpecification[] {
+    return Array.from(this.certifiedSpecs.values()).filter((s) => s.category === category);
   }
 
   /**
-   * Evaluates axial stress, ASME safety factor, and deformation of a structural member.
-   * delta_L = (F * L) / (E * A)
+   * Calculates linear thermal expansion elongation:
+   * delta_L = alpha * L_0 * delta_T
+   * where alpha is the linear thermal expansion coefficient (10^-6 / K)
+   */
+  public calculateThermalDeformation(
+    materialSpecId: string,
+    initialLengthM: number,
+    deltaTemperatureK: number,
+  ): number | null {
+    const spec = this.certifiedSpecs.get(materialSpecId);
+    if (!spec) return null;
+    const alpha = spec.thermalExpansionPpmK * 1e-6;
+    return alpha * initialLengthM * deltaTemperatureK;
+  }
+
+  // ==========================================
+  // Reactive Listener API (for UI synchronization)
+  // ==========================================
+
+  public subscribe(listener: PhysicsRegistryListener): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private notifyListeners(eventType: 'material_updated' | 'constant_updated' | 'component_updated'): void {
+    for (const listener of this.listeners) {
+      try {
+        listener(eventType);
+      } catch (err) {
+        console.error('Error in PhysicsRegistryListener', err);
+      }
+    }
+  }
+
+  public registerConstant(key: string, constant: PhysicalConstant): void {
+    this.constants.set(key, constant);
+    this.notifyListeners('constant_updated');
+  }
+
+  public registerStructuralMaterial(material: Material): void {
+    this.structuralMaterials.set(material.id, material);
+    this.notifyListeners('material_updated');
+  }
+
+  public registerCertifiedSpec(spec: MaterialSpecification): void {
+    this.certifiedSpecs.set(spec.id, spec);
+    this.notifyListeners('material_updated');
+  }
+
+  /**
+   * Evaluates axial stress, ASME safety factor, deformation, and Euler column buckling (AISC 360-16).
+   * P_cr = (pi^2 * E * I) / (K * L)^2
+   * For square/circular section approximation: I approx A^2 / 12
    */
   public evaluateStructuralMember(
     materialId: string,
     axialForceN: number,
     lengthM: number,
+    effectiveLengthFactorK: number = 1.0,
   ): MechanicalEvaluation | null {
     const mat = this.structuralMaterials.get(materialId);
     if (!mat) return null;
 
     const stressPa = Math.abs(axialForceN) / mat.area;
     const allowableStressPa = mat.allowableStress;
-    const utilization = allowableStressPa > 0 ? stressPa / allowableStressPa : 0;
-    const safetyFactor = utilization > 0 ? 1 / utilization : 999;
+    let utilization = allowableStressPa > 0 ? stressPa / allowableStressPa : 0;
+    let safetyFactor = utilization > 0 ? 1 / utilization : 999;
 
     let isFailing = utilization > 1.0;
     if (mat.tensionOnly && axialForceN < -1e-6) {
       isFailing = true; // Compression in tension-only cable
     } else if (mat.compressionOnly && axialForceN > 1e-6) {
       isFailing = true; // Tension in compression-only strut
+    }
+
+    // Phase 2: Euler Column Buckling for compression members (axialForceN < 0)
+    let eulerCriticalLoadN: number | undefined;
+    let slendernessRatio: number | undefined;
+    let isBuckled = false;
+
+    if (axialForceN < -1e-6 && lengthM > 0) {
+      // Area moment of inertia for square solid cross-section with width b = sqrt(A):
+      // I = b^4 / 12 = A^2 / 12
+      const I = (mat.area * mat.area) / 12;
+      const r = Math.sqrt(I / mat.area); // radius of gyration
+      slendernessRatio = (effectiveLengthFactorK * lengthM) / r;
+
+      const KL = effectiveLengthFactorK * lengthM;
+      eulerCriticalLoadN = (Math.PI * Math.PI * mat.youngsModulus * I) / (KL * KL);
+
+      const compressiveLoadN = Math.abs(axialForceN);
+      if (compressiveLoadN > eulerCriticalLoadN) {
+        isBuckled = true;
+        isFailing = true;
+        const bucklingUtilization = compressiveLoadN / eulerCriticalLoadN;
+        if (bucklingUtilization > utilization) {
+          utilization = bucklingUtilization;
+          safetyFactor = 1 / utilization;
+        }
+      }
     }
 
     const deformationM = mat.youngsModulus > 0 && mat.area > 0
@@ -214,6 +311,58 @@ export class PhysicsEngineRegistry {
       safetyFactor,
       isFailing,
       deformationM,
+      eulerCriticalLoadN,
+      slendernessRatio,
+      isBuckled,
+    };
+  }
+
+  /**
+   * Phase 2: Beam Bending Analysis (Simply Supported Beam with Center Point Load)
+   * Euler-Bernoulli beam theory:
+   * Max Deflection: delta_max = (P * L^3) / (48 * E * I)
+   * Max Bending Moment: M_max = (P * L) / 4
+   * Max Bending Stress: sigma_max = (M_max * c) / I = (M_max * (h/2)) / I
+   */
+  public evaluateBeamBending(
+    materialSpecId: string,
+    spanLengthM: number,
+    pointLoadN: number,
+    widthM: number = 0.1,
+    heightM: number = 0.2,
+  ): BeamBendingEvaluation | null {
+    const spec = this.certifiedSpecs.get(materialSpecId);
+    if (!spec) return null;
+
+    const E = spec.youngsModulusGPa * 1e9;
+    const I = (widthM * Math.pow(heightM, 3)) / 12; // m^4
+    const area = widthM * heightM;
+    const g = this.getStandardGravity();
+    const beamMassKg = spec.densityKgM3 * area * spanLengthM;
+    const beamWeightN = beamMassKg * g;
+
+    // Combined center load including 50% distributed self-weight equivalent center load
+    const totalCenterLoadN = Math.abs(pointLoadN) + 0.5 * beamWeightN;
+
+    const maxDeflectionM = (totalCenterLoadN * Math.pow(spanLengthM, 3)) / (48 * E * I);
+    const maxMomentNm = (totalCenterLoadN * spanLengthM) / 4;
+    const c = heightM / 2; // extreme fiber distance
+    const maxBendingStressPa = (maxMomentNm * c) / I;
+
+    const allowableStressPa = spec.allowableStressMPa * 1e6;
+    const utilization = allowableStressPa > 0 ? maxBendingStressPa / allowableStressPa : 0;
+    const safetyFactor = utilization > 0 ? 1 / utilization : 999;
+    const isFailing = utilization > 1.0;
+
+    return {
+      maxDeflectionM,
+      maxMomentNm,
+      maxBendingStressPa,
+      allowableStressPa,
+      utilization,
+      safetyFactor,
+      isFailing,
+      weightN: beamWeightN,
     };
   }
 
