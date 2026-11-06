@@ -1,10 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useGameStore } from '../state/gameStore';
-import { useCircuitStore } from '../state/circuitStore';
-import { useVehicleStore } from '../state/vehicleStore';
-import { LEVELS } from '../content/levels';
-import { CIRCUIT_LEVELS } from '../content/circuitLevels';
-import { VEHICLE_LEVELS } from '../content/vehicleLevels';
+import { useGlobalProgress } from '../state/useProgressTracker';
 
 interface PackCard {
   id: string;
@@ -46,32 +41,11 @@ const PACKS: PackCard[] = [
 ];
 
 export function PackSelect() {
-  const gameProgress = useGameStore((s) => s.progress);
-  const circuitProgress = useCircuitStore((s) => s.progress);
-  const vehicleProgress = useVehicleStore((s) => s.progress);
-
-  const getPackProgress = (packId: string) => {
-    if (packId === 'structures') {
-      const total = LEVELS.length;
-      const completed = LEVELS.filter((l) => (gameProgress[l.id]?.stars ?? 0) > 0).length;
-      return { completed, total };
-    }
-    if (packId === 'circuits') {
-      const total = CIRCUIT_LEVELS.length;
-      const completed = CIRCUIT_LEVELS.filter((l) => (circuitProgress[l.id]?.stars ?? 0) > 0).length;
-      return { completed, total };
-    }
-    if (packId === 'machines') {
-      const total = VEHICLE_LEVELS.length;
-      const completed = VEHICLE_LEVELS.filter((l) => (vehicleProgress[l.id]?.stars ?? 0) > 0).length;
-      return { completed, total };
-    }
-    return { completed: 0, total: 0 };
-  };
+  const globalProgress = useGlobalProgress();
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <header className="mb-10 text-center">
+      <header className="mb-8 text-center">
         <p className="font-mono text-xs uppercase tracking-widest text-accent">
           Engineering Forge
         </p>
@@ -82,11 +56,46 @@ export function PackSelect() {
         </p>
       </header>
 
+      {/* Global Achievement & Progress Banner */}
+      <div className="mb-6 rounded-xl border border-border bg-surface-1/90 p-4 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20 text-accent border border-accent/40 font-mono text-xs font-bold">
+              ⚡
+            </span>
+            <div>
+              <span className="font-mono text-xs uppercase tracking-wider text-fg-muted font-medium block">
+                Forge Apprenticeship Progress
+              </span>
+              <span className="text-xs text-fg">
+                Overall Mastery: <strong className="text-accent">{globalProgress.percent}%</strong>
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-xs font-mono">
+            <span className="rounded bg-surface-2 px-2.5 py-1 border border-border text-fg-muted">
+              Levels: <strong className="text-fg">{globalProgress.completedLevels}/{globalProgress.totalLevels}</strong>
+            </span>
+            <span className="rounded bg-surface-2 px-2.5 py-1 border border-border text-warning">
+              ★ <strong>{globalProgress.earnedStars}/{globalProgress.maxStars}</strong>
+            </span>
+          </div>
+        </div>
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
+          <div
+            className="h-full rounded-full bg-accent transition-all duration-500 shadow-[0_0_10px_rgba(255,106,44,0.4)]"
+            style={{ width: `${globalProgress.percent}%` }}
+          />
+        </div>
+      </div>
+
       <ol className="flex flex-col gap-3">
         {PACKS.map((pack) => {
           const available = pack.status === 'available';
-          const { completed, total } = getPackProgress(pack.id);
-          const allCompleted = total > 0 && completed === total;
+          const packData = pack.id !== 'lab' ? globalProgress.packs[pack.id as 'structures' | 'circuits' | 'machines'] : null;
+          const completed = packData?.completed ?? 0;
+          const total = packData?.total ?? 0;
+          const allCompleted = packData?.isAllCompleted ?? false;
 
           const cardStyle = !available
             ? 'border-border/50 bg-surface-1/40 opacity-50'

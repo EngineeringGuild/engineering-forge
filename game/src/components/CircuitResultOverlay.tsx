@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Stars } from './Stars';
+import { AchievementCelebration } from './AchievementCelebration';
 import type { CircuitTestResult } from '../state/circuitStore';
 import { soundFx } from '../audio/soundFx';
 
@@ -50,12 +51,16 @@ export function CircuitResultOverlay({
             : null;
 
   return (
-    <div
-      className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="result-heading"
-    >
+    <>
+      {passed && result.status === 'analyzed' && (
+        <AchievementCelebration stars={result.stars} active={true} />
+      )}
+      <div
+        className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="result-heading"
+      >
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center">
         {heading && (
           <h2
@@ -131,5 +136,6 @@ export function CircuitResultOverlay({
         </div>
       </div>
     </div>
+    </>
   );
 }

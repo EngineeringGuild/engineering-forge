@@ -15,6 +15,8 @@ export interface DynamicTrussFrame {
   supportReactions?: Record<string, { rx: number; ry: number }>;
   maxDeflectionMm?: number;
   activeLoadN?: number;
+  /** Phase 2/3 performance profiling: frame-by-frame physics calculation time in milliseconds */
+  calculationTimeMs?: number;
 }
 
 export interface DynamicSimulationTrajectory {
@@ -265,7 +267,9 @@ export function computeDynamicTrussSimulation(
       loads: dynamicLoads,
     };
 
+    const stepStartTime = performance.now();
     const res = solveTrussWithDisplacements(stepModel);
+    const calculationTimeMs = Math.max(0.01, performance.now() - stepStartTime);
 
     if (res.status === 'unstable') {
       failureStep = s;
@@ -313,6 +317,7 @@ export function computeDynamicTrussSimulation(
         maxUtilization: stepMaxUtil,
         failedMemberId,
         isCollapsed: true,
+        calculationTimeMs,
       });
     } else {
       frames.push({
@@ -324,6 +329,7 @@ export function computeDynamicTrussSimulation(
         maxUtilization: stepMaxUtil,
         failedMemberId: null,
         isCollapsed: false,
+        calculationTimeMs,
       });
     }
   }

@@ -49,4 +49,42 @@ describe('Level Progress Tracking Logic', () => {
     expect(earnedStars).toBe(4);
     expect(maxStars).toBe(15);
   });
+
+  it('ProgressManager records completions and preserves highest star score', async () => {
+    const { progressManager } = await import('../state/ProgressManager');
+    progressManager.resetAllProgress();
+
+    // Record initial completion: 2 stars at $120
+    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 2, 120);
+    expect(progressManager.isLevelCompleted('structures', LEVELS[0].id)).toBe(true);
+    expect(progressManager.getStarsForLevel('structures', LEVELS[0].id)).toBe(2);
+
+    // Replay with 1 star at lower cost ($90) -> Stars must NOT regress!
+    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 1, 90);
+    expect(progressManager.getStarsForLevel('structures', LEVELS[0].id)).toBe(2);
+
+    // Replay with 3 stars at $85 -> Stars must upgrade to 3
+    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 3, 85);
+    expect(progressManager.getStarsForLevel('structures', LEVELS[0].id)).toBe(3);
+
+    // Pack progress verification
+    const structProgress = progressManager.getPackProgress('structures');
+    expect(structProgress.completed).toBe(1);
+    expect(structProgress.earnedStars).toBe(3);
+    expect(structProgress.total).toBe(LEVELS.length);
+    expect(structProgress.percent).toBeGreaterThan(0);
+
+    // Global progress verification
+    const globalProg = progressManager.getGlobalProgress();
+    expect(globalProg.completedLevels).toBe(1);
+    expect(globalProg.totalLevels).toBe(
+      LEVELS.length + CIRCUIT_LEVELS.length + VEHICLE_LEVELS.length,
+    );
+    expect(globalProg.earnedStars).toBe(3);
+
+    // Reset pack progress
+    progressManager.resetPackProgress('structures');
+    expect(progressManager.isLevelCompleted('structures', LEVELS[0].id)).toBe(false);
+  });
 });
+

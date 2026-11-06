@@ -7,6 +7,9 @@ import { getCircuitLevel, nextCircuitLevelId } from '../content/circuitLevels';
 import { totalCircuitCost } from '../game/circuitBuild';
 import { COMPONENTS } from '../physics/components';
 import { useCircuitStore } from '../state/circuitStore';
+import { ChallengeTimer } from '../components/ChallengeTimer';
+import { getElectricalGuidance } from '../game/guidanceSystem';
+import { ContextualHintBanner } from '../components/ContextualHintBanner';
 
 export function CircuitsPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
@@ -14,6 +17,8 @@ export function CircuitsPlayLevel() {
   const [showHint, setShowHint] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [timerResetKey, setTimerResetKey] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const level = levelId ? getCircuitLevel(levelId) : undefined;
   const isLevelUnlocked = useCircuitStore((s) => s.isLevelUnlocked);
@@ -78,30 +83,50 @@ export function CircuitsPlayLevel() {
     setIsSimulating(false);
     setShowResult(false);
     resetBuild();
+    setTimerResetKey((k) => k + 1);
+    setElapsedSeconds(0);
   };
+
+  const isLevelCompleted = testResult?.status === 'analyzed' && testResult.passed;
+  const isStuck = !isLevelCompleted && elapsedSeconds >= 60;
+  const guidance = getElectricalGuidance(level, builtNodes, builtEdges, cost, testResult);
 
   return (
     <div className="mx-auto flex h-svh max-w-4xl flex-col gap-4 p-4">
       <header className="flex items-center justify-between">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-accent">
-            {level.name}
-          </p>
-          <p className="text-sm text-fg-muted">{level.tagline}</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-widest text-accent">
+              {level.name}
+            </p>
+            <p className="text-sm text-fg-muted">{level.tagline}</p>
+          </div>
+          <ChallengeTimer
+            isRunning={!isLevelCompleted}
+            resetTrigger={`${level.id}-${timerResetKey}`}
+            onTimeUpdate={setElapsedSeconds}
+          />
         </div>
         <button
           onClick={() => setShowHint((v) => !v)}
-          className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg"
+          className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+            isStuck
+              ? 'border-accent bg-accent/10 font-medium text-accent animate-pulse'
+              : 'border-border text-fg-muted hover:text-fg'
+          }`}
         >
-          Hint
+          {isStuck ? '💡 Guidance Ready' : 'Hint'}
         </button>
       </header>
 
-      {showHint && (
-        <p className="rounded-xl border border-border bg-surface-1 px-4 py-3 text-sm text-fg-muted">
-          {level.hint}
-        </p>
-      )}
+      <ContextualHintBanner
+        guidance={guidance}
+        isStuck={isStuck}
+        elapsedSeconds={elapsedSeconds}
+        fallbackHint={level.hint}
+        manualOpen={showHint}
+        onDismiss={() => setShowHint(false)}
+      />
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface-1">
         <CircuitCanvas

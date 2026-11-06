@@ -396,10 +396,12 @@ export function computeMatterTrussTrajectory(
   let failedMemberId: string | null = null;
   let peakUtilization = 0;
   for (let s = 0; s <= totalSteps; s++) {
+    const stepStartTime = performance.now();
     // Substep with 16.66ms physics ticks for stable Matter.js integration
     sim.step(16.66);
     sim.step(16.66);
     const stepState = sim.step(16.66);
+    const calculationTimeMs = Math.max(0.01, performance.now() - stepStartTime);
     const t = s / totalSteps;
 
     let stepMaxUtil = 0;
@@ -454,6 +456,7 @@ export function computeMatterTrussTrajectory(
       supportReactions: stepState.supportReactions,
       maxDeflectionMm: stepState.maxDeflectionMm,
       activeLoadN: vehicleLoadN,
+      calculationTimeMs,
     });
   }
 

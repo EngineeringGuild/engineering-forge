@@ -338,3 +338,64 @@ describe('Phase 2 Continuum Mechanics & Dynamics Formulations', () => {
     expect(fAt15).toBeLessThanOrEqual(muPeak * normalForce);
   });
 });
+
+describe('Phase 3 Multi-Physics Guild Matrix (Electro-Thermal-Structural & FSI)', () => {
+  it('evaluates Electro-Thermal-Structural Coupling (Joule heating, thermal expansion & pre-stress)', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Copper busbar/structural tie: length = 2.0m, area = 0.001 m^2 (1000 mm^2)
+    // Carrying current = 1200 A for 10 seconds under 15 kN axial mechanical tension
+    const res = physicsRegistry.evaluateElectroThermalStructuralCoupling(
+      'copper_c11000',
+      1200,      // 1200 A
+      15_000,    // 15 kN mechanical tension
+      2.0,       // 2 meters long
+      0.001,     // 0.001 m^2 area
+      10.0,      // 10 seconds duration
+      293.15,    // 20 deg C ambient
+      1.0,       // fully constrained ends
+    );
+
+    expect(res).not.toBeNull();
+    // Resistance R = rho_e * (L / A) = 1.68e-8 * (2 / 0.001) = 3.36e-5 Ohm
+    expect(res?.resistanceOhm).toBeCloseTo(3.36e-5, 7);
+    // Joule dissipation P = I^2 * R = 1200^2 * 3.36e-5 ~ 48.38 W
+    expect(res?.joulePowerWatts).toBeCloseTo(48.38, 1);
+    // Total energy generated Q = P * 10s ~ 483.8 Joules
+    expect(res?.heatEnergyJoules).toBeCloseTo(483.8, 1);
+    // Mass = 8940 * 0.001 * 2 = 17.88 kg
+    expect(res?.memberMassKg).toBeCloseTo(17.88, 2);
+    // Temperature rise: delta_T = Q / (mass * c_p) = 483.8 / (17.88 * 385) ~ 0.07 K
+    expect(res?.temperatureRiseK).toBeGreaterThan(0);
+    expect(res?.temperatureRiseK).toBeLessThan(1.0);
+    // Constrained thermal stress and combined stress are positive
+    expect(res?.constrainedThermalStressPa).toBeGreaterThan(0);
+    expect(res?.combinedStressPa).toBeGreaterThan(15_000 / 0.001); // greater than pure mechanical
+    expect(res?.isFailing).toBe(false);
+  });
+
+  it('evaluates Fluid-Structure Interaction (FSI) & bridge aerodynamic cross-wind loading', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Vehicle traveling at 30 m/s (~108 km/h) with Cd=0.32, Cl=0.18, A=1.8 m^2
+    // Along with storm cross-wind of 20 m/s acting on 12 m^2 exposed bridge truss
+    const fsi = physicsRegistry.evaluateFluidStructureInteraction(
+      30.0, // 30 m/s vehicle velocity
+      0.32, // Cd
+      0.18, // Cl downforce
+      1.8,  // 1.8 m^2 frontal area
+      20.0, // 20 m/s cross-wind
+      12.0, // 12 m^2 bridge truss exposed area
+    );
+
+    // Dynamic pressure: q = 0.5 * 1.225 * 30^2 = 551.25 Pa
+    expect(fsi.velocityPressurePa).toBeCloseTo(551.25, 1);
+    // Vehicle Drag = 551.25 * 0.32 * 1.8 ~ 317.52 N
+    expect(fsi.dragForceN).toBeCloseTo(317.52, 1);
+    // Vehicle Downforce = 551.25 * 0.18 * 1.8 ~ 178.60 N
+    expect(fsi.downforceLiftN).toBeCloseTo(178.60, 1);
+
+    // Cross-wind pressure: q_wind = 0.5 * 1.225 * 20^2 = 245.0 Pa
+    // Bridge wind thrust = 245.0 * 1.2 * 12 = 3528.0 N (~3.53 kN)
+    expect(fsi.bridgeWindThrustN).toBeCloseTo(3528.0, 0);
+  });
+});
+

@@ -60,34 +60,36 @@ Every formulation, metric, and threshold in the matrix adheres strictly to inter
 
 ---
 
-### Version 2.0 — Continuum Mechanics & Nonlinear Structural Dynamics
-- **Frame & Beam Elements (Timoshenko & Euler-Bernoulli)**:
-  - Expands from 2-DOF axial pin-jointed trusses to 3-DOF/node frame elements capturing bending moments $M(x)$ and shear forces $V(x)$:
-    $$\frac{d^2 y}{dx^2} = \frac{M(x)}{E I_z}, \quad \sigma_{comb} = \frac{N}{A} \pm \frac{M \cdot y}{I}$$
-- **Euler Critical Column Buckling**:
-  - Calculates column slenderness ratio $\lambda = \frac{K L}{r}$ (where $r = \sqrt{I / A}$ is the radius of gyration).
-  - Distinguishes tension-failure from compressive buckling instabilities.
-- **Bilinear Elastoplastic Constitutive Material Law**:
-  - Incorporates post-yield plastic strain hardening:
-    $$\sigma = \begin{cases} E \epsilon & \text{for } \epsilon \le \epsilon_y \\ \sigma_y + E_{tan} (\epsilon - \epsilon_y) & \text{for } \epsilon > \epsilon_y \end{cases}$$
-- **Rayleigh Viscous Damping**:
-  - Damping matrix $[C] = \alpha [M] + \beta [K]$ to prevent unphysical high-frequency numerical ringing during impact.
-- **Pacejka Magic Formula Tire Dynamics**:
-  - Vehicle longitudinal and lateral tire slip curves:
-    $$F_x = D \sin\left(C \arctan\left(B \kappa - E(B \kappa - \arctan(B \kappa))\right)\right)$$
+### Version 2.0 — Continuum Mechanics & Nonlinear Structural Dynamics (Delivered & Certified)
+- **Euler-Bernoulli Elastic Beam Flexure (Delivered)**:
+  - Simple beam bending under concentrated and self-mass distributed loads:
+    $$\delta_{max} = \frac{P L^3}{48 E I}, \quad M_{max} = \frac{P L}{4}, \quad \sigma_{max} = \frac{M c}{I}$$
+- **Euler Critical Column Buckling (AISC 360-16 / ASME III) (Delivered)**:
+  - Critical buckling load $P_{cr} = \frac{\pi^2 E I}{(K L)^2}$ and slenderness ratio $\lambda = \frac{K L}{r}$. Compression members undergo physical lateral buckling failure when $|F_{axial}| > P_{cr}$, prior to material yield.
+- **Pacejka Magic Formula Tire Dynamics (Delivered)**:
+  - Longitudinal tire traction curves $F_x(\kappa)$ modeling rolling resistance, optimal grip at 12–18% slip, and wheelspin burnout.
+- **Interactive Multi-Mode Material Test Bench (`/lab`) (Delivered)**:
+  - Beam Bending Mode, Euler Buckling Mode, and Pacejka Tire Slip Mode with interactive parametric sliders and SVG curve plots.
+- **PhysicsMediator & PhysicsPerformanceMonitor (Delivered)**:
+  - Reactive decoupled state mediator with frame-by-frame calculation timing and CPU load telemetry graph.
 
 ---
 
-### Version 3.0 — Coupled Multi-Physics Guild Matrix
-- **Electro-Thermal-Structural Coupling**:
-  - Current flow $I$ generates Joule dissipation $\dot{Q} = I^2 R$.
-  - Thermal expansion $\Delta L = \alpha_{th} L_0 \Delta T$ introduces thermal pre-stress:
-    $$\sigma_{th} = E (\epsilon - \alpha_{th} \Delta T)$$
-- **Fluid-Structure Interaction (FSI) & Aerodynamics**:
-  - Quadratic aerodynamic drag and downforce profiles:
-    $$F_d = \frac{1}{2} \rho v^2 C_d A_{ref}$$
-- **Dimension Register & CAD Export**:
-  - Full parametric export into Guild engineering formats (YAML, STEP, DXF) integrated with the Guild's `dimension_register.py` authority.
+### Version 3.0 — Coupled Multi-Physics Guild Matrix (Active Implementation)
+- **Electro-Thermal-Structural Coupling (Active)**:
+  - Electrical current flow $I$ through structural elements generates Joule dissipation $\dot{Q} = I^2 R = I^2 (\rho_e \frac{L}{A})$.
+  - Thermal mass temperature rise $\Delta T = \frac{\dot{Q} \Delta t}{m c_p}$.
+  - Constrained thermal expansion induces thermal pre-stress:
+    $$\sigma_{th} = E (\epsilon - \alpha_{th} \Delta T), \quad \sigma_{comb} = \frac{|F_{axial}|}{A} + \sigma_{th}$$
+  - Evaluated via `evaluateElectroThermalStructuralCoupling(...)` in `PhysicsEngineRegistry`.
+- **Fluid-Structure Interaction (FSI) & Aerodynamics (Active)**:
+  - Dynamic air pressure $q = \frac{1}{2} \rho v^2$.
+  - Quadratic aerodynamic drag $F_d = q C_d A_{ref}$ and downforce/lift $F_L = q C_L A_{ref}$.
+  - Lateral aerodynamic bridge cross-wind thrust loading on exposed truss frames:
+    $$F_{wind} = \frac{1}{2} \rho v_{wind}^2 C_{d,truss} A_{exposed}$$
+  - Evaluated via `evaluateFluidStructureInteraction(...)` in `PhysicsEngineRegistry`.
+- **Dimension Register & CAD Export (Active)**:
+  - Full parametric export into Guild engineering formats (`exportToGuildRegister`), supporting dimension logs, named tuples, and technical drawing manifests.
 
 ---
 

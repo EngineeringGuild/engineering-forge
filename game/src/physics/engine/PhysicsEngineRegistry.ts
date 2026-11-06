@@ -70,6 +70,37 @@ export interface MachineTractionEvaluation {
   isStalled: boolean;
 }
 
+/**
+ * Phase 3: Electro-Thermal-Structural Coupled Multi-Physics Evaluation
+ */
+export interface ElectroThermalStructuralCouplingResult {
+  resistanceOhm: number;
+  joulePowerWatts: number;
+  heatEnergyJoules: number;
+  memberMassKg: number;
+  temperatureRiseK: number;
+  finalTemperatureK: number;
+  thermalStrain: number;
+  freeElongationM: number;
+  constrainedThermalStressPa: number;
+  combinedStressPa: number;
+  allowableStressPa: number;
+  utilization: number;
+  isOverheating: boolean;
+  isFailing: boolean;
+}
+
+/**
+ * Phase 3: Fluid-Structure Interaction (FSI) & Aerodynamic Evaluation
+ */
+export interface FluidStructureInteractionResult {
+  velocityPressurePa: number;
+  dragForceN: number;
+  downforceLiftN: number;
+  bridgeWindThrustN: number;
+  airDensityKgM3: number;
+}
+
 export type PhysicsRegistryListener = (eventType: 'material_updated' | 'constant_updated' | 'component_updated') => void;
 
 export class PhysicsEngineRegistry {
@@ -496,6 +527,126 @@ export class PhysicsEngineRegistry {
   ): number {
     const rho = this.getAirDensity();
     return 0.5 * rho * (speedMps * speedMps) * dragCoefficient * frontalAreaM2;
+  }
+
+  /**
+   * Phase 3: Electro-Thermal-Structural Coupled Multi-Physics Solver
+   * Computes Joule heating from current flow, temperature rise, thermal expansion,
+   * constrained thermal pre-stress, and combined mechanical stress under ASME criteria.
+   * 
+   * Formulations:
+   * R = rho_e * (L / A)
+   * P_joule = I^2 * R
+   * Q = P_joule * delta_t
+   * delta_T = Q / (mass * c_p)
+   * epsilon_th = alpha * delta_T
+   * sigma_th = E * epsilon_th
+   * sigma_combined = |F_axial| / A + sigma_th
+   */
+  public evaluateElectroThermalStructuralCoupling(
+    materialSpecId: string,
+    currentA: number,
+    axialForceN: number,
+    lengthM: number,
+    crossSectionAreaM2: number,
+    durationSeconds: number = 1.0,
+    ambientTempK: number = 293.15, // 20 deg C
+    endConstraintRatio: number = 1.0, // 1.0 = fully constrained ends (fixed), 0 = free expansion
+  ): ElectroThermalStructuralCouplingResult | null {
+    const spec = this.certifiedSpecs.get(materialSpecId);
+    if (!spec) return null;
+
+    const current = Math.abs(currentA);
+    const area = Math.max(1e-7, crossSectionAreaM2);
+    const length = Math.max(1e-3, lengthM);
+    const duration = Math.max(0, durationSeconds);
+
+    // Physical constants
+    const rho_e = spec.electricalResistivityOhmM ?? 1.7e-7; // Ohm*m
+    const c_p = spec.specificHeatJkgK ?? 490; // J / (kg*K)
+    const density = spec.densityKgM3; // kg/m^3
+    const E = spec.youngsModulusGPa * 1e9; // Pa
+    const alpha = spec.thermalExpansionPpmK * 1e-6; // 1/K
+
+    // 1. Electrical Resistance & Joule Dissipation
+    const resistanceOhm = rho_e * (length / area);
+    const joulePowerWatts = current * current * resistanceOhm;
+    const heatEnergyJoules = joulePowerWatts * duration;
+
+    // 2. Thermal Mass & Temperature Rise
+    const memberMassKg = density * area * length;
+    const temperatureRiseK = memberMassKg > 0 && c_p > 0
+      ? heatEnergyJoules / (memberMassKg * c_p)
+      : 0;
+    const finalTemperatureK = ambientTempK + temperatureRiseK;
+
+    // 3. Thermal Strain & Expansion
+    const thermalStrain = alpha * temperatureRiseK;
+    const freeElongationM = thermalStrain * length;
+
+    // 4. Constrained Thermal Pre-Stress & Combined Mechanical Stress
+    // If ends are fixed (endConstraintRatio = 1), thermal expansion produces compressive stress
+    const constrainedThermalStressPa = endConstraintRatio * (E * thermalStrain);
+    const mechanicalStressPa = Math.abs(axialForceN) / area;
+    const combinedStressPa = mechanicalStressPa + constrainedThermalStressPa;
+
+    // 5. Allowable Stress & Utilization
+    const allowableStressPa = spec.allowableStressMPa * 1e6;
+    const utilization = allowableStressPa > 0 ? combinedStressPa / allowableStressPa : 0;
+    const isOverheating = finalTemperatureK > 423.15; // > 150 deg C
+    const isFailing = utilization > 1.0 || isOverheating;
+
+    return {
+      resistanceOhm,
+      joulePowerWatts,
+      heatEnergyJoules,
+      memberMassKg,
+      temperatureRiseK,
+      finalTemperatureK,
+      thermalStrain,
+      freeElongationM,
+      constrainedThermalStressPa,
+      combinedStressPa,
+      allowableStressPa,
+      utilization,
+      isOverheating,
+      isFailing,
+    };
+  }
+
+  /**
+   * Phase 3: Fluid-Structure Interaction (FSI) & Aerodynamics
+   * Computes dynamic air pressure, quadratic drag, aerodynamic downforce/lift,
+   * and lateral aerodynamic cross-wind loading on exposed structural frames.
+   */
+  public evaluateFluidStructureInteraction(
+    relativeAirSpeedMps: number,
+    dragCoefficientCd: number = 0.32,
+    liftCoefficientCl: number = 0.15,
+    referenceAreaM2: number = 1.8,
+    crossWindSpeedMps: number = 0,
+    bridgeExposedAreaM2: number = 0,
+  ): FluidStructureInteractionResult {
+    const rho = this.getAirDensity();
+    const v = Math.abs(relativeAirSpeedMps);
+    const vWind = Math.abs(crossWindSpeedMps);
+
+    // Dynamic pressure: q = 0.5 * rho * v^2
+    const velocityPressurePa = 0.5 * rho * (v * v);
+    const dragForceN = velocityPressurePa * dragCoefficientCd * referenceAreaM2;
+    const downforceLiftN = velocityPressurePa * liftCoefficientCl * referenceAreaM2;
+
+    // Lateral bridge cross-wind thrust
+    const windPressurePa = 0.5 * rho * (vWind * vWind);
+    const bridgeWindThrustN = windPressurePa * 1.2 * bridgeExposedAreaM2; // Cd ~ 1.2 for bluff truss
+
+    return {
+      velocityPressurePa,
+      dragForceN,
+      downforceLiftN,
+      bridgeWindThrustN,
+      airDensityKgM3: rho,
+    };
   }
 
   // ==========================================

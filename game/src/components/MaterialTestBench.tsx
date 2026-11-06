@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { physicsMediator, type BeamTestBenchState } from '../physics/engine/PhysicsMediator';
 import { getStressHeatmapRgb } from '../physics/heatmap';
 import { calculatePacejkaTraction } from '../physics/vehicle';
+import { PhysicsPerformanceMonitor } from './PhysicsPerformanceMonitor';
 
 export function MaterialTestBench() {
   const [benchMode, setBenchMode] = useState<'beam_bending' | 'euler_buckling' | 'tire_pacejka'>('beam_bending');
@@ -797,6 +798,19 @@ export function MaterialTestBench() {
           </div>
         </div>
       )}
+
+      {/* Live Physics Engine Performance Monitor */}
+      <div className="mt-6 pt-4 border-t border-border/60">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-fg-muted font-mono">
+            Physics Engine Computation Telemetry
+          </span>
+          <span className="text-[10px] text-fg-subtle font-mono">
+            Target Budget: 16.67ms (60 FPS)
+          </span>
+        </div>
+        <PhysicsPerformanceMonitor isSimulating={true} />
+      </div>
     </div>
   );
 }

@@ -7,6 +7,9 @@ import { totalVehicleCost } from '../game/vehicleBuild';
 import { CHASSIS, ENGINES } from '../physics/vehicleParts';
 import { useVehicleStore } from '../state/vehicleStore';
 import { soundFx } from '../audio/soundFx';
+import { ChallengeTimer } from '../components/ChallengeTimer';
+import { getVehicleGuidance } from '../game/guidanceSystem';
+import { ContextualHintBanner } from '../components/ContextualHintBanner';
 
 export function VehiclesPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
@@ -14,6 +17,8 @@ export function VehiclesPlayLevel() {
   const [showHint, setShowHint] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [timerResetKey, setTimerResetKey] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const level = levelId ? getVehicleLevel(levelId) : undefined;
   const isLevelUnlocked = useVehicleStore((s) => s.isLevelUnlocked);
@@ -74,28 +79,48 @@ export function VehiclesPlayLevel() {
     setIsSimulating(false);
     setShowResult(false);
     resetBuild();
+    setTimerResetKey((k) => k + 1);
+    setElapsedSeconds(0);
   };
+
+  const isLevelCompleted = Boolean(testResult?.passed);
+  const isStuck = !isLevelCompleted && elapsedSeconds >= 60;
+  const guidance = getVehicleGuidance(level, selectedEngine, selectedChassis, cost, testResult);
 
   return (
     <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-4 p-4">
       <header className="flex items-center justify-between">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-accent">{level.name}</p>
-          <p className="text-sm text-fg-muted">{level.tagline}</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-widest text-accent">{level.name}</p>
+            <p className="text-sm text-fg-muted">{level.tagline}</p>
+          </div>
+          <ChallengeTimer
+            isRunning={!isLevelCompleted}
+            resetTrigger={`${level.id}-${timerResetKey}`}
+            onTimeUpdate={setElapsedSeconds}
+          />
         </div>
         <button
           onClick={() => setShowHint((v) => !v)}
-          className="rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg"
+          className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+            isStuck
+              ? 'border-accent bg-accent/10 font-medium text-accent animate-pulse'
+              : 'border-border text-fg-muted hover:text-fg'
+          }`}
         >
-          Hint
+          {isStuck ? '💡 Guidance Ready' : 'Hint'}
         </button>
       </header>
 
-      {showHint && (
-        <p className="rounded-xl border border-border bg-surface-1 px-4 py-3 text-sm text-fg-muted">
-          {level.hint}
-        </p>
-      )}
+      <ContextualHintBanner
+        guidance={guidance}
+        isStuck={isStuck}
+        elapsedSeconds={elapsedSeconds}
+        fallbackHint={level.hint}
+        manualOpen={showHint}
+        onDismiss={() => setShowHint(false)}
+      />
 
       {/* Dynamic Runway Track Canvas */}
       <VehicleTrackCanvas

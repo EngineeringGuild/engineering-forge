@@ -52,6 +52,8 @@ export interface MaterialSpecification {
   poissonsRatio: number; // Poisson's ratio (nu)
   densityKgM3: number; // Mass density (rho)
   thermalExpansionPpmK: number; // Coefficient of Linear Thermal Expansion (alpha in 10^-6 / K)
+  specificHeatJkgK?: number; // Specific heat capacity (c_p in J / kg·K)
+  electricalResistivityOhmM?: number; // Volume electrical resistivity (rho_e in Ohm·m)
   asmeSafetyFactor: number;
   standardCitation: string;
   basis: 'LOCKED' | 'DERIVADO' | 'ESTIMATE' | 'REFERENCIA';
@@ -69,6 +71,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.26,
     densityKgM3: 7850,
     thermalExpansionPpmK: 12.0,
+    specificHeatJkgK: 490,
+    electricalResistivityOhmM: 1.7e-7,
     asmeSafetyFactor: 1.56,
     standardCitation: 'ASTM A36/A36M-19; ASME BPVC Section II-D Table 1A',
     basis: 'REFERENCIA',
@@ -84,6 +88,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.29,
     densityKgM3: 8000,
     thermalExpansionPpmK: 17.2,
+    specificHeatJkgK: 500,
+    electricalResistivityOhmM: 7.2e-7,
     asmeSafetyFactor: 1.48,
     standardCitation: 'ASTM A240 / ASME BPVC Section II-D Table 1A',
     basis: 'REFERENCIA',
@@ -99,6 +105,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.33,
     densityKgM3: 2700,
     thermalExpansionPpmK: 23.6,
+    specificHeatJkgK: 896,
+    electricalResistivityOhmM: 3.99e-8,
     asmeSafetyFactor: 2.5,
     standardCitation: 'ASTM B221-21 / Aluminum Design Manual (ADM-2020)',
     basis: 'REFERENCIA',
@@ -114,6 +122,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.20,
     densityKgM3: 2400,
     thermalExpansionPpmK: 10.0,
+    specificHeatJkgK: 880,
+    electricalResistivityOhmM: 1.0e5,
     asmeSafetyFactor: 2.22,
     standardCitation: 'ACI 318-19 Building Code Requirements for Structural Concrete / EN 1992-1-1',
     basis: 'REFERENCIA',
@@ -129,6 +139,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.34,
     densityKgM3: 4430,
     thermalExpansionPpmK: 8.6,
+    specificHeatJkgK: 526,
+    electricalResistivityOhmM: 1.78e-6,
     asmeSafetyFactor: 1.95,
     standardCitation: 'ASTM B265 / MIL-HDBK-5J Metallic Materials for Aerospace Vehicles',
     basis: 'REFERENCIA',
@@ -144,6 +156,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.34,
     densityKgM3: 8940,
     thermalExpansionPpmK: 16.5,
+    specificHeatJkgK: 385,
+    electricalResistivityOhmM: 1.68e-8,
     asmeSafetyFactor: 1.50,
     standardCitation: 'ASTM B152 / CDA Standards Handbook for Copper Alloy C11000',
     basis: 'REFERENCIA',
@@ -159,6 +173,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.35,
     densityKgM3: 530,
     thermalExpansionPpmK: 4.5,
+    specificHeatJkgK: 1600,
+    electricalResistivityOhmM: 1.0e14,
     asmeSafetyFactor: 4.0,
     standardCitation: 'NDS for Wood Construction (AWC-2018) / ASTM D2555',
     basis: 'REFERENCIA',
@@ -174,6 +190,8 @@ export const CERTIFIED_MATERIALS_REGISTER: Record<string, MaterialSpecification>
     poissonsRatio: 0.3,
     densityKgM3: 7200,
     thermalExpansionPpmK: 11.5,
+    specificHeatJkgK: 480,
+    electricalResistivityOhmM: 2.0e-7,
     asmeSafetyFactor: 2.27,
     standardCitation: 'ASTM A603-19 Standard Specification for Zinc-Coated Steel Structural Wire Rope',
     basis: 'REFERENCIA',

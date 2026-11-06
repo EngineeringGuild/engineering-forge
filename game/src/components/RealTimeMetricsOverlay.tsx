@@ -2,6 +2,7 @@ import { calculateSafetyFactor, formatForce } from '../physics/heatmap';
 import type { DynamicTrussFrame } from '../physics/trussDynamic';
 import type { BuiltMember } from '../game/build';
 import { MATERIALS } from '../physics/materials';
+import { PhysicsPerformanceMonitor } from './PhysicsPerformanceMonitor';
 
 interface RealTimeMetricsOverlayProps {
   currentFrame: DynamicTrussFrame | null;
@@ -67,7 +68,7 @@ export function RealTimeMetricsOverlay({
   return (
     <aside
       aria-label="Real-time structural metrics"
-      className="absolute bottom-3 right-3 z-10 flex w-72 flex-col gap-2 rounded-xl border border-border/80 bg-surface-1/95 p-3 font-mono text-xs shadow-xl backdrop-blur-md"
+      className="absolute bottom-3 right-3 z-10 flex w-80 flex-col gap-2 rounded-xl border border-border/80 bg-surface-1/95 p-3 font-mono text-xs shadow-xl backdrop-blur-md"
     >
       {/* Header with Live Status Indicator */}
       <div className="flex items-center justify-between border-b border-border/60 pb-2">
@@ -198,6 +199,14 @@ export function RealTimeMetricsOverlay({
           </div>
         </div>
       )}
+
+      {/* Physics Engine Performance & CPU Compute Graph */}
+      <div className="border-t border-border/40 pt-1.5">
+        <PhysicsPerformanceMonitor
+          calculationTimeMs={currentFrame.calculationTimeMs}
+          isSimulating={isSimulating}
+        />
+      </div>
 
       {/* Heatmap Spectrum Legend Bar */}
       {heatmapEnabled && (
