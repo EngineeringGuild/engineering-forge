@@ -88,3 +88,71 @@ describe('Physics Engine Infrastructure (Registry & Contracts)', () => {
     expect(slope30.slopeGravityN).toBeCloseTo(mass * 9.80665 * 0.5, 1);
   });
 });
+
+describe('PhysicsEngineRegistry (Centralized Manager)', () => {
+  it('provides singleton access with standard constants and certified materials', async () => {
+    const { PhysicsEngineRegistry, physicsRegistry } = await import('./PhysicsEngineRegistry');
+    expect(PhysicsEngineRegistry.getInstance()).toBe(physicsRegistry);
+    expect(physicsRegistry.getStandardGravity()).toBeCloseTo(9.80665);
+    expect(physicsRegistry.getAirDensity()).toBe(1.225);
+
+    const steelSpec = physicsRegistry.getCertifiedSpec('structural_steel_a36');
+    expect(steelSpec).toBeDefined();
+    expect(steelSpec?.youngsModulusGPa).toBe(200);
+  });
+
+  it('evaluates structural mechanics with ASME allowable stress, safety factor, and deformation', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Steel: area 0.005 m², allowable stress 250 MPa, Young's modulus 200 GPa
+    // Under 500 kN tension, length 4m:
+    // stress = 500,000 / 0.005 = 100 MPa
+    // utilization = 100 MPa / 250 MPa = 0.40
+    // safetyFactor = 2.5
+    // delta_L = (500,000 * 4) / (200e9 * 0.005) = 2,000,000 / 1e9 = 0.002 m (2 mm)
+    const result = physicsRegistry.evaluateStructuralMember('steel', 500_000, 4.0);
+    expect(result).not.toBeNull();
+    expect(result?.stressPa).toBeCloseTo(100e6);
+    expect(result?.utilization).toBeCloseTo(0.4);
+    expect(result?.safetyFactor).toBeCloseTo(2.5);
+    expect(result?.isFailing).toBe(false);
+    expect(result?.deformationM).toBeCloseTo(0.002);
+  });
+
+  it('evaluates electrodynamic Ohm law and Joule power dissipation', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Resistor small: 5 ohms, max power 10 W
+    // At 1.2 A:
+    // V = 1.2 * 5 = 6.0 V
+    // P = 1.2^2 * 5 = 7.2 W
+    // utilization = 7.2 / 10 = 0.72 (nominal)
+    const evalNominal = physicsRegistry.evaluateElectricalComponent('resistor-small', 1.2);
+    expect(evalNominal).not.toBeNull();
+    expect(evalNominal?.voltageDropV).toBeCloseTo(6.0);
+    expect(evalNominal?.powerW).toBeCloseTo(7.2);
+    expect(evalNominal?.isOverloaded).toBe(false);
+
+    // At 2.0 A: P = 2^2 * 5 = 20 W > 10 W (overloaded)
+    const evalBurn = physicsRegistry.evaluateElectricalComponent('resistor-small', 2.0);
+    expect(evalBurn?.powerW).toBeCloseTo(20.0);
+    expect(evalBurn?.isOverloaded).toBe(true);
+  });
+
+  it('evaluates machine traction, normal forces, and grade stall limits', async () => {
+    const { physicsRegistry } = await import('./PhysicsEngineRegistry');
+    // Light chassis: 800 kg, Small engine: 1500 N thrust
+    // On flat ground: normal = 800 * 9.80665 ~ 7845.3 N
+    // Traction limit = 0.8 * 7845.3 ~ 6276.2 N > 1500 N (not traction limited)
+    // net acceleration = 1500 / 800 = 1.875 m/s²
+    const flatTraction = physicsRegistry.evaluateMachineTraction('engine-small', 'chassis-light', 0, 0);
+    expect(flatTraction).not.toBeNull();
+    expect(flatTraction?.isTractionLimited).toBe(false);
+    expect(flatTraction?.netAccelerationMps2).toBeCloseTo(1.875, 2);
+    expect(flatTraction?.isStalled).toBe(false);
+
+    // On steep 45-degree slope:
+    // slope force = 800 * 9.80665 * sin(45) ~ 5547.8 N > 1500 N -> STALLED
+    const steepSlope = physicsRegistry.evaluateMachineTraction('engine-small', 'chassis-light', 45, 0);
+    expect(steepSlope?.isStalled).toBe(true);
+    expect(steepSlope?.netAccelerationMps2).toBe(0);
+  });
+});
