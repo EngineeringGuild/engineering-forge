@@ -11,6 +11,7 @@ import { SimulationControlPanel } from './SimulationControlPanel';
 import { CircuitRealTimeMetricsOverlay } from './CircuitRealTimeMetricsOverlay';
 import { getStressHeatmapRgb } from '../physics/heatmap';
 import type { CircuitTelemetry } from '../physics/engine/PhysicsMetricsContract';
+import { PhysicsParticleCanvas, type PhysicsParticleCanvasHandle } from './PhysicsParticleCanvas';
 
 interface Point {
   x: number;
@@ -62,6 +63,7 @@ export function CircuitCanvas({
   onResetSimulation,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const particleCanvasRef = useRef<PhysicsParticleCanvasHandle | null>(null);
   const { buildArea, gridSize } = level;
   const simRef = useRef<ReturnType<typeof createMatterCircuitSimulation> | null>(null);
 
@@ -97,6 +99,7 @@ export function CircuitCanvas({
       breakerTripped: false,
       sparks: [],
     });
+    particleCanvasRef.current?.clear();
     setIsPaused(false);
     if (onResetSimulation) {
       onResetSimulation();
@@ -232,6 +235,22 @@ export function CircuitCanvas({
         soundFx.playBreak();
         soundFx.playSpark();
         tracker.playedBreakerSound = true;
+      }
+
+      // Physics particle canvas visual feedback for electric arcs and breaker blowout
+      if (svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        if (state.arcSparks.length > 0) {
+          for (const s of state.arcSparks) {
+            const px = (s.x / 400) * rect.width;
+            const py = (s.y / 300) * rect.height;
+            particleCanvasRef.current?.emitSparks(px, py, 3, { color: '#38bdf8' });
+          }
+        }
+        if (state.breakerTripped && !tracker.playedBreakerSound) {
+          particleCanvasRef.current?.emitSparks(rect.width * 0.45, rect.height * 0.45, 24, { color: '#f59e0b' });
+          particleCanvasRef.current?.emitStressPuff(rect.width * 0.45, rect.height * 0.45, 1.0);
+        }
       }
 
       if (elapsed < 2000) {
@@ -721,6 +740,8 @@ export function CircuitCanvas({
           );
         })}
       </svg>
+      {/* Particle Simulation Canvas for short-circuits and electrical arcs */}
+      <PhysicsParticleCanvas ref={particleCanvasRef} active={isSimulating} />
 
       {/* Real-time Circuit HUD */}
       {metricsEnabled && (

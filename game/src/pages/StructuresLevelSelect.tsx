@@ -3,6 +3,7 @@ import { LevelSelectList } from '../components/LevelSelectList';
 import { LEVELS } from '../content/levels';
 import { useGameStore } from '../state/gameStore';
 import { usePackProgress } from '../state/useProgressTracker';
+import { CompletionBadge } from '../components/CompletionBadge';
 
 export function StructuresLevelSelect() {
   const progress = useGameStore((s) => s.progress);
@@ -26,6 +27,9 @@ export function StructuresLevelSelect() {
           Build a bridge, then let the physics decide if it holds.
         </p>
       </header>
+
+      {/* Persistent Category Completion Badge */}
+      <CompletionBadge category="structures" className="mb-6" />
 
       <LevelSelectList
         levels={LEVELS}

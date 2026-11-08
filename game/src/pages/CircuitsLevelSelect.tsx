@@ -3,6 +3,7 @@ import { LevelSelectList } from '../components/LevelSelectList';
 import { CIRCUIT_LEVELS } from '../content/circuitLevels';
 import { useCircuitStore } from '../state/circuitStore';
 import { usePackProgress } from '../state/useProgressTracker';
+import { CompletionBadge } from '../components/CompletionBadge';
 
 export function CircuitsLevelSelect() {
   const progress = useCircuitStore((s) => s.progress);
@@ -26,6 +27,9 @@ export function CircuitsLevelSelect() {
           Wire a circuit, then let Ohm's law decide if it lights up.
         </p>
       </header>
+
+      {/* Persistent Category Completion Badge */}
+      <CompletionBadge category="circuits" className="mb-6" />
 
       <LevelSelectList
         levels={CIRCUIT_LEVELS}

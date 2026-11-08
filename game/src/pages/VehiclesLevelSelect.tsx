@@ -3,6 +3,7 @@ import { LevelSelectList } from '../components/LevelSelectList';
 import { VEHICLE_LEVELS } from '../content/vehicleLevels';
 import { useVehicleStore } from '../state/vehicleStore';
 import { usePackProgress } from '../state/useProgressTracker';
+import { CompletionBadge } from '../components/CompletionBadge';
 
 export function VehiclesLevelSelect() {
   const progress = useVehicleStore((s) => s.progress);
@@ -26,6 +27,9 @@ export function VehiclesLevelSelect() {
           Spec an engine and a chassis, then let Newton's second law decide how fast it goes.
         </p>
       </header>
+
+      {/* Persistent Category Completion Badge */}
+      <CompletionBadge category="machines" className="mb-6" />
 
       <LevelSelectList
         levels={VEHICLE_LEVELS}

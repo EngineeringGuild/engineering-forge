@@ -11,6 +11,7 @@ import {
   calculateInclineForces,
   type VehicleTelemetry,
 } from '../physics/engine/PhysicsMetricsContract';
+import { PhysicsParticleCanvas, type PhysicsParticleCanvasHandle } from './PhysicsParticleCanvas';
 
 interface Props {
   level: VehicleLevelDef;
@@ -44,6 +45,8 @@ export function VehicleTrackCanvas({
   const soundTriggeredRef = useRef<{ rev: boolean; screech: boolean }>({ rev: false, screech: false });
   const animIdRef = useRef<number>(0);
   const simRef = useRef<ReturnType<typeof createMatterVehicleSimulation> | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const particleCanvasRef = useRef<PhysicsParticleCanvasHandle | null>(null);
 
   const handleResetSimulationClick = useCallback(() => {
     soundFx.playSnapNode();
@@ -54,6 +57,7 @@ export function VehicleTrackCanvas({
     setAnimSpeed(0);
     setWheelRotation(0);
     setIsPaused(false);
+    particleCanvasRef.current?.clear();
     if (onResetSimulation) {
       onResetSimulation();
     }
@@ -160,6 +164,22 @@ export function VehicleTrackCanvas({
         soundTriggeredRef.current.screech = true;
       }
 
+      // Physics particle canvas visual feedback for tire smoke and slip sparks
+      if (svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        const curCarX = 60 + p * (540 - 60);
+        const curCarY = 160 - (curCarX - 60) * Math.tan((incline * Math.PI) / 180);
+        const px = ((curCarX - 18) / 600) * rect.width;
+        const py = (curCarY / 210) * rect.height;
+
+        if (state.isTractionLimited) {
+          particleCanvasRef.current?.emitSparks(px, py, 3, { color: '#f59e0b' });
+          particleCanvasRef.current?.emitTireSmoke(px, py, 0.9);
+        } else if (state.speed > 1.2 && Math.random() > 0.45) {
+          particleCanvasRef.current?.emitTireSmoke(px, py, 0.4);
+        }
+      }
+
       const isDone = state.reachedFinish || (state.isStalled && state.timeSeconds > 1.6);
 
       if (!isDone) {
@@ -228,7 +248,7 @@ export function VehicleTrackCanvas({
         </div>
       )}
 
-      <svg viewBox="0 0 600 210" className="w-full h-48 select-none touch-none">
+      <svg ref={svgRef} viewBox="0 0 600 210" className="w-full h-48 select-none touch-none">
         <defs>
           <linearGradient id="trackGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="var(--border)" />
@@ -456,6 +476,8 @@ export function VehicleTrackCanvas({
           )}
         </g>
       </svg>
+      {/* Particle Simulation Canvas for tire smoke and slip sparks */}
+      <PhysicsParticleCanvas ref={particleCanvasRef} active={isSimulating} />
 
       {/* Real-Time Vehicle Telemetry Overlay */}
       {(isSimulating || testResult) && metricsEnabled && (

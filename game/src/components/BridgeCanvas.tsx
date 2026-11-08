@@ -10,6 +10,7 @@ import { soundFx } from '../audio/soundFx';
 import { getStressHeatmapRgb } from '../physics/heatmap';
 import { SimulationControlPanel } from './SimulationControlPanel';
 import { RealTimeMetricsOverlay } from './RealTimeMetricsOverlay';
+import { PhysicsParticleCanvas, type PhysicsParticleCanvasHandle } from './PhysicsParticleCanvas';
 
 interface Point {
   x: number;
@@ -58,6 +59,11 @@ export function BridgeCanvas({
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const { buildArea, gridSize } = level;
+  const vbX = buildArea.minX - 1;
+  const vbY = buildArea.minY - 1;
+  const vbW = buildArea.maxX - buildArea.minX + 2;
+  const vbH = buildArea.maxY - buildArea.minY + 3;
+  const particleCanvasRef = useRef<PhysicsParticleCanvasHandle | null>(null);
 
   // Dynamic simulation playback state
   const [animProgress, setAnimProgress] = useState(0); // 0 to 1
@@ -95,6 +101,7 @@ export function BridgeCanvas({
     setIsPaused(false);
     startTimestampRef.current = null;
     soundPlayedRef.current = { creak: false, snap: false };
+    particleCanvasRef.current?.clear();
     onResetSimulation?.();
   }, [onResetSimulation]);
 
@@ -148,7 +155,7 @@ export function BridgeCanvas({
       const p = Math.min(1, Math.max(0, elapsed / duration));
       setAnimProgress(p);
 
-      // Sound triggers based on simulation state
+      // Sound triggers and particle effects based on simulation state
       const frameIndex = Math.min(
         trajectory.frames.length - 1,
         Math.floor(p * trajectory.frames.length),
@@ -156,13 +163,48 @@ export function BridgeCanvas({
       const curFrame = trajectory.frames[frameIndex];
 
       if (curFrame) {
+        if (curFrame.maxUtilization > 0.82 && svgRef.current) {
+          const rect = svgRef.current.getBoundingClientRect();
+          if (curFrame.cartPos && Math.random() > 0.65) {
+            const px = ((curFrame.cartPos.x - vbX) / vbW) * rect.width;
+            const py = ((curFrame.cartPos.y - vbY) / vbH) * rect.height;
+            particleCanvasRef.current?.emitStressPuff(px, py, curFrame.maxUtilization);
+          }
+        }
+
         if (curFrame.maxUtilization > 0.75 && !soundPlayedRef.current.creak) {
           soundFx.playStressCreak(curFrame.maxUtilization);
           soundPlayedRef.current.creak = true;
         }
+
         if (curFrame.failedMemberId && !soundPlayedRef.current.snap) {
           soundFx.playBreak();
           soundPlayedRef.current.snap = true;
+
+          // Trigger physical fracture fragments and sparks on beam failure
+          if (svgRef.current) {
+            const brokenMember = [...level.deckMembers, ...builtMembers].find(
+              (m) => m.id === curFrame.failedMemberId,
+            );
+            if (brokenMember) {
+              const a = basePoints.get(brokenMember.nodeA);
+              const b = basePoints.get(brokenMember.nodeB);
+              if (a && b) {
+                const rect = svgRef.current.getBoundingClientRect();
+                const x1 = ((a.x - vbX) / vbW) * rect.width;
+                const y1 = ((a.y - vbY) / vbH) * rect.height;
+                const x2 = ((b.x - vbX) / vbW) * rect.width;
+                const y2 = ((b.y - vbY) / vbH) * rect.height;
+                particleCanvasRef.current?.emitFracture(x1, y1, x2, y2, '#ef4444', 30);
+                particleCanvasRef.current?.emitSparks(
+                  (x1 + x2) / 2,
+                  (y1 + y2) / 2,
+                  18,
+                  { color: '#ff6600', speed: 160 },
+                );
+              }
+            }
+          }
         }
       }
 
@@ -177,7 +219,20 @@ export function BridgeCanvas({
 
     animIdRef.current = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(animIdRef.current);
-  }, [isSimulating, trajectory, playbackSpeed, isPaused, onSimulationFinish]);
+  }, [
+    isSimulating,
+    trajectory,
+    playbackSpeed,
+    isPaused,
+    onSimulationFinish,
+    vbX,
+    vbY,
+    vbW,
+    vbH,
+    builtMembers,
+    basePoints,
+    level.deckMembers,
+  ]);
 
   // Current frame data based on animProgress or static result
   const currentFrame = useMemo(() => {
@@ -213,11 +268,6 @@ export function BridgeCanvas({
     });
     return map;
   }, [basePoints, currentFrame, isSimulating, testResult]);
-
-  const vbX = buildArea.minX - 1;
-  const vbY = buildArea.minY - 1;
-  const vbW = buildArea.maxX - buildArea.minX + 2;
-  const vbH = buildArea.maxY - buildArea.minY + 3;
 
   function toModel(evt: React.MouseEvent): Point | null {
     const svg = svgRef.current;
@@ -700,6 +750,8 @@ export function BridgeCanvas({
           );
         })}
       </svg>
+      {/* Particle Simulation Canvas for fracture sparks and stress puffs */}
+      <PhysicsParticleCanvas ref={particleCanvasRef} active={isSimulating} />
 
       {/* Simulation Control Panel & Playback Inspection */}
       {(isSimulating || testResult) && (
