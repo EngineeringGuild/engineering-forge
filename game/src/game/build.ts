@@ -1,6 +1,7 @@
 import type { TrussMember, TrussModel, TrussNode } from '../physics/truss';
 import { MATERIALS } from '../physics/materials';
 import type { LevelDef } from '../content/types';
+import { computeStarRating, getDefaultParTime, type StarRatingResult } from './starRating';
 
 export interface BuiltNode {
   id: string;
@@ -69,13 +70,24 @@ export interface StarResult {
   passed: boolean;
   cost: number;
   stars: 0 | 1 | 2 | 3;
+  ratingDetails?: StarRatingResult;
 }
 
-export function scoreAttempt(level: LevelDef, cost: number, passed: boolean): StarResult {
-  if (!passed || cost > level.budget) {
-    return { passed: false, cost, stars: 0 };
+export function scoreAttempt(
+  level: LevelDef,
+  cost: number,
+  passed: boolean,
+  timeSeconds?: number,
+): StarResult {
+  const parTime = getDefaultParTime(level.order);
+  const rating = computeStarRating(passed, cost, level.budget, timeSeconds, parTime);
+  const res: StarResult = {
+    passed: rating.passed,
+    cost,
+    stars: rating.stars,
+  };
+  if (timeSeconds !== undefined) {
+    res.ratingDetails = rating;
   }
-  const ratio = cost / level.budget;
-  const stars = ratio <= 0.6 ? 3 : ratio <= 0.85 ? 2 : 1;
-  return { passed: true, cost, stars };
+  return res;
 }

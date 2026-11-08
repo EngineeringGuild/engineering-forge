@@ -170,6 +170,52 @@ export class PhysicsMediator {
       kFactor,
     );
   }
+
+  /**
+   * Phase 3: Evaluates Joule heating, temperature rise, and constrained thermal stress
+   */
+  public evaluateElectroThermalCoupling(
+    materialSpecId: string,
+    currentA: number,
+    axialForceN: number,
+    lengthM: number,
+    crossSectionAreaM2: number,
+    durationSeconds: number = 1.0,
+    ambientTempK: number = 293.15,
+    endConstraintRatio: number = 1.0,
+  ) {
+    return this.registry.evaluateElectroThermalStructuralCoupling(
+      materialSpecId,
+      currentA,
+      axialForceN,
+      lengthM,
+      crossSectionAreaM2,
+      durationSeconds,
+      ambientTempK,
+      endConstraintRatio,
+    );
+  }
+
+  /**
+   * Phase 3: Evaluates Aerodynamic Dynamic Pressure, Drag, and Cross-Wind Truss Thrust
+   */
+  public evaluateFsi(
+    relativeAirSpeedMps: number,
+    dragCoefficientCd: number = 0.32,
+    liftCoefficientCl: number = 0.15,
+    referenceAreaM2: number = 1.8,
+    crossWindSpeedMps: number = 0,
+    bridgeExposedAreaM2: number = 0,
+  ) {
+    return this.registry.evaluateFluidStructureInteraction(
+      relativeAirSpeedMps,
+      dragCoefficientCd,
+      liftCoefficientCl,
+      referenceAreaM2,
+      crossWindSpeedMps,
+      bridgeExposedAreaM2,
+    );
+  }
 }
 
 export const physicsMediator = PhysicsMediator.getInstance();

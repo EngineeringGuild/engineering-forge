@@ -5,11 +5,24 @@ import { calculatePacejkaTraction } from '../physics/vehicle';
 import { PhysicsPerformanceMonitor } from './PhysicsPerformanceMonitor';
 
 export function MaterialTestBench() {
-  const [benchMode, setBenchMode] = useState<'beam_bending' | 'euler_buckling' | 'tire_pacejka'>('beam_bending');
+  const [benchMode, setBenchMode] = useState<
+    'beam_bending' | 'euler_buckling' | 'tire_pacejka' | 'electro_thermal' | 'fsi_aerodynamics'
+  >('beam_bending');
   const [bucklingLoadKn, setBucklingLoadKn] = useState(50);
   const [bucklingLengthM, setBucklingLengthM] = useState(4.0);
   const [tireSlipRatio, setTireSlipRatio] = useState(0.15);
   const [tireNormalKn, setTireNormalKn] = useState(8.0);
+
+  // Phase 3 Multi-Physics State
+  const [jouleCurrentA, setJouleCurrentA] = useState(120);
+  const [jouleDurationS, setJouleDurationS] = useState(5.0);
+  const [jouleAxialKn, setJouleAxialKn] = useState(20);
+  const [endConstraintRatio, setEndConstraintRatio] = useState(1.0); // 1.0 = fixed ends
+
+  const [airSpeedMps, setAirSpeedMps] = useState(30); // 108 km/h
+  const [crossWindMps, setCrossWindMps] = useState(18); // ~65 km/h gale
+  const [dragCd, setDragCd] = useState(0.35);
+  const [bridgeFaceAreaM2, setBridgeFaceAreaM2] = useState(12.0);
 
   const [benchState, setBenchState] = useState<BeamTestBenchState>(
     physicsMediator.getTestBenchState(),
@@ -49,6 +62,42 @@ export function MaterialTestBench() {
       bucklingLengthM,
     );
   }, [benchState.selectedMaterialId, bucklingLoadKn, bucklingLengthM]);
+
+  // Phase 3 Electro-Thermal-Structural Coupling Evaluation
+  const electroThermalEvaluation = useMemo(() => {
+    const areaM2 = benchState.beamWidthM * benchState.beamHeightM;
+    return physicsMediator.evaluateElectroThermalCoupling(
+      benchState.selectedMaterialId,
+      jouleCurrentA,
+      jouleAxialKn * 1000,
+      benchState.spanLengthM,
+      areaM2,
+      jouleDurationS,
+      293.15,
+      endConstraintRatio,
+    );
+  }, [
+    benchState.selectedMaterialId,
+    benchState.beamWidthM,
+    benchState.beamHeightM,
+    benchState.spanLengthM,
+    jouleCurrentA,
+    jouleAxialKn,
+    jouleDurationS,
+    endConstraintRatio,
+  ]);
+
+  // Phase 3 Fluid-Structure Interaction (FSI) & Aerodynamics Evaluation
+  const fsiEvaluation = useMemo(() => {
+    return physicsMediator.evaluateFsi(
+      airSpeedMps,
+      dragCd,
+      0.18,
+      2.2, // Vehicle ref area
+      crossWindMps,
+      bridgeFaceAreaM2,
+    );
+  }, [airSpeedMps, dragCd, crossWindMps, bridgeFaceAreaM2]);
 
   const updateParam = useCallback((partial: Partial<BeamTestBenchState>) => {
     physicsMediator.updateTestBenchState(partial);
@@ -104,37 +153,57 @@ export function MaterialTestBench() {
           </div>
         </div>
 
-        {/* Phase 2 Test Mode Switcher */}
-        <div className="flex items-center gap-1.5 rounded-xl bg-surface-2 p-1 border border-border">
+        {/* Multi-Physics Test Mode Switcher */}
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-surface-2 p-1 border border-border">
           <button
             onClick={() => setBenchMode('beam_bending')}
-            className={`rounded-lg px-3 py-1.5 font-bold text-xs transition-colors ${
+            className={`rounded-lg px-2.5 py-1.5 font-bold text-xs transition-colors ${
               benchMode === 'beam_bending'
                 ? 'bg-accent text-accent-fg shadow-sm'
                 : 'text-fg-muted hover:text-fg'
             }`}
           >
-            1. Beam Flexure
+            1. Flexure
           </button>
           <button
             onClick={() => setBenchMode('euler_buckling')}
-            className={`rounded-lg px-3 py-1.5 font-bold text-xs transition-colors ${
+            className={`rounded-lg px-2.5 py-1.5 font-bold text-xs transition-colors ${
               benchMode === 'euler_buckling'
                 ? 'bg-accent text-accent-fg shadow-sm'
                 : 'text-fg-muted hover:text-fg'
             }`}
           >
-            2. Euler Buckling
+            2. Buckling
           </button>
           <button
             onClick={() => setBenchMode('tire_pacejka')}
-            className={`rounded-lg px-3 py-1.5 font-bold text-xs transition-colors ${
+            className={`rounded-lg px-2.5 py-1.5 font-bold text-xs transition-colors ${
               benchMode === 'tire_pacejka'
                 ? 'bg-accent text-accent-fg shadow-sm'
                 : 'text-fg-muted hover:text-fg'
             }`}
           >
-            3. Pacejka Tire Slip
+            3. Pacejka
+          </button>
+          <button
+            onClick={() => setBenchMode('electro_thermal')}
+            className={`rounded-lg px-2.5 py-1.5 font-bold text-xs transition-colors ${
+              benchMode === 'electro_thermal'
+                ? 'bg-accent text-accent-fg shadow-sm'
+                : 'text-fg-muted hover:text-fg'
+            }`}
+          >
+            4. Electro-Thermal
+          </button>
+          <button
+            onClick={() => setBenchMode('fsi_aerodynamics')}
+            className={`rounded-lg px-2.5 py-1.5 font-bold text-xs transition-colors ${
+              benchMode === 'fsi_aerodynamics'
+                ? 'bg-accent text-accent-fg shadow-sm'
+                : 'text-fg-muted hover:text-fg'
+            }`}
+          >
+            5. FSI & Wind
           </button>
         </div>
 
@@ -793,6 +862,357 @@ export function MaterialTestBench() {
                   <span className="text-base font-bold text-fg">μ = 0.85</span>
                 </div>
                 <span className="text-[9px] text-fg-muted mt-auto pt-1">Asphalt Standard Tire</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PHASE 3 MODE 4: ELECTRO-THERMAL-STRUCTURAL COUPLING */}
+      {benchMode === 'electro_thermal' && electroThermalEvaluation && (
+        <div className="flex flex-col gap-6 animate-in fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Control Sliders */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface-2/40 p-4">
+              <span className="text-xs font-bold text-fg uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚡</span> Joule Current & Constraints
+              </span>
+
+              {/* Current Input */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Current (I):</span>
+                  <span className="font-bold text-accent">{jouleCurrentA} A</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="600"
+                  step="10"
+                  value={jouleCurrentA}
+                  onChange={(e) => setJouleCurrentA(parseFloat(e.target.value))}
+                  className="accent-accent"
+                />
+              </div>
+
+              {/* Duration Input */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Pulse Duration (t):</span>
+                  <span className="font-bold text-accent">{jouleDurationS.toFixed(1)} s</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="30"
+                  step="0.5"
+                  value={jouleDurationS}
+                  onChange={(e) => setJouleDurationS(parseFloat(e.target.value))}
+                  className="accent-accent"
+                />
+              </div>
+
+              {/* Pre-Existing Axial Force */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Mechanical Axial Force:</span>
+                  <span className="font-bold text-accent">{jouleAxialKn} kN</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="150"
+                  step="5"
+                  value={jouleAxialKn}
+                  onChange={(e) => setJouleAxialKn(parseFloat(e.target.value))}
+                  className="accent-accent"
+                />
+              </div>
+
+              {/* End Constraint Switcher */}
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-border/60">
+                <span className="text-[10px] text-fg-muted uppercase font-semibold">Support End Constraint</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setEndConstraintRatio(1.0)}
+                    className={`rounded px-2 py-1 text-[10px] font-bold border transition-colors ${
+                      endConstraintRatio === 1.0
+                        ? 'border-accent bg-accent/20 text-accent'
+                        : 'border-border text-fg-muted hover:text-fg'
+                    }`}
+                  >
+                    Rigidly Fixed (σ_th &gt; 0)
+                  </button>
+                  <button
+                    onClick={() => setEndConstraintRatio(0.0)}
+                    className={`rounded px-2 py-1 text-[10px] font-bold border transition-colors ${
+                      endConstraintRatio === 0.0
+                        ? 'border-accent bg-accent/20 text-accent'
+                        : 'border-border text-fg-muted hover:text-fg'
+                    }`}
+                  >
+                    Free Expansion (ΔL &gt; 0)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Heating & Thermal Strain Representation */}
+            <div className="md:col-span-2 flex flex-col gap-4 rounded-xl border border-border bg-surface-2/40 p-4">
+              <span className="text-xs font-bold text-fg uppercase tracking-wider flex items-center justify-between">
+                <span>🔥 Joule Dissipation & Thermal Pre-Stress</span>
+                <span className="text-[10px] font-mono text-accent">
+                  ASTM E8 / IEEE 100 Multi-Physics
+                </span>
+              </span>
+
+              {/* Heat gradient visualization */}
+              <div className="relative flex h-36 w-full items-center justify-center rounded-xl border border-border/80 bg-surface-1 overflow-hidden p-4">
+                <div
+                  className="h-10 w-4/5 rounded-md border transition-all duration-300 relative flex items-center justify-center"
+                  style={{
+                    backgroundColor:
+                      electroThermalEvaluation.temperatureRiseK > 120
+                        ? '#ef4444'
+                        : electroThermalEvaluation.temperatureRiseK > 50
+                        ? '#f97316'
+                        : electroThermalEvaluation.temperatureRiseK > 15
+                        ? '#eab308'
+                        : '#3b82f6',
+                    boxShadow:
+                      electroThermalEvaluation.temperatureRiseK > 50
+                        ? '0 0 25px rgba(249, 115, 22, 0.5)'
+                        : 'none',
+                  }}
+                >
+                  <span className="font-mono text-xs font-bold text-black bg-white/70 px-2 py-0.5 rounded shadow">
+                    T = {(electroThermalEvaluation.finalTemperatureK - 273.15).toFixed(1)} °C (+{electroThermalEvaluation.temperatureRiseK.toFixed(1)} K)
+                  </span>
+                </div>
+              </div>
+
+              {/* Multi-physics output stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Joule Heat (Q)</span>
+                  <span className="text-sm font-bold text-amber-400 mt-1">
+                    {(electroThermalEvaluation.heatEnergyJoules / 1000).toFixed(1)} kJ
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">P = I²R ({electroThermalEvaluation.joulePowerWatts.toFixed(0)} W)</span>
+                </div>
+
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Thermal Stress</span>
+                  <span className="text-sm font-bold text-accent mt-1">
+                    {(electroThermalEvaluation.constrainedThermalStressPa / 1e6).toFixed(1)} MPa
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">σ_th = E·α·ΔT</span>
+                </div>
+
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Combined Stress</span>
+                  <span
+                    className={`text-sm font-bold mt-1 ${
+                      electroThermalEvaluation.isFailing ? 'text-red-400' : 'text-emerald-400'
+                    }`}
+                  >
+                    {(electroThermalEvaluation.combinedStressPa / 1e6).toFixed(1)} MPa
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">
+                    Allow: {(electroThermalEvaluation.allowableStressPa / 1e6).toFixed(0)} MPa
+                  </span>
+                </div>
+
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Utilization</span>
+                  <span
+                    className={`text-sm font-bold mt-1 ${
+                      electroThermalEvaluation.isFailing ? 'text-red-400' : 'text-fg'
+                    }`}
+                  >
+                    {(electroThermalEvaluation.utilization * 100).toFixed(1)}%
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">
+                    {electroThermalEvaluation.isFailing ? 'FAILED / OVERHEAT' : 'ELASTIC OK'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PHASE 3 MODE 5: FLUID-STRUCTURE INTERACTION (FSI) & AERODYNAMICS */}
+      {benchMode === 'fsi_aerodynamics' && fsiEvaluation && (
+        <div className="flex flex-col gap-6 animate-in fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Wind and Aerodynamic Controls */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface-2/40 p-4">
+              <span className="text-xs font-bold text-fg uppercase tracking-wider flex items-center gap-1.5">
+                <span>💨</span> Airflow & Boundary Conditions
+              </span>
+
+              {/* Forward Relative Air Velocity */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Relative Airspeed (v):</span>
+                  <span className="font-bold text-accent">
+                    {airSpeedMps} m/s ({(airSpeedMps * 3.6).toFixed(0)} km/h)
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="80"
+                  step="2"
+                  value={airSpeedMps}
+                  onChange={(e) => setAirSpeedMps(parseFloat(e.target.value))}
+                  className="accent-accent"
+                />
+              </div>
+
+              {/* Cross-wind Speed */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Lateral Cross-Wind:</span>
+                  <span className="font-bold text-cyan-400">
+                    {crossWindMps} m/s ({(crossWindMps * 3.6).toFixed(0)} km/h)
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="45"
+                  step="1"
+                  value={crossWindMps}
+                  onChange={(e) => setCrossWindMps(parseFloat(e.target.value))}
+                  className="accent-cyan-400"
+                />
+              </div>
+
+              {/* Drag Coefficient (Cd) */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Drag Coefficient (C_d):</span>
+                  <span className="font-bold text-fg">{dragCd.toFixed(2)}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.15"
+                  max="1.2"
+                  step="0.05"
+                  value={dragCd}
+                  onChange={(e) => setDragCd(parseFloat(e.target.value))}
+                  className="accent-accent"
+                />
+              </div>
+
+              {/* Exposed Truss Face Area */}
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-fg-muted">Bridge Exposed Face:</span>
+                  <span className="font-bold text-fg">{bridgeFaceAreaM2} m²</span>
+                </div>
+                <input
+                  type="range"
+                  min="2"
+                  max="40"
+                  step="2"
+                  value={bridgeFaceAreaM2}
+                  onChange={(e) => setBridgeFaceAreaM2(parseFloat(e.target.value))}
+                  className="accent-accent"
+                />
+              </div>
+            </div>
+
+            {/* Aerodynamic SVG Visualizer */}
+            <div className="md:col-span-2 flex flex-col gap-4 rounded-xl border border-border bg-surface-2/40 p-4">
+              <span className="text-xs font-bold text-fg uppercase tracking-wider flex items-center justify-between">
+                <span>🌪️ Dynamic Pressure & Aerodynamic Thrust</span>
+                <span className="text-[10px] font-mono text-cyan-400">
+                  ISO 2533 / Standard Atmosphere (ρ = 1.225 kg/m³)
+                </span>
+              </span>
+
+              {/* Interactive Vector Canvas */}
+              <div className="relative flex h-36 w-full items-center justify-center rounded-xl border border-border/80 bg-surface-1 overflow-hidden p-4">
+                <svg viewBox="0 0 500 120" className="h-full w-full">
+                  {/* Streamlines */}
+                  {[20, 40, 60, 80, 100].map((y, idx) => (
+                    <line
+                      key={idx}
+                      x1="10"
+                      y1={y}
+                      x2="480"
+                      y2={y}
+                      stroke="#06b6d4"
+                      strokeWidth="1.5"
+                      strokeDasharray="8 6"
+                      strokeOpacity="0.4"
+                    />
+                  ))}
+
+                  {/* Exposed structural obstacle */}
+                  <rect x="220" y="30" width="30" height="60" fill="#3b82f6" rx="4" />
+                  <text x="235" y="65" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">
+                    Truss
+                  </text>
+
+                  {/* Drag force vector */}
+                  <line
+                    x1="250"
+                    y1="60"
+                    x2={250 + Math.min(180, (fsiEvaluation.dragForceN / 1500) * 120)}
+                    y2="60"
+                    stroke="#ef4444"
+                    strokeWidth="3"
+                    markerEnd="url(#arrow)"
+                  />
+                  <text
+                    x={260 + Math.min(180, (fsiEvaluation.dragForceN / 1500) * 120)}
+                    y="55"
+                    fill="#ef4444"
+                    fontSize="11"
+                    fontWeight="bold"
+                  >
+                    F_drag: {(fsiEvaluation.dragForceN / 1000).toFixed(2)} kN
+                  </text>
+                </svg>
+              </div>
+
+              {/* FSI Aerodynamic Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Dynamic Pressure (q)</span>
+                  <span className="text-sm font-bold text-cyan-400 mt-1">
+                    {fsiEvaluation.velocityPressurePa.toFixed(0)} Pa
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">q = ½·ρ·v²</span>
+                </div>
+
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Aerodynamic Drag</span>
+                  <span className="text-sm font-bold text-amber-400 mt-1">
+                    {(fsiEvaluation.dragForceN / 1000).toFixed(2)} kN
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">F_d = q · C_d · A</span>
+                </div>
+
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Downforce / Lift</span>
+                  <span className="text-sm font-bold text-fg mt-1">
+                    {(fsiEvaluation.downforceLiftN / 1000).toFixed(2)} kN
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">F_L = q · C_L · A</span>
+                </div>
+
+                <div className="rounded-lg border border-border bg-surface-1 p-2.5 flex flex-col">
+                  <span className="text-[10px] text-fg-muted font-semibold uppercase">Cross-Wind Thrust</span>
+                  <span className="text-sm font-bold text-red-400 mt-1">
+                    {(fsiEvaluation.bridgeWindThrustN / 1000).toFixed(2)} kN
+                  </span>
+                  <span className="text-[9px] text-fg-subtle">Truss Lateral Load</span>
+                </div>
               </div>
             </div>
           </div>

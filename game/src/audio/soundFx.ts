@@ -6,11 +6,21 @@
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private volume: number = 0.8;
 
   constructor() {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('forge-sound-muted');
-      this.isMuted = saved === 'true';
+      const savedMuted = localStorage.getItem('forge-sound-muted');
+      if (savedMuted !== null) {
+        this.isMuted = savedMuted === 'true';
+      }
+      const savedVol = localStorage.getItem('forge-sound-volume');
+      if (savedVol !== null) {
+        const parsed = parseFloat(savedVol);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 1) {
+          this.volume = parsed;
+        }
+      }
     }
   }
 
@@ -32,12 +42,28 @@ class SoundEngine {
     return this.isMuted;
   }
 
-  public toggleMute(): boolean {
-    this.isMuted = !this.isMuted;
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted;
     if (typeof window !== 'undefined') {
       localStorage.setItem('forge-sound-muted', String(this.isMuted));
     }
+  }
+
+  public toggleMute(): boolean {
+    this.setMuted(!this.isMuted);
     return this.isMuted;
+  }
+
+  public getVolume(): number {
+    return this.volume;
+  }
+
+  public setVolume(vol: number): void {
+    const clamped = Math.max(0, Math.min(1, vol));
+    this.volume = clamped;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('forge-sound-volume', String(clamped));
+    }
   }
 
   /**

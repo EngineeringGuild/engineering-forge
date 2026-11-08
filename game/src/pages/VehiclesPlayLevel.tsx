@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { VehicleResultOverlay } from '../components/VehicleResultOverlay';
 import { VehicleTrackCanvas } from '../components/VehicleTrackCanvas';
@@ -10,11 +10,25 @@ import { soundFx } from '../audio/soundFx';
 import { ChallengeTimer } from '../components/ChallengeTimer';
 import { getVehicleGuidance } from '../game/guidanceSystem';
 import { ContextualHintBanner } from '../components/ContextualHintBanner';
+import { EngineeringGlossaryModal } from '../components/EngineeringGlossaryModal';
+import { PersonalBestBadge } from '../components/PersonalBestBadge';
+import { highScoresManager } from '../state/HighScoresManager';
+import { OnboardingOverlay } from '../components/OnboardingOverlay';
+import { AutosaveIndicator } from '../components/AutosaveIndicator';
+import { useAutosaveProject } from '../state/useAutosaveProject';
+import { autosaveManager } from '../state/AutosaveManager';
+import { progressManager } from '../state/ProgressManager';
+import { BlueprintShareModal } from '../components/BlueprintShareModal';
+import { SoundSettingsModal } from '../components/SoundSettingsModal';
+import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
 
 export function VehiclesPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
   const navigate = useNavigate();
   const [showHint, setShowHint] = useState(false);
+  const [showGlossary, setShowGlossary] = useState(false);
+  const [showBlueprintModal, setShowBlueprintModal] = useState(false);
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
@@ -32,12 +46,60 @@ export function VehiclesPlayLevel() {
   const runTest = useVehicleStore((s) => s.runTest);
   const clearTestResult = useVehicleStore((s) => s.clearTestResult);
   const resetBuild = useVehicleStore((s) => s.resetBuild);
+  const restoreBuild = useVehicleStore((s) => s.restoreBuild);
+
+  const {
+    lastSavedTime,
+    wasRestored,
+    saveNow,
+    clearDraft,
+    dismissRestoredNotice,
+    isSaving,
+  } = useAutosaveProject<{
+    selectedEngine: string;
+    selectedChassis: string;
+  }>({
+    discipline: 'vehicles',
+    levelId: level?.id ?? '',
+    getData: () => ({
+      selectedEngine: useVehicleStore.getState().selectedEngine,
+      selectedChassis: useVehicleStore.getState().selectedChassis,
+    }),
+    onRestore: (saved) => {
+      restoreBuild(saved.selectedEngine, saved.selectedChassis);
+    },
+  });
+
+  const getBlueprint = useCallback((): UniversalBlueprint<'machines'> => {
+    const curLevel = levelId ? getVehicleLevel(levelId) : undefined;
+    const estCost = totalVehicleCost(selectedEngine, selectedChassis);
+    return {
+      schemaVersion: 1,
+      id: `bp_mech_${curLevel?.id || 'custom'}`,
+      domain: 'machines',
+      name: `${curLevel?.name || 'Machine'} Spec`,
+      levelId: curLevel?.id,
+      createdAt: new Date().toISOString(),
+      estimatedCost: estCost,
+      data: {
+        selectedEngine,
+        selectedChassis,
+      },
+    };
+  }, [levelId, selectedEngine, selectedChassis]);
 
   useEffect(() => {
     if (level && currentLevelId !== level.id) {
       startLevel(level.id);
+      const draft = autosaveManager.load<{
+        selectedEngine: string;
+        selectedChassis: string;
+      }>('vehicles', level.id);
+      if (draft && (draft.data.selectedEngine || draft.data.selectedChassis)) {
+        restoreBuild(draft.data.selectedEngine, draft.data.selectedChassis);
+      }
     }
-  }, [level, currentLevelId, startLevel]);
+  }, [level, currentLevelId, startLevel, restoreBuild]);
 
   if (!level) return <Navigate to="/machines" replace />;
   if (!isLevelUnlocked(level.id)) return <Navigate to="/machines" replace />;
@@ -59,12 +121,22 @@ export function VehiclesPlayLevel() {
   const handleTestDrive = () => {
     setIsSimulating(true);
     setShowResult(false);
-    runTest();
+    runTest(elapsedSeconds);
   };
 
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+    if (level && testResult?.passed && elapsedSeconds > 0) {
+      highScoresManager.recordSolveTime(level.id, elapsedSeconds);
+      progressManager.recordLevelCompletion(
+        'machines',
+        level.id,
+        testResult.stars as 1 | 2 | 3,
+        testResult.cost,
+        elapsedSeconds,
+      );
+    }
   };
 
   const handleResetSimulation = () => {
@@ -79,6 +151,7 @@ export function VehiclesPlayLevel() {
     setIsSimulating(false);
     setShowResult(false);
     resetBuild();
+    clearDraft();
     setTimerResetKey((k) => k + 1);
     setElapsedSeconds(0);
   };
@@ -86,6 +159,13 @@ export function VehiclesPlayLevel() {
   const isLevelCompleted = Boolean(testResult?.passed);
   const isStuck = !isLevelCompleted && elapsedSeconds >= 60;
   const guidance = getVehicleGuidance(level, selectedEngine, selectedChassis, cost, testResult);
+
+  const handleLoadBlueprint = (bp: UniversalBlueprint) => {
+    if (bp.domain === 'machines') {
+      const data = bp.data as MachinesBlueprintData;
+      restoreBuild(data.selectedEngine, data.selectedChassis);
+    }
+  };
 
   return (
     <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-4 p-4">
@@ -100,17 +180,51 @@ export function VehiclesPlayLevel() {
             resetTrigger={`${level.id}-${timerResetKey}`}
             onTimeUpdate={setElapsedSeconds}
           />
+          <PersonalBestBadge levelId={level.id} />
+          <AutosaveIndicator
+            lastSavedTime={lastSavedTime}
+            isSaving={isSaving}
+            wasRestored={wasRestored}
+            onSaveNow={saveNow}
+            onClearDraft={clearDraft}
+            onDismissRestored={dismissRestoredNotice}
+          />
         </div>
-        <button
-          onClick={() => setShowHint((v) => !v)}
-          className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
-            isStuck
-              ? 'border-accent bg-accent/10 font-medium text-accent animate-pulse'
-              : 'border-border text-fg-muted hover:text-fg'
-          }`}
-        >
-          {isStuck ? '💡 Guidance Ready' : 'Hint'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBlueprintModal(true)}
+            title="Universal Blueprint Exchange (Share, Export, Import, Library)"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>📐</span>
+            <span>Blueprint</span>
+          </button>
+          <button
+            onClick={() => setShowSoundSettings(true)}
+            title="Audio & Sound Synthesizer Settings"
+            className="flex items-center justify-center rounded-lg border border-border px-2.5 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>🔊</span>
+          </button>
+          <button
+            onClick={() => setShowGlossary(true)}
+            title="Open Engineering Glossary (Torque, Pacejka Tire Slip, Power-to-Weight, ISO/SAE standards)"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>📖</span>
+            <span>Glossary</span>
+          </button>
+          <button
+            onClick={() => setShowHint((v) => !v)}
+            className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+              isStuck
+                ? 'border-accent bg-accent/10 font-medium text-accent animate-pulse'
+                : 'border-border text-fg-muted hover:text-fg'
+            }`}
+          >
+            {isStuck ? '💡 Guidance Ready' : 'Hint'}
+          </button>
+        </div>
       </header>
 
       <ContextualHintBanner
@@ -245,6 +359,35 @@ export function VehiclesPlayLevel() {
           onRetry={handleReset}
           onNext={() => next && navigate(`/machines/level/${next}`)}
           onLevelSelect={() => navigate('/machines')}
+        />
+      )}
+
+      {/* Engineering Glossary Modal */}
+      <EngineeringGlossaryModal
+        isOpen={showGlossary}
+        onClose={() => setShowGlossary(false)}
+        defaultCategory="vehicles"
+      />
+
+      {/* Interactive Onboarding Overlay */}
+      <OnboardingOverlay discipline="vehicles" levelId={level.id} />
+
+      {/* Blueprint Share & Import Modal */}
+      {showBlueprintModal && (
+        <BlueprintShareModal
+          isOpen={showBlueprintModal}
+          onClose={() => setShowBlueprintModal(false)}
+          domain="machines"
+          getBlueprint={getBlueprint}
+          onLoadBlueprint={handleLoadBlueprint}
+        />
+      )}
+
+      {/* Sound Settings Modal */}
+      {showSoundSettings && (
+        <SoundSettingsModal
+          isOpen={showSoundSettings}
+          onClose={() => setShowSoundSettings(false)}
         />
       )}
     </div>

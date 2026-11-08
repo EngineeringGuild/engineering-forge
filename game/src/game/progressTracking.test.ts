@@ -54,17 +54,17 @@ describe('Level Progress Tracking Logic', () => {
     const { progressManager } = await import('../state/ProgressManager');
     progressManager.resetAllProgress();
 
-    // Record initial completion: 2 stars at $120
-    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 2, 120);
+    // Record initial completion: 2 stars at $120, 52 seconds
+    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 2, 120, 52);
     expect(progressManager.isLevelCompleted('structures', LEVELS[0].id)).toBe(true);
     expect(progressManager.getStarsForLevel('structures', LEVELS[0].id)).toBe(2);
 
-    // Replay with 1 star at lower cost ($90) -> Stars must NOT regress!
-    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 1, 90);
+    // Replay with 1 star at lower cost ($90) and faster time (41 seconds) -> Stars must NOT regress!
+    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 1, 90, 41);
     expect(progressManager.getStarsForLevel('structures', LEVELS[0].id)).toBe(2);
 
-    // Replay with 3 stars at $85 -> Stars must upgrade to 3
-    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 3, 85);
+    // Replay with 3 stars at $85 and 28 seconds -> Stars must upgrade to 3
+    progressManager.recordLevelCompletion('structures', LEVELS[0].id, 3, 85, 28);
     expect(progressManager.getStarsForLevel('structures', LEVELS[0].id)).toBe(3);
 
     // Pack progress verification

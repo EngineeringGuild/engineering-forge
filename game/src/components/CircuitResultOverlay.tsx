@@ -102,14 +102,61 @@ export function CircuitResultOverlay({
         )}
 
         {passed && (
-          <>
-            <p className="mt-1 text-sm text-fg-muted">
-              Built for ${result.status === 'analyzed' ? result.cost.toFixed(0) : ''} of ${budget}.
-            </p>
-            <div className="mt-3 flex justify-center">
+          <div className="mt-2 space-y-3">
+            <div className="flex justify-center">
               <Stars count={result.status === 'analyzed' ? result.stars : 0} />
             </div>
-          </>
+
+            {result.status === 'analyzed' && result.ratingDetails && (
+              <div className="rounded-xl border border-border/80 bg-surface-2/60 p-3 text-left font-mono text-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-fg-muted flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>Wiring Economy:</span>
+                  </span>
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <span className="text-fg">
+                      ${result.cost.toFixed(0)} / ${budget} (
+                      {((result.cost / budget) * 100).toFixed(0)}%)
+                    </span>
+                    <span className="text-warning text-xs">
+                      {'★'.repeat(result.ratingDetails.materialRating)}
+                    </span>
+                  </div>
+                </div>
+
+                {result.ratingDetails.timeSeconds !== undefined && result.ratingDetails.timeSeconds > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-fg-muted flex items-center gap-1.5">
+                      <span>⏱️</span>
+                      <span>Solve Speed:</span>
+                    </span>
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <span className="text-fg">
+                        {result.ratingDetails.timeSeconds.toFixed(1)}s
+                        <span className="text-fg-subtle text-[10px] font-normal">
+                          {' '}(Par: {result.ratingDetails.parTimeSeconds}s)
+                        </span>
+                      </span>
+                      <span className="text-warning text-xs">
+                        {'★'.repeat(result.ratingDetails.timeRating)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-accent font-sans border-t border-border/60 pt-1.5 mt-1">
+                  {result.ratingDetails.feedback}
+                </p>
+              </div>
+            )}
+
+            {result.status === 'analyzed' && !result.ratingDetails && (
+              <p className="mt-1 text-sm text-fg-muted">
+                Built for ${result.cost.toFixed(0)} of ${budget}.
+              </p>
+            )}
+          </div>
         )}
 
         <div className="mt-6 flex justify-center gap-3">

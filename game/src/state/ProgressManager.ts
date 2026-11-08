@@ -241,6 +241,7 @@ export class ProgressManager {
     levelId: string,
     stars: 1 | 2 | 3,
     cost: number,
+    timeSeconds?: number,
   ): void {
     switch (packId) {
       case 'structures': {
@@ -248,10 +249,21 @@ export class ProgressManager {
         const existing = store.progress[levelId];
         const bestStars = (existing ? Math.max(existing.stars, stars) : stars) as 1 | 2 | 3;
         const bestCost = existing ? Math.min(existing.bestCost, cost) : cost;
+        const bestTimeSeconds =
+          timeSeconds !== undefined && timeSeconds > 0
+            ? existing?.bestTimeSeconds
+              ? Math.min(existing.bestTimeSeconds, timeSeconds)
+              : timeSeconds
+            : existing?.bestTimeSeconds;
         useGameStore.setState({
           progress: {
             ...store.progress,
-            [levelId]: { stars: bestStars, bestCost },
+            [levelId]: {
+              stars: bestStars,
+              bestCost,
+              bestTimeSeconds,
+              completedAt: existing?.completedAt ?? new Date().toISOString(),
+            },
           },
         });
         break;
@@ -261,10 +273,21 @@ export class ProgressManager {
         const existing = store.progress[levelId];
         const bestStars = (existing ? Math.max(existing.stars, stars) : stars) as 1 | 2 | 3;
         const bestCost = existing ? Math.min(existing.bestCost, cost) : cost;
+        const bestTimeSeconds =
+          timeSeconds !== undefined && timeSeconds > 0
+            ? existing?.bestTimeSeconds
+              ? Math.min(existing.bestTimeSeconds, timeSeconds)
+              : timeSeconds
+            : existing?.bestTimeSeconds;
         useCircuitStore.setState({
           progress: {
             ...store.progress,
-            [levelId]: { stars: bestStars, bestCost },
+            [levelId]: {
+              stars: bestStars,
+              bestCost,
+              bestTimeSeconds,
+              completedAt: existing?.completedAt ?? new Date().toISOString(),
+            },
           },
         });
         break;
@@ -274,10 +297,21 @@ export class ProgressManager {
         const existing = store.progress[levelId];
         const bestStars = (existing ? Math.max(existing.stars, stars) : stars) as 1 | 2 | 3;
         const bestCost = existing ? Math.min(existing.bestCost, cost) : cost;
+        const bestTimeSeconds =
+          timeSeconds !== undefined && timeSeconds > 0
+            ? existing?.bestTimeSeconds
+              ? Math.min(existing.bestTimeSeconds, timeSeconds)
+              : timeSeconds
+            : existing?.bestTimeSeconds;
         useVehicleStore.setState({
           progress: {
             ...store.progress,
-            [levelId]: { stars: bestStars, bestCost },
+            [levelId]: {
+              stars: bestStars,
+              bestCost,
+              bestTimeSeconds,
+              completedAt: existing?.completedAt ?? new Date().toISOString(),
+            },
           },
         });
         break;

@@ -2,6 +2,7 @@ import type { CircuitEdge, CircuitModel, CircuitNode } from '../physics/circuit'
 import { COMPONENTS } from '../physics/components';
 import type { CircuitLevelDef } from '../content/circuitTypes';
 import type { BuiltNode } from './build';
+import { computeStarRating, getDefaultParTime, type StarRatingResult } from './starRating';
 
 export interface BuiltEdge {
   id: string;
@@ -55,17 +56,24 @@ export interface CircuitStarResult {
   passed: boolean;
   cost: number;
   stars: 0 | 1 | 2 | 3;
+  ratingDetails?: StarRatingResult;
 }
 
 export function scoreCircuitAttempt(
   level: CircuitLevelDef,
   cost: number,
   passed: boolean,
+  timeSeconds?: number,
 ): CircuitStarResult {
-  if (!passed || cost > level.budget) {
-    return { passed: false, cost, stars: 0 };
+  const parTime = getDefaultParTime(level.order);
+  const rating = computeStarRating(passed, cost, level.budget, timeSeconds, parTime);
+  const res: CircuitStarResult = {
+    passed: rating.passed,
+    cost,
+    stars: rating.stars,
+  };
+  if (timeSeconds !== undefined) {
+    res.ratingDetails = rating;
   }
-  const ratio = cost / level.budget;
-  const stars = ratio <= 0.6 ? 3 : ratio <= 0.85 ? 2 : 1;
-  return { passed: true, cost, stars };
+  return res;
 }

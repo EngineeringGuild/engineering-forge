@@ -3,10 +3,13 @@ import { persist } from 'zustand/middleware';
 import { analyzeTruss, type MemberResult } from '../physics/truss';
 import { getLevel, LEVELS } from '../content/levels';
 import { DECK_MATERIAL_ID, scoreAttempt, toTrussModel, totalCost, type BuiltMember, type BuiltNode } from '../game/build';
+import type { StarRatingResult } from '../game/starRating';
 
 export interface LevelProgress {
   stars: 1 | 2 | 3;
   bestCost: number;
+  bestTimeSeconds?: number;
+  completedAt?: string;
 }
 
 export type TestResult =
@@ -18,6 +21,7 @@ export type TestResult =
       passed: boolean;
       cost: number;
       stars: 0 | 1 | 2 | 3;
+      ratingDetails?: StarRatingResult;
     };
 
 interface GameState {
@@ -32,13 +36,19 @@ interface GameState {
 
   isLevelUnlocked: (levelId: string) => boolean;
   startLevel: (levelId: string) => void;
+  restoreBuild: (
+    nodes: BuiltNode[],
+    members: BuiltMember[],
+    nextId?: number,
+    selectedMaterial?: string,
+  ) => void;
   addNode: (x: number, y: number) => void;
   removeNode: (nodeId: string) => void;
   addMember: (nodeA: string, nodeB: string) => void;
   removeMember: (memberId: string) => void;
   setSelectedMaterial: (materialId: string) => void;
   setPendingNode: (nodeId: string | null) => void;
-  runTest: () => void;
+  runTest: (solveTimeSeconds?: number) => void;
   clearTestResult: () => void;
   resetBuild: () => void;
 }
@@ -72,6 +82,25 @@ export const useGameStore = create<GameState>()(
           selectedMaterial: DECK_MATERIAL_ID,
           nextId: 0,
         }),
+
+      restoreBuild: (nodes, members, nextId, selectedMaterial) => {
+        const computedNextId =
+          nextId !== undefined
+            ? nextId
+            : Math.max(
+                ...nodes.map((n) => parseInt(n.id.replace(/\D/g, ''), 10) || 0),
+                ...members.map((m) => parseInt(m.id.replace(/\D/g, ''), 10) || 0),
+                0,
+              ) + 1;
+        set({
+          builtNodes: nodes,
+          builtMembers: members,
+          nextId: computedNextId,
+          selectedMaterial: selectedMaterial ?? DECK_MATERIAL_ID,
+          pendingNodeId: null,
+          testResult: null,
+        });
+      },
 
       addNode: (x, y) =>
         set((state) => ({
@@ -123,7 +152,7 @@ export const useGameStore = create<GameState>()(
       setSelectedMaterial: (materialId) => set({ selectedMaterial: materialId }),
       setPendingNode: (nodeId) => set({ pendingNodeId: nodeId }),
 
-      runTest: () => {
+      runTest: (solveTimeSeconds) => {
         const state = get();
         const level = state.currentLevelId ? getLevel(state.currentLevelId) : undefined;
         if (!level) return;
@@ -137,7 +166,7 @@ export const useGameStore = create<GameState>()(
           return;
         }
 
-        const scored = scoreAttempt(level, cost, !analysis.anyFailed);
+        const scored = scoreAttempt(level, cost, !analysis.anyFailed, solveTimeSeconds ?? 0);
         set({
           testResult: {
             status: 'analyzed',
@@ -146,18 +175,31 @@ export const useGameStore = create<GameState>()(
             passed: scored.passed,
             cost,
             stars: scored.stars,
+            ratingDetails: scored.ratingDetails,
           },
         });
 
         if (scored.passed) {
           set((s) => {
             const existing = s.progress[level.id];
-            const stars = scored.stars as 1 | 2 | 3;
-            if (existing && existing.bestCost <= cost) return s;
+            const newStars = Math.max(existing?.stars ?? 0, scored.stars) as 1 | 2 | 3;
+            const bestCost = existing ? Math.min(existing.bestCost, cost) : cost;
+            const bestTime =
+              solveTimeSeconds !== undefined && solveTimeSeconds > 0
+                ? existing?.bestTimeSeconds
+                  ? Math.min(existing.bestTimeSeconds, solveTimeSeconds)
+                  : solveTimeSeconds
+                : existing?.bestTimeSeconds;
+
             return {
               progress: {
                 ...s.progress,
-                [level.id]: { stars, bestCost: cost },
+                [level.id]: {
+                  stars: newStars,
+                  bestCost,
+                  bestTimeSeconds: bestTime,
+                  completedAt: existing?.completedAt ?? new Date().toISOString(),
+                },
               },
             };
           });

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGlobalProgress } from '../state/useProgressTracker';
+import { SoundSettingsModal } from '../components/SoundSettingsModal';
 
 interface PackCard {
   id: string;
@@ -34,18 +36,27 @@ const PACKS: PackCard[] = [
   {
     id: 'lab',
     path: '/lab',
-    name: 'Materials Lab',
-    tagline: 'Test beam bending, elasticity, density & Euler buckling in real-time.',
+    name: 'Lab & Sandbox',
+    tagline: 'Free sandbox workshop & multi-physics continuum test bench (ASME/IEEE/ISO).',
     status: 'available',
   },
 ];
 
 export function PackSelect() {
   const globalProgress = useGlobalProgress();
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <header className="mb-8 text-center">
+      <header className="relative mb-8 text-center">
+        <button
+          onClick={() => setShowSoundSettings(true)}
+          title="Audio & Sound Settings"
+          className="absolute right-0 top-0 flex items-center gap-1.5 rounded-lg border border-border bg-surface-1 px-3 py-1.5 font-mono text-xs text-fg-muted hover:border-accent hover:text-fg transition-colors"
+        >
+          <span>🔊</span>
+          <span>Audio</span>
+        </button>
         <p className="font-mono text-xs uppercase tracking-widest text-accent">
           Engineering Forge
         </p>
@@ -162,6 +173,11 @@ export function PackSelect() {
           );
         })}
       </ol>
+
+      <SoundSettingsModal
+        isOpen={showSoundSettings}
+        onClose={() => setShowSoundSettings(false)}
+      />
     </div>
   );
 }

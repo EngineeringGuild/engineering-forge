@@ -17,6 +17,21 @@ describe('SoundEngine', () => {
     expect(soundFx.getMuted()).toBe(initial);
   });
 
+  it('sets and gets master volume clamped between 0 and 1', () => {
+    soundFx.setVolume(0.5);
+    expect(soundFx.getVolume()).toBe(0.5);
+
+    soundFx.setVolume(1.5);
+    expect(soundFx.getVolume()).toBe(1);
+
+    soundFx.setVolume(-0.2);
+    expect(soundFx.getVolume()).toBe(0);
+
+    // restore
+    soundFx.setVolume(0.8);
+    expect(soundFx.getVolume()).toBe(0.8);
+  });
+
   it('calling audio methods does not throw errors when WebAudio is unavailable in Node', () => {
     expect(() => soundFx.playSnapNode()).not.toThrow();
     expect(() => soundFx.playStressCreak(0.9)).not.toThrow();

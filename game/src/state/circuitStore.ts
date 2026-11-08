@@ -9,10 +9,13 @@ import {
   type BuiltEdge,
 } from '../game/circuitBuild';
 import type { BuiltNode } from '../game/build';
+import type { StarRatingResult } from '../game/starRating';
 
 export interface CircuitLevelProgress {
   stars: 1 | 2 | 3;
   bestCost: number;
+  bestTimeSeconds?: number;
+  completedAt?: string;
 }
 
 export type CircuitTestResult =
@@ -25,6 +28,7 @@ export type CircuitTestResult =
       passed: boolean;
       cost: number;
       stars: 0 | 1 | 2 | 3;
+      ratingDetails?: StarRatingResult;
     };
 
 const DEFAULT_MATERIAL = 'wire';
@@ -41,13 +45,19 @@ interface CircuitState {
 
   isLevelUnlocked: (levelId: string) => boolean;
   startLevel: (levelId: string) => void;
+  restoreBuild: (
+    nodes: BuiltNode[],
+    edges: BuiltEdge[],
+    nextId?: number,
+    selectedMaterial?: string,
+  ) => void;
   addNode: (x: number, y: number) => void;
   removeNode: (nodeId: string) => void;
   addEdge: (nodeA: string, nodeB: string) => void;
   removeEdge: (edgeId: string) => void;
   setSelectedMaterial: (materialId: string) => void;
   setPendingNode: (nodeId: string | null) => void;
-  runTest: () => void;
+  runTest: (solveTimeSeconds?: number) => void;
   clearTestResult: () => void;
   resetBuild: () => void;
 }
@@ -81,6 +91,25 @@ export const useCircuitStore = create<CircuitState>()(
           selectedMaterial: DEFAULT_MATERIAL,
           nextId: 0,
         }),
+
+      restoreBuild: (nodes, edges, nextId, selectedMaterial) => {
+        const computedNextId =
+          nextId !== undefined
+            ? nextId
+            : Math.max(
+                ...nodes.map((n) => parseInt(n.id.replace(/\D/g, ''), 10) || 0),
+                ...edges.map((e) => parseInt(e.id.replace(/\D/g, ''), 10) || 0),
+                0,
+              ) + 1;
+        set({
+          builtNodes: nodes,
+          builtEdges: edges,
+          nextId: computedNextId,
+          selectedMaterial: selectedMaterial ?? DEFAULT_MATERIAL,
+          pendingNodeId: null,
+          testResult: null,
+        });
+      },
 
       addNode: (x, y) =>
         set((state) => ({
@@ -127,7 +156,7 @@ export const useCircuitStore = create<CircuitState>()(
       setSelectedMaterial: (materialId) => set({ selectedMaterial: materialId }),
       setPendingNode: (nodeId) => set({ pendingNodeId: nodeId }),
 
-      runTest: () => {
+      runTest: (solveTimeSeconds) => {
         const state = get();
         const level = state.currentLevelId ? getCircuitLevel(state.currentLevelId) : undefined;
         if (!level) return;
@@ -146,6 +175,7 @@ export const useCircuitStore = create<CircuitState>()(
           level,
           cost,
           !analysis.anyBurnedOut && !anyUnderpowered,
+          solveTimeSeconds ?? 0,
         );
 
         set({
@@ -157,16 +187,32 @@ export const useCircuitStore = create<CircuitState>()(
             passed: scored.passed,
             cost,
             stars: scored.stars,
+            ratingDetails: scored.ratingDetails,
           },
         });
 
         if (scored.passed) {
           set((s) => {
             const existing = s.progress[level.id];
-            const stars = scored.stars as 1 | 2 | 3;
-            if (existing && existing.bestCost <= cost) return s;
+            const newStars = Math.max(existing?.stars ?? 0, scored.stars) as 1 | 2 | 3;
+            const bestCost = existing ? Math.min(existing.bestCost, cost) : cost;
+            const bestTime =
+              solveTimeSeconds !== undefined && solveTimeSeconds > 0
+                ? existing?.bestTimeSeconds
+                  ? Math.min(existing.bestTimeSeconds, solveTimeSeconds)
+                  : solveTimeSeconds
+                : existing?.bestTimeSeconds;
+
             return {
-              progress: { ...s.progress, [level.id]: { stars, bestCost: cost } },
+              progress: {
+                ...s.progress,
+                [level.id]: {
+                  stars: newStars,
+                  bestCost,
+                  bestTimeSeconds: bestTime,
+                  completedAt: existing?.completedAt ?? new Date().toISOString(),
+                },
+              },
             };
           });
         }

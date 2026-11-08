@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BridgeCanvas } from '../components/BridgeCanvas';
 import { ResultOverlay } from '../components/ResultOverlay';
@@ -11,11 +11,25 @@ import { exportToGuildRegister } from '../physics/engine/PhysicsRegistry';
 import { ChallengeTimer } from '../components/ChallengeTimer';
 import { getStructuralGuidance } from '../game/guidanceSystem';
 import { ContextualHintBanner } from '../components/ContextualHintBanner';
+import { EngineeringGlossaryModal } from '../components/EngineeringGlossaryModal';
+import { PersonalBestBadge } from '../components/PersonalBestBadge';
+import { highScoresManager } from '../state/HighScoresManager';
+import { OnboardingOverlay } from '../components/OnboardingOverlay';
+import { AutosaveIndicator } from '../components/AutosaveIndicator';
+import { useAutosaveProject } from '../state/useAutosaveProject';
+import { autosaveManager } from '../state/AutosaveManager';
+import { progressManager } from '../state/ProgressManager';
+import { BlueprintShareModal } from '../components/BlueprintShareModal';
+import { SoundSettingsModal } from '../components/SoundSettingsModal';
+import type { UniversalBlueprint, StructuresBlueprintData } from '../state/BlueprintManager';
 
 export function StructuresPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
   const navigate = useNavigate();
   const [showHint, setShowHint] = useState(false);
+  const [showGlossary, setShowGlossary] = useState(false);
+  const [showBlueprintModal, setShowBlueprintModal] = useState(false);
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [showManifest, setShowManifest] = useState(false);
   const [manifestText, setManifestText] = useState('');
   const [copiedManifest, setCopiedManifest] = useState(false);
@@ -42,6 +56,52 @@ export function StructuresPlayLevel() {
   const runTest = useGameStore((s) => s.runTest);
   const clearTestResult = useGameStore((s) => s.clearTestResult);
   const resetBuild = useGameStore((s) => s.resetBuild);
+  const restoreBuild = useGameStore((s) => s.restoreBuild);
+
+  const {
+    lastSavedTime,
+    wasRestored,
+    saveNow,
+    clearDraft,
+    dismissRestoredNotice,
+    isSaving,
+  } = useAutosaveProject<{
+    builtNodes: typeof builtNodes;
+    builtMembers: typeof builtMembers;
+    selectedMaterial: string;
+    nextId: number;
+  }>({
+    discipline: 'structures',
+    levelId: level?.id ?? '',
+    getData: () => ({
+      builtNodes: useGameStore.getState().builtNodes,
+      builtMembers: useGameStore.getState().builtMembers,
+      selectedMaterial: useGameStore.getState().selectedMaterial,
+      nextId: useGameStore.getState().nextId,
+    }),
+    onRestore: (saved) => {
+      restoreBuild(saved.builtNodes, saved.builtMembers, saved.nextId, saved.selectedMaterial);
+    },
+    isEmpty: (data) => data.builtNodes.length === 0 && data.builtMembers.length === 0,
+  });
+
+  const getBlueprint = useCallback((): UniversalBlueprint<'structures'> => {
+    const curLevel = levelId ? getLevel(levelId) : undefined;
+    const estCost = curLevel ? totalCost(curLevel, builtNodes, builtMembers) : 0;
+    return {
+      schemaVersion: 1,
+      id: `bp_struct_${curLevel?.id || 'custom'}`,
+      domain: 'structures',
+      name: `${curLevel?.name || 'Bridge'} Design`,
+      levelId: curLevel?.id,
+      createdAt: new Date().toISOString(),
+      estimatedCost: estCost,
+      data: {
+        nodes: builtNodes,
+        members: builtMembers,
+      },
+    };
+  }, [levelId, builtNodes, builtMembers]);
 
   const handleOpenManifest = () => {
     if (!level) return;
@@ -119,8 +179,22 @@ export function StructuresPlayLevel() {
   useEffect(() => {
     if (level && currentLevelId !== level.id) {
       startLevel(level.id);
+      const draft = autosaveManager.load<{
+        builtNodes: typeof builtNodes;
+        builtMembers: typeof builtMembers;
+        selectedMaterial?: string;
+        nextId?: number;
+      }>('structures', level.id);
+      if (draft && (draft.data.builtNodes.length > 0 || draft.data.builtMembers.length > 0)) {
+        restoreBuild(
+          draft.data.builtNodes,
+          draft.data.builtMembers,
+          draft.data.nextId,
+          draft.data.selectedMaterial,
+        );
+      }
     }
-  }, [level, currentLevelId, startLevel]);
+  }, [level, currentLevelId, startLevel, restoreBuild]);
 
   if (!level) return <Navigate to="/structures" replace />;
   if (!isLevelUnlocked(level.id)) return <Navigate to="/structures" replace />;
@@ -142,12 +216,22 @@ export function StructuresPlayLevel() {
   const handleTest = () => {
     setIsSimulating(true);
     setShowResult(false);
-    runTest();
+    runTest(elapsedSeconds);
   };
 
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+    if (level && testResult?.status === 'analyzed' && testResult.passed && elapsedSeconds > 0) {
+      highScoresManager.recordSolveTime(level.id, elapsedSeconds);
+      progressManager.recordLevelCompletion(
+        'structures',
+        level.id,
+        testResult.stars as 1 | 2 | 3,
+        testResult.cost,
+        elapsedSeconds,
+      );
+    }
   };
 
   const handleResetSimulation = () => {
@@ -160,6 +244,7 @@ export function StructuresPlayLevel() {
     setIsSimulating(false);
     setShowResult(false);
     resetBuild();
+    clearDraft();
     setTimerResetKey((k) => k + 1);
     setElapsedSeconds(0);
   };
@@ -167,6 +252,13 @@ export function StructuresPlayLevel() {
   const isLevelCompleted = testResult?.status === 'analyzed' && testResult.passed;
   const isStuck = !isLevelCompleted && elapsedSeconds >= 60;
   const guidance = getStructuralGuidance(level, builtNodes, builtMembers, cost, testResult);
+
+  const handleLoadBlueprint = (bp: UniversalBlueprint) => {
+    if (bp.domain === 'structures') {
+      const data = bp.data as StructuresBlueprintData;
+      restoreBuild(data.nodes, data.members, data.nextId);
+    }
+  };
 
   return (
     <div className="mx-auto flex h-svh max-w-4xl flex-col gap-4 p-4">
@@ -183,8 +275,40 @@ export function StructuresPlayLevel() {
             resetTrigger={`${level.id}-${timerResetKey}`}
             onTimeUpdate={setElapsedSeconds}
           />
+          <PersonalBestBadge levelId={level.id} />
+          <AutosaveIndicator
+            lastSavedTime={lastSavedTime}
+            isSaving={isSaving}
+            wasRestored={wasRestored}
+            onSaveNow={saveNow}
+            onClearDraft={clearDraft}
+            onDismissRestored={dismissRestoredNotice}
+          />
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBlueprintModal(true)}
+            title="Universal Blueprint Exchange (Share, Export, Import, Library)"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>📐</span>
+            <span>Blueprint</span>
+          </button>
+          <button
+            onClick={() => setShowSoundSettings(true)}
+            title="Audio & Sound Synthesizer Settings"
+            className="flex items-center justify-center rounded-lg border border-border px-2.5 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>🔊</span>
+          </button>
+          <button
+            onClick={() => setShowGlossary(true)}
+            title="Open Engineering Glossary (Truss, Buckling, Elastic Modulus, AISC/ASME standards)"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>📖</span>
+            <span>Glossary</span>
+          </button>
           <button
             onClick={handleOpenManifest}
             title="Export full bridge geometry to Engineering Guild Dimension Register (python Dim format)"
@@ -312,6 +436,35 @@ export function StructuresPlayLevel() {
           onRetry={handleReset}
           onNext={() => next && navigate(`/structures/level/${next}`)}
           onLevelSelect={() => navigate('/structures')}
+        />
+      )}
+
+      {/* Engineering Glossary Modal */}
+      <EngineeringGlossaryModal
+        isOpen={showGlossary}
+        onClose={() => setShowGlossary(false)}
+        defaultCategory="structures"
+      />
+
+      {/* Interactive Onboarding Overlay */}
+      <OnboardingOverlay discipline="structures" levelId={level.id} />
+
+      {/* Blueprint Share & Import Modal */}
+      {showBlueprintModal && (
+        <BlueprintShareModal
+          isOpen={showBlueprintModal}
+          onClose={() => setShowBlueprintModal(false)}
+          domain="structures"
+          getBlueprint={getBlueprint}
+          onLoadBlueprint={handleLoadBlueprint}
+        />
+      )}
+
+      {/* Sound Settings Modal */}
+      {showSoundSettings && (
+        <SoundSettingsModal
+          isOpen={showSoundSettings}
+          onClose={() => setShowSoundSettings(false)}
         />
       )}
     </div>
