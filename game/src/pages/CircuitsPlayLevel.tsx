@@ -23,6 +23,8 @@ import { SoundSettingsModal } from '../components/SoundSettingsModal';
 import { PhysicsDebugPanel, type PhysicsDebugConfig } from '../components/PhysicsDebugPanel';
 import { DesignSaveModal } from '../components/DesignSaveModal';
 import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
+import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
+import { computeCircuitBuildMetrics } from '../physics/buildModePhysics';
 import type { UniversalBlueprint, CircuitsBlueprintData } from '../state/BlueprintManager';
 
 export function CircuitsPlayLevel() {
@@ -63,6 +65,36 @@ export function CircuitsPlayLevel() {
   const clearTestResult = useCircuitStore((s) => s.clearTestResult);
   const resetBuild = useCircuitStore((s) => s.resetBuild);
   const restoreBuild = useCircuitStore((s) => s.restoreBuild);
+  const undo = useCircuitStore((s) => s.undo);
+  const redo = useCircuitStore((s) => s.redo);
+  const canUndo = useCircuitStore((s) => s.undoStack.length > 0);
+  const canRedo = useCircuitStore((s) => s.redoStack.length > 0);
+
+  // Keyboard shortcut listener for Undo (Ctrl+Z) and Redo (Ctrl+Y / Ctrl+Shift+Z)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
+  // Real-time circuit physics telemetry
+  const circuitMetrics = useMemo(() => {
+    if (!level) return undefined;
+    return computeCircuitBuildMetrics(level, builtNodes, builtEdges);
+  }, [level, builtNodes, builtEdges]);
 
   const {
     lastSavedTime,
@@ -324,7 +356,14 @@ export function CircuitsPlayLevel() {
         onDismiss={() => setShowHint(false)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface-1">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface-1">
+        {/* Real-time Build Mode Physics & Circuit Telemetry Overlay */}
+        {!isSimulating && !testResult && circuitMetrics && (
+          <div className="absolute top-3 left-3 z-20 pointer-events-auto">
+            <BuildModePhysicsHUD discipline="circuits" circuitMetrics={circuitMetrics} />
+          </div>
+        )}
+
         <CircuitCanvas
           level={level}
           builtNodes={builtNodes}
@@ -344,7 +383,7 @@ export function CircuitsPlayLevel() {
 
       <p className="text-center text-xs text-fg-subtle">
         Click empty grid to add a joint · click two joints to connect them · right-click a joint to
-        remove it · click a connection to remove it
+        remove it · click a connection to remove it · <span className="font-mono text-[11px]">Ctrl+Z</span> to undo · <span className="font-mono text-[11px]">Ctrl+Y</span> to redo
       </p>
 
       <Toolbar
@@ -357,6 +396,10 @@ export function CircuitsPlayLevel() {
         onTest={handleTest}
         onReset={handleReset}
         onResetSimulation={handleResetSimulation}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
         testing={isSimulating}
         testLabel="Test Circuit"
       />

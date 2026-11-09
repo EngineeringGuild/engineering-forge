@@ -25,6 +25,8 @@ interface Props {
   pendingNodeId: string | null;
   testResult: TestResult | null;
   debugConfig?: PhysicsDebugConfig;
+  cog?: { x: number; y: number } | null;
+  showCoGMarker?: boolean;
   isSimulating?: boolean;
   onSimulationFinish?: () => void;
   onResetSimulation?: () => void;
@@ -52,6 +54,8 @@ export function BridgeCanvas({
   pendingNodeId,
   testResult,
   debugConfig,
+  cog,
+  showCoGMarker = true,
   isSimulating = false,
   onSimulationFinish,
   onResetSimulation,
@@ -976,6 +980,71 @@ export function BridgeCanvas({
             />
           );
         })}
+
+        {/* Real-Time Center of Gravity (CoG) Live Marker in Build Mode */}
+        {!isSimulating && !testResult && showCoGMarker && cog && (
+          <g className="pointer-events-none select-none transition-all duration-150">
+            {/* Plumb / gravity vertical reference line */}
+            <line
+              x1={cog.x}
+              y1={cog.y}
+              x2={cog.x}
+              y2={level.buildArea.maxY + 0.6}
+              stroke="#38bdf8"
+              strokeWidth={0.03}
+              strokeDasharray="0.1 0.1"
+              opacity={0.5}
+              vectorEffect="non-scaling-stroke"
+            />
+            {/* Target concentric reticle */}
+            <circle
+              cx={cog.x}
+              cy={cog.y}
+              r={0.28}
+              fill="none"
+              stroke="#38bdf8"
+              strokeWidth={0.03}
+              vectorEffect="non-scaling-stroke"
+            />
+            <circle
+              cx={cog.x}
+              cy={cog.y}
+              r={0.08}
+              fill="#38bdf8"
+              opacity={0.7}
+            />
+            {/* Precision Crosshairs */}
+            <line
+              x1={cog.x - 0.38}
+              y1={cog.y}
+              x2={cog.x + 0.38}
+              y2={cog.y}
+              stroke="#38bdf8"
+              strokeWidth={0.03}
+              vectorEffect="non-scaling-stroke"
+            />
+            <line
+              x1={cog.x}
+              y1={cog.y - 0.38}
+              x2={cog.x}
+              y2={cog.y + 0.38}
+              stroke="#38bdf8"
+              strokeWidth={0.03}
+              vectorEffect="non-scaling-stroke"
+            />
+            {/* CoG Tag */}
+            <text
+              x={cog.x + 0.35}
+              y={cog.y - 0.22}
+              fill="#38bdf8"
+              fontSize={0.28}
+              fontFamily="monospace"
+              fontWeight="bold"
+            >
+              CoG
+            </text>
+          </g>
+        )}
       </svg>
       {/* Particle Simulation Canvas for fracture sparks and stress puffs */}
       <PhysicsParticleCanvas ref={particleCanvasRef} active={isSimulating} />

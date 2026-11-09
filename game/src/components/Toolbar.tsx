@@ -18,6 +18,10 @@ interface Props {
   onTest: () => void;
   onReset: () => void;
   onResetSimulation?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
   testing: boolean;
   testLabel?: string;
 }
@@ -32,6 +36,10 @@ export function Toolbar({
   onTest,
   onReset,
   onResetSimulation,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
   testing,
   testLabel = 'Test',
 }: Props) {
@@ -54,6 +62,20 @@ export function Toolbar({
   const handleResetClick = () => {
     soundFx.playSnapNode();
     onReset();
+  };
+
+  const handleUndoClick = () => {
+    if (onUndo && canUndo) {
+      soundFx.playSnapNode();
+      onUndo();
+    }
+  };
+
+  const handleRedoClick = () => {
+    if (onRedo && canRedo) {
+      soundFx.playSnapNode();
+      onRedo();
+    }
   };
 
   return (
@@ -85,7 +107,33 @@ export function Toolbar({
         })}
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        {/* Undo and Redo Actions */}
+        {onUndo && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleUndoClick}
+              disabled={!canUndo}
+              title="Undo last placement or action (Ctrl+Z)"
+              aria-label="Undo"
+              className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg hover:border-accent disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            >
+              <span className="text-sm">↶</span>
+              <span className="hidden sm:inline">Undo</span>
+            </button>
+            <button
+              onClick={handleRedoClick}
+              disabled={!canRedo}
+              title="Redo action (Ctrl+Y / Ctrl+Shift+Z)"
+              aria-label="Redo"
+              className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg hover:border-accent disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            >
+              <span className="text-sm">↷</span>
+              <span className="hidden sm:inline">Redo</span>
+            </button>
+          </div>
+        )}
+
         <button
           onClick={handleToggleSound}
           title={muted ? 'Unmute sound effects' : 'Mute sound effects'}

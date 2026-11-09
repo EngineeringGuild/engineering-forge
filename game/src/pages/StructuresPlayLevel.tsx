@@ -24,6 +24,8 @@ import { SoundSettingsModal } from '../components/SoundSettingsModal';
 import { PhysicsDebugPanel, type PhysicsDebugConfig } from '../components/PhysicsDebugPanel';
 import { DesignSaveModal } from '../components/DesignSaveModal';
 import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
+import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
+import { computeTrussBuildMetrics } from '../physics/buildModePhysics';
 import type { UniversalBlueprint, StructuresBlueprintData } from '../state/BlueprintManager';
 
 export function StructuresPlayLevel() {
@@ -41,6 +43,7 @@ export function StructuresPlayLevel() {
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showCoGMarker, setShowCoGMarker] = useState(true);
   const [debugConfig, setDebugConfig] = useState<PhysicsDebugConfig>({
     enabled: false,
     showColliders: true,
@@ -67,6 +70,36 @@ export function StructuresPlayLevel() {
   const clearTestResult = useGameStore((s) => s.clearTestResult);
   const resetBuild = useGameStore((s) => s.resetBuild);
   const restoreBuild = useGameStore((s) => s.restoreBuild);
+  const undo = useGameStore((s) => s.undo);
+  const redo = useGameStore((s) => s.redo);
+  const canUndo = useGameStore((s) => s.undoStack.length > 0);
+  const canRedo = useGameStore((s) => s.redoStack.length > 0);
+
+  // Keyboard shortcut listener for Undo (Ctrl+Z) and Redo (Ctrl+Y / Ctrl+Shift+Z)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
+  // Real-time statics and physics calculations in build mode
+  const trussMetrics = useMemo(() => {
+    if (!level) return undefined;
+    return computeTrussBuildMetrics(level, builtNodes, builtMembers);
+  }, [level, builtNodes, builtMembers]);
 
   const {
     lastSavedTime,
@@ -468,7 +501,19 @@ export function StructuresPlayLevel() {
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface-1">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface-1">
+        {/* Real-time Build Mode Physics HUD Overlay */}
+        {!isSimulating && !testResult && trussMetrics && (
+          <div className="absolute top-3 left-3 z-20 pointer-events-auto">
+            <BuildModePhysicsHUD
+              discipline="structures"
+              trussMetrics={trussMetrics}
+              showCoGMarker={showCoGMarker}
+              onToggleCoGMarker={() => setShowCoGMarker((v) => !v)}
+            />
+          </div>
+        )}
+
         <BridgeCanvas
           level={level}
           builtNodes={builtNodes}
@@ -476,6 +521,8 @@ export function StructuresPlayLevel() {
           pendingNodeId={pendingNodeId}
           testResult={testResult}
           debugConfig={debugConfig}
+          cog={trussMetrics?.cog}
+          showCoGMarker={showCoGMarker}
           isSimulating={isSimulating}
           onSimulationFinish={handleSimulationFinish}
           onResetSimulation={handleResetSimulation}
@@ -488,7 +535,7 @@ export function StructuresPlayLevel() {
 
       <p className="text-center text-xs text-fg-subtle">
         Click empty grid to add a joint · click two joints to connect them · right-click a joint to
-        remove it · click a member to remove it
+        remove it · click a member to remove it · <span className="font-mono text-[11px]">Ctrl+Z</span> to undo · <span className="font-mono text-[11px]">Ctrl+Y</span> to redo
       </p>
 
       <Toolbar
@@ -501,6 +548,10 @@ export function StructuresPlayLevel() {
         onTest={handleTest}
         onReset={handleReset}
         onResetSimulation={handleResetSimulation}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
         testing={isSimulating}
         testLabel="Test Bridge"
       />

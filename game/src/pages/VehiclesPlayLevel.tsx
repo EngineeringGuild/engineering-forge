@@ -23,6 +23,8 @@ import { SoundSettingsModal } from '../components/SoundSettingsModal';
 import { PhysicsDebugPanel, type PhysicsDebugConfig } from '../components/PhysicsDebugPanel';
 import { DesignSaveModal } from '../components/DesignSaveModal';
 import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
+import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
+import { computeVehicleBuildMetrics } from '../physics/buildModePhysics';
 import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
 
 export function VehiclesPlayLevel() {
@@ -117,6 +119,10 @@ export function VehiclesPlayLevel() {
       equilibriumDetail: 'Newton 2nd Law (ΣF=ma)',
     };
   }, []);
+
+  const vehicleMetrics = useMemo(() => {
+    return computeVehicleBuildMetrics(selectedEngine, selectedChassis);
+  }, [selectedEngine, selectedChassis]);
 
   const handleRestoreSavedDesign = useCallback(
     (
@@ -296,17 +302,24 @@ export function VehiclesPlayLevel() {
         onDismiss={() => setShowHint(false)}
       />
 
-      {/* Dynamic Runway Track Canvas */}
-      <VehicleTrackCanvas
-        level={level}
-        selectedEngineId={selectedEngine}
-        selectedChassisId={selectedChassis}
-        testResult={testResult}
-        debugConfig={debugConfig}
-        isSimulating={isSimulating}
-        onSimulationFinish={handleSimulationFinish}
-        onResetSimulation={handleResetSimulation}
-      />
+      {/* Dynamic Runway Track Canvas with Build Mode Dynamics HUD */}
+      <div className="relative">
+        {!isSimulating && !testResult && (
+          <div className="absolute top-3 left-3 z-20 pointer-events-auto">
+            <BuildModePhysicsHUD discipline="vehicles" vehicleMetrics={vehicleMetrics} />
+          </div>
+        )}
+        <VehicleTrackCanvas
+          level={level}
+          selectedEngineId={selectedEngine}
+          selectedChassisId={selectedChassis}
+          testResult={testResult}
+          debugConfig={debugConfig}
+          isSimulating={isSimulating}
+          onSimulationFinish={handleSimulationFinish}
+          onResetSimulation={handleResetSimulation}
+        />
+      </div>
 
       <p className="rounded-xl border border-border bg-surface-1 px-4 py-3 text-center text-sm text-fg-muted">
         {level.maxSpeed !== undefined ? (

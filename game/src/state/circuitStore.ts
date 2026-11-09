@@ -33,6 +33,15 @@ export type CircuitTestResult =
 
 const DEFAULT_MATERIAL = 'wire';
 
+export interface CircuitBuildSnapshot {
+  builtNodes: BuiltNode[];
+  builtEdges: BuiltEdge[];
+  nextId: number;
+  selectedMaterial: string;
+}
+
+const MAX_HISTORY = 40;
+
 interface CircuitState {
   progress: Record<string, CircuitLevelProgress>;
   currentLevelId: string | null;
@@ -42,7 +51,13 @@ interface CircuitState {
   pendingNodeId: string | null;
   testResult: CircuitTestResult | null;
   nextId: number;
+  undoStack: CircuitBuildSnapshot[];
+  redoStack: CircuitBuildSnapshot[];
 
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  undo: () => boolean;
+  redo: () => boolean;
   isLevelUnlocked: (levelId: string) => boolean;
   startLevel: (levelId: string) => void;
   restoreBuild: (
@@ -73,6 +88,64 @@ export const useCircuitStore = create<CircuitState>()(
       pendingNodeId: null,
       testResult: null,
       nextId: 0,
+      undoStack: [],
+      redoStack: [],
+
+      canUndo: () => get().undoStack.length > 0,
+      canRedo: () => get().redoStack.length > 0,
+
+      undo: () => {
+        const state = get();
+        if (state.undoStack.length === 0) return false;
+        const previous = state.undoStack[state.undoStack.length - 1];
+        const newUndoStack = state.undoStack.slice(0, -1);
+        const currentSnapshot: CircuitBuildSnapshot = {
+          builtNodes: state.builtNodes,
+          builtEdges: state.builtEdges,
+          nextId: state.nextId,
+          selectedMaterial: state.selectedMaterial,
+        };
+        const newRedoStack = [currentSnapshot, ...state.redoStack];
+        set({
+          builtNodes: previous.builtNodes,
+          builtEdges: previous.builtEdges,
+          nextId: previous.nextId,
+          selectedMaterial: previous.selectedMaterial,
+          undoStack: newUndoStack,
+          redoStack: newRedoStack,
+          pendingNodeId: null,
+          testResult: null,
+        });
+        return true;
+      },
+
+      redo: () => {
+        const state = get();
+        if (state.redoStack.length === 0) return false;
+        const next = state.redoStack[0];
+        const newRedoStack = state.redoStack.slice(1);
+        const currentSnapshot: CircuitBuildSnapshot = {
+          builtNodes: state.builtNodes,
+          builtEdges: state.builtEdges,
+          nextId: state.nextId,
+          selectedMaterial: state.selectedMaterial,
+        };
+        const newUndoStack = [...state.undoStack, currentSnapshot];
+        if (newUndoStack.length > MAX_HISTORY) {
+          newUndoStack.shift();
+        }
+        set({
+          builtNodes: next.builtNodes,
+          builtEdges: next.builtEdges,
+          nextId: next.nextId,
+          selectedMaterial: next.selectedMaterial,
+          undoStack: newUndoStack,
+          redoStack: newRedoStack,
+          pendingNodeId: null,
+          testResult: null,
+        });
+        return true;
+      },
 
       isLevelUnlocked: (levelId) => {
         const index = CIRCUIT_LEVELS.findIndex((l) => l.id === levelId);
@@ -90,6 +163,8 @@ export const useCircuitStore = create<CircuitState>()(
           testResult: null,
           selectedMaterial: DEFAULT_MATERIAL,
           nextId: 0,
+          undoStack: [],
+          redoStack: [],
         }),
 
       restoreBuild: (nodes, edges, nextId, selectedMaterial) => {
@@ -108,25 +183,51 @@ export const useCircuitStore = create<CircuitState>()(
           selectedMaterial: selectedMaterial ?? DEFAULT_MATERIAL,
           pendingNodeId: null,
           testResult: null,
+          undoStack: [],
+          redoStack: [],
         });
       },
 
       addNode: (x, y) =>
-        set((state) => ({
-          builtNodes: [...state.builtNodes, { id: `n${state.nextId}`, x, y }],
-          nextId: state.nextId + 1,
-          testResult: null,
-        })),
+        set((state) => {
+          const snapshot: CircuitBuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtEdges: state.builtEdges,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtNodes: [...state.builtNodes, { id: `n${state.nextId}`, x, y }],
+            nextId: state.nextId + 1,
+            testResult: null,
+          };
+        }),
 
       removeNode: (nodeId) =>
-        set((state) => ({
-          builtNodes: state.builtNodes.filter((n) => n.id !== nodeId),
-          builtEdges: state.builtEdges.filter(
-            (e) => e.nodeA !== nodeId && e.nodeB !== nodeId,
-          ),
-          pendingNodeId: state.pendingNodeId === nodeId ? null : state.pendingNodeId,
-          testResult: null,
-        })),
+        set((state) => {
+          const snapshot: CircuitBuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtEdges: state.builtEdges,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtNodes: state.builtNodes.filter((n) => n.id !== nodeId),
+            builtEdges: state.builtEdges.filter(
+              (e) => e.nodeA !== nodeId && e.nodeB !== nodeId,
+            ),
+            pendingNodeId: state.pendingNodeId === nodeId ? null : state.pendingNodeId,
+            testResult: null,
+          };
+        }),
 
       addEdge: (nodeA, nodeB) =>
         set((state) => {
@@ -137,7 +238,17 @@ export const useCircuitStore = create<CircuitState>()(
               (e.nodeA === nodeB && e.nodeB === nodeA),
           );
           if (exists) return state;
+          const snapshot: CircuitBuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtEdges: state.builtEdges,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
           return {
+            undoStack: newUndo,
+            redoStack: [],
             builtEdges: [
               ...state.builtEdges,
               { id: `e${state.nextId}`, nodeA, nodeB, componentId: state.selectedMaterial },
@@ -148,10 +259,22 @@ export const useCircuitStore = create<CircuitState>()(
         }),
 
       removeEdge: (edgeId) =>
-        set((state) => ({
-          builtEdges: state.builtEdges.filter((e) => e.id !== edgeId),
-          testResult: null,
-        })),
+        set((state) => {
+          const snapshot: CircuitBuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtEdges: state.builtEdges,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtEdges: state.builtEdges.filter((e) => e.id !== edgeId),
+            testResult: null,
+          };
+        }),
 
       setSelectedMaterial: (materialId) => set({ selectedMaterial: materialId }),
       setPendingNode: (nodeId) => set({ pendingNodeId: nodeId }),
@@ -219,8 +342,30 @@ export const useCircuitStore = create<CircuitState>()(
       },
 
       clearTestResult: () => set({ testResult: null }),
+
       resetBuild: () =>
-        set({ builtNodes: [], builtEdges: [], pendingNodeId: null, testResult: null, nextId: 0 }),
+        set((state) => {
+          if (state.builtNodes.length === 0 && state.builtEdges.length === 0) {
+            return { pendingNodeId: null, testResult: null };
+          }
+          const snapshot: CircuitBuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtEdges: state.builtEdges,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtNodes: [],
+            builtEdges: [],
+            pendingNodeId: null,
+            testResult: null,
+            nextId: 0,
+          };
+        }),
     }),
     {
       name: 'engineering-forge-circuits-progress',

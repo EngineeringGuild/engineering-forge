@@ -24,6 +24,15 @@ export type TestResult =
       ratingDetails?: StarRatingResult;
     };
 
+export interface BuildSnapshot {
+  builtNodes: BuiltNode[];
+  builtMembers: BuiltMember[];
+  nextId: number;
+  selectedMaterial: string;
+}
+
+const MAX_HISTORY = 40;
+
 interface GameState {
   progress: Record<string, LevelProgress>;
   currentLevelId: string | null;
@@ -33,7 +42,13 @@ interface GameState {
   pendingNodeId: string | null;
   testResult: TestResult | null;
   nextId: number;
+  undoStack: BuildSnapshot[];
+  redoStack: BuildSnapshot[];
 
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  undo: () => boolean;
+  redo: () => boolean;
   isLevelUnlocked: (levelId: string) => boolean;
   startLevel: (levelId: string) => void;
   restoreBuild: (
@@ -64,6 +79,64 @@ export const useGameStore = create<GameState>()(
       pendingNodeId: null,
       testResult: null,
       nextId: 0,
+      undoStack: [],
+      redoStack: [],
+
+      canUndo: () => get().undoStack.length > 0,
+      canRedo: () => get().redoStack.length > 0,
+
+      undo: () => {
+        const state = get();
+        if (state.undoStack.length === 0) return false;
+        const previous = state.undoStack[state.undoStack.length - 1];
+        const newUndoStack = state.undoStack.slice(0, -1);
+        const currentSnapshot: BuildSnapshot = {
+          builtNodes: state.builtNodes,
+          builtMembers: state.builtMembers,
+          nextId: state.nextId,
+          selectedMaterial: state.selectedMaterial,
+        };
+        const newRedoStack = [currentSnapshot, ...state.redoStack];
+        set({
+          builtNodes: previous.builtNodes,
+          builtMembers: previous.builtMembers,
+          nextId: previous.nextId,
+          selectedMaterial: previous.selectedMaterial,
+          undoStack: newUndoStack,
+          redoStack: newRedoStack,
+          pendingNodeId: null,
+          testResult: null,
+        });
+        return true;
+      },
+
+      redo: () => {
+        const state = get();
+        if (state.redoStack.length === 0) return false;
+        const next = state.redoStack[0];
+        const newRedoStack = state.redoStack.slice(1);
+        const currentSnapshot: BuildSnapshot = {
+          builtNodes: state.builtNodes,
+          builtMembers: state.builtMembers,
+          nextId: state.nextId,
+          selectedMaterial: state.selectedMaterial,
+        };
+        const newUndoStack = [...state.undoStack, currentSnapshot];
+        if (newUndoStack.length > MAX_HISTORY) {
+          newUndoStack.shift();
+        }
+        set({
+          builtNodes: next.builtNodes,
+          builtMembers: next.builtMembers,
+          nextId: next.nextId,
+          selectedMaterial: next.selectedMaterial,
+          undoStack: newUndoStack,
+          redoStack: newRedoStack,
+          pendingNodeId: null,
+          testResult: null,
+        });
+        return true;
+      },
 
       isLevelUnlocked: (levelId) => {
         const index = LEVELS.findIndex((l) => l.id === levelId);
@@ -81,6 +154,8 @@ export const useGameStore = create<GameState>()(
           testResult: null,
           selectedMaterial: DECK_MATERIAL_ID,
           nextId: 0,
+          undoStack: [],
+          redoStack: [],
         }),
 
       restoreBuild: (nodes, members, nextId, selectedMaterial) => {
@@ -99,25 +174,51 @@ export const useGameStore = create<GameState>()(
           selectedMaterial: selectedMaterial ?? DECK_MATERIAL_ID,
           pendingNodeId: null,
           testResult: null,
+          undoStack: [],
+          redoStack: [],
         });
       },
 
       addNode: (x, y) =>
-        set((state) => ({
-          builtNodes: [...state.builtNodes, { id: `n${state.nextId}`, x, y }],
-          nextId: state.nextId + 1,
-          testResult: null,
-        })),
+        set((state) => {
+          const snapshot: BuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtMembers: state.builtMembers,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtNodes: [...state.builtNodes, { id: `n${state.nextId}`, x, y }],
+            nextId: state.nextId + 1,
+            testResult: null,
+          };
+        }),
 
       removeNode: (nodeId) =>
-        set((state) => ({
-          builtNodes: state.builtNodes.filter((n) => n.id !== nodeId),
-          builtMembers: state.builtMembers.filter(
-            (m) => m.nodeA !== nodeId && m.nodeB !== nodeId,
-          ),
-          pendingNodeId: state.pendingNodeId === nodeId ? null : state.pendingNodeId,
-          testResult: null,
-        })),
+        set((state) => {
+          const snapshot: BuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtMembers: state.builtMembers,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtNodes: state.builtNodes.filter((n) => n.id !== nodeId),
+            builtMembers: state.builtMembers.filter(
+              (m) => m.nodeA !== nodeId && m.nodeB !== nodeId,
+            ),
+            pendingNodeId: state.pendingNodeId === nodeId ? null : state.pendingNodeId,
+            testResult: null,
+          };
+        }),
 
       addMember: (nodeA, nodeB) =>
         set((state) => {
@@ -128,7 +229,17 @@ export const useGameStore = create<GameState>()(
               (m.nodeA === nodeB && m.nodeB === nodeA),
           );
           if (exists) return state;
+          const snapshot: BuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtMembers: state.builtMembers,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
           return {
+            undoStack: newUndo,
+            redoStack: [],
             builtMembers: [
               ...state.builtMembers,
               {
@@ -144,10 +255,22 @@ export const useGameStore = create<GameState>()(
         }),
 
       removeMember: (memberId) =>
-        set((state) => ({
-          builtMembers: state.builtMembers.filter((m) => m.id !== memberId),
-          testResult: null,
-        })),
+        set((state) => {
+          const snapshot: BuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtMembers: state.builtMembers,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtMembers: state.builtMembers.filter((m) => m.id !== memberId),
+            testResult: null,
+          };
+        }),
 
       setSelectedMaterial: (materialId) => set({ selectedMaterial: materialId }),
       setPendingNode: (nodeId) => set({ pendingNodeId: nodeId }),
@@ -209,7 +332,28 @@ export const useGameStore = create<GameState>()(
       clearTestResult: () => set({ testResult: null }),
 
       resetBuild: () =>
-        set({ builtNodes: [], builtMembers: [], pendingNodeId: null, testResult: null, nextId: 0 }),
+        set((state) => {
+          if (state.builtNodes.length === 0 && state.builtMembers.length === 0) {
+            return { pendingNodeId: null, testResult: null };
+          }
+          const snapshot: BuildSnapshot = {
+            builtNodes: state.builtNodes,
+            builtMembers: state.builtMembers,
+            nextId: state.nextId,
+            selectedMaterial: state.selectedMaterial,
+          };
+          const newUndo = [...state.undoStack, snapshot];
+          if (newUndo.length > MAX_HISTORY) newUndo.shift();
+          return {
+            undoStack: newUndo,
+            redoStack: [],
+            builtNodes: [],
+            builtMembers: [],
+            pendingNodeId: null,
+            testResult: null,
+            nextId: 0,
+          };
+        }),
     }),
     {
       name: 'engineering-forge-progress',
