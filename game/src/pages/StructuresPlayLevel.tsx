@@ -44,6 +44,8 @@ export function StructuresPlayLevel() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showCoGMarker, setShowCoGMarker] = useState(true);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [heatmapEnabled, setHeatmapEnabled] = useState(true);
   const [debugConfig, setDebugConfig] = useState<PhysicsDebugConfig>({
     enabled: false,
     showColliders: true,
@@ -510,6 +512,10 @@ export function StructuresPlayLevel() {
               trussMetrics={trussMetrics}
               showCoGMarker={showCoGMarker}
               onToggleCoGMarker={() => setShowCoGMarker((v) => !v)}
+              heatmapEnabled={heatmapEnabled}
+              onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+              playbackSpeed={playbackSpeed}
+              onSpeedChange={setPlaybackSpeed}
             />
           </div>
         )}
@@ -523,6 +529,10 @@ export function StructuresPlayLevel() {
           debugConfig={debugConfig}
           cog={trussMetrics?.cog}
           showCoGMarker={showCoGMarker}
+          heatmapEnabled={heatmapEnabled}
+          onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+          playbackSpeed={playbackSpeed}
+          onSpeedChange={setPlaybackSpeed}
           isSimulating={isSimulating}
           onSimulationFinish={handleSimulationFinish}
           onResetSimulation={handleResetSimulation}

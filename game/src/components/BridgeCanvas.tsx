@@ -6,6 +6,7 @@ import type { TestResult } from '../state/gameStore';
 import type { DynamicSimulationTrajectory } from '../physics/trussDynamic';
 import { computeMatterTrussTrajectory } from '../physics/matterTruss';
 import { toTrussModel } from '../game/build';
+import { analyzeTruss } from '../physics/truss';
 import { soundFx } from '../audio/soundFx';
 import { getStressHeatmapRgb } from '../physics/heatmap';
 import { SimulationControlPanel } from './SimulationControlPanel';
@@ -27,6 +28,10 @@ interface Props {
   debugConfig?: PhysicsDebugConfig;
   cog?: { x: number; y: number } | null;
   showCoGMarker?: boolean;
+  heatmapEnabled?: boolean;
+  onToggleHeatmap?: () => void;
+  playbackSpeed?: number;
+  onSpeedChange?: (speed: number) => void;
   isSimulating?: boolean;
   onSimulationFinish?: () => void;
   onResetSimulation?: () => void;
@@ -56,6 +61,10 @@ export function BridgeCanvas({
   debugConfig,
   cog,
   showCoGMarker = true,
+  heatmapEnabled: propHeatmapEnabled,
+  onToggleHeatmap,
+  playbackSpeed: propPlaybackSpeed,
+  onSpeedChange,
   isSimulating = false,
   onSimulationFinish,
   onResetSimulation,
@@ -74,9 +83,21 @@ export function BridgeCanvas({
 
   // Dynamic simulation playback state
   const [animProgress, setAnimProgress] = useState(0); // 0 to 1
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [internalSpeed, setInternalSpeed] = useState(1);
+  const playbackSpeed = propPlaybackSpeed ?? internalSpeed;
+  const setPlaybackSpeed = onSpeedChange ?? setInternalSpeed;
+
   const [isPaused, setIsPaused] = useState(false);
-  const [heatmapEnabled, setHeatmapEnabled] = useState(true);
+  const [internalHeatmap, setInternalHeatmap] = useState(true);
+  const heatmapEnabled = propHeatmapEnabled ?? internalHeatmap;
+  const toggleHeatmap = useCallback(() => {
+    if (onToggleHeatmap) {
+      onToggleHeatmap();
+    } else {
+      setInternalHeatmap((v) => !v);
+    }
+  }, [onToggleHeatmap]);
+
   const [vectorsEnabled, setVectorsEnabled] = useState(true);
   const [metricsEnabled, setMetricsEnabled] = useState(true);
   const soundPlayedRef = useRef<{ creak: boolean; snap: boolean }>({ creak: false, snap: false });
@@ -88,6 +109,25 @@ export function BridgeCanvas({
     for (const n of builtNodes) map.set(n.id, { x: n.x, y: n.y });
     return map;
   }, [level.fixedNodes, builtNodes]);
+
+  // Real-time static dead-load member stress map in build mode when heatmap is active
+  const buildModeStressMap = useMemo(() => {
+    if (!heatmapEnabled || isSimulating || testResult) return null;
+    try {
+      const model = toTrussModel(level, builtNodes, builtMembers);
+      const analysis = analyzeTruss(model);
+      if (analysis.status === 'analyzed') {
+        const map = new Map<string, { utilization: number; failed: boolean }>();
+        for (const m of analysis.members) {
+          map.set(m.memberId, { utilization: m.utilization, failed: m.failed });
+        }
+        return map;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }, [heatmapEnabled, isSimulating, testResult, level, builtNodes, builtMembers]);
 
   // Compute dynamic trajectory when in simulation or test mode using Matter.js physics engine
   const trajectory: DynamicSimulationTrajectory | null = useMemo(() => {
@@ -128,7 +168,7 @@ export function BridgeCanvas({
       } else if ((e.key === 'r' || e.key === 'R') && (isSimulating || testResult)) {
         handleResetSimulation();
       } else if (e.key === 'h' || e.key === 'H') {
-        setHeatmapEnabled((v) => !v);
+        toggleHeatmap();
       } else if (e.key === 'v' || e.key === 'V') {
         setVectorsEnabled((v) => !v);
       } else if (e.key === 'm' || e.key === 'M') {
@@ -137,7 +177,7 @@ export function BridgeCanvas({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSimulating, testResult, handleResetSimulation]);
+  }, [isSimulating, testResult, handleResetSimulation, toggleHeatmap]);
 
   // Animation loop when simulating
   useEffect(() => {
@@ -337,9 +377,14 @@ export function BridgeCanvas({
         {level.deckMembers.map((m) => {
           const a = displayPoints.get(m.nodeA)!;
           const b = displayPoints.get(m.nodeB)!;
-          const result = currentFrame?.memberResults[m.id];
-          const color = result
-            ? getMemberColor(result.utilization, result.failed, MATERIALS.wood.color, heatmapEnabled)
+          const staticResult = testResult?.status === 'analyzed'
+            ? testResult.members.find((res) => res.memberId === m.id)
+            : undefined;
+          const buildStress = buildModeStressMap?.get(m.id);
+          const result = currentFrame?.memberResults[m.id] ?? staticResult ?? buildStress;
+          const isFailed = result ? (result.failed || result.utilization >= 1.0) : false;
+          const color = (heatmapEnabled && result)
+            ? getMemberColor(result.utilization, isFailed, MATERIALS.wood.color, heatmapEnabled)
             : MATERIALS.wood.color;
           return (
             <line
@@ -361,10 +406,14 @@ export function BridgeCanvas({
           const a = displayPoints.get(m.nodeA);
           const b = displayPoints.get(m.nodeB);
           if (!a || !b) return null;
-          const result = currentFrame?.memberResults[m.id];
+          const staticResult = testResult?.status === 'analyzed'
+            ? testResult.members.find((res) => res.memberId === m.id)
+            : undefined;
+          const buildStress = buildModeStressMap?.get(m.id);
+          const result = currentFrame?.memberResults[m.id] ?? staticResult ?? buildStress;
           const material = MATERIALS[m.materialId];
-          const isFailed = result?.failed || currentFrame?.failedMemberId === m.id;
-          const color = result
+          const isFailed = result?.failed || (result ? result.utilization >= 1.0 : false) || currentFrame?.failedMemberId === m.id;
+          const color = (heatmapEnabled && result)
             ? getMemberColor(result.utilization, isFailed, material.color, heatmapEnabled)
             : material.color;
 
@@ -376,7 +425,7 @@ export function BridgeCanvas({
                 x2={b.x}
                 y2={b.y}
                 stroke={color}
-                strokeWidth={isFailed ? 0.08 : 0.12}
+                strokeWidth={isFailed ? 0.16 : 0.12}
                 strokeDasharray={isFailed ? '0.15 0.1' : undefined}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
@@ -388,7 +437,7 @@ export function BridgeCanvas({
                   onRemoveMember(m.id);
                 }}
               />
-              {/* Failure rupture blast indicator */}
+              {/* Failure rupture blast indicator or critical warning badge */}
               {isFailed && (
                 <g transform={`translate(${(a.x + b.x) / 2}, ${(a.y + b.y) / 2})`}>
                   <circle r={0.22} fill="var(--danger)" opacity={0.65} className="animate-ping" />
@@ -1065,7 +1114,7 @@ export function BridgeCanvas({
             onReset={handleResetSimulation}
             onSpeedChange={setPlaybackSpeed}
             onScrub={handleScrub}
-            onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+            onToggleHeatmap={toggleHeatmap}
             onToggleVectors={() => setVectorsEnabled((v) => !v)}
             onToggleMetrics={() => setMetricsEnabled((v) => !v)}
           />
@@ -1081,6 +1130,26 @@ export function BridgeCanvas({
           heatmapEnabled={heatmapEnabled}
           vectorsEnabled={vectorsEnabled}
         />
+      )}
+
+      {/* Visual FEA Stress Heatmap Legend (visible in build mode or when metrics panel is toggled off) */}
+      {heatmapEnabled && (!metricsEnabled || (!isSimulating && !testResult)) && (
+        <div
+          data-testid="stress-heatmap-legend"
+          className="absolute bottom-3 right-3 z-20 flex flex-col gap-1 rounded-xl border border-border/80 bg-surface-base/95 backdrop-blur px-3 py-2 font-mono text-[11px] shadow-lg pointer-events-auto"
+        >
+          <div className="flex items-center justify-between gap-3 text-fg-subtle">
+            <span className="font-semibold text-fg">FEA Stress Heatmap</span>
+            <span className="text-red-400 font-bold">Red = Critical Failure</span>
+          </div>
+          <div className="h-2 w-48 rounded bg-gradient-to-r from-blue-600 via-cyan-500 via-emerald-500 via-amber-500 to-red-500 shadow-inner" />
+          <div className="flex justify-between text-[9px] text-fg-subtle">
+            <span>0% Safe</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span className="text-red-400 font-bold">100%+ Fail</span>
+          </div>
+        </div>
       )}
 
       {/* Physics Debug: Static Determinacy & Equilibrium Inspector */}

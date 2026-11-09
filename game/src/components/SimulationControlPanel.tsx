@@ -77,26 +77,50 @@ export function SimulationControlPanel({
           <span>Reset</span>
         </button>
 
-        {/* Speed presets */}
-        <div className="flex items-center rounded-lg border border-border bg-surface-2 p-0.5" role="group" aria-label="Playback speed">
-          {[0.5, 1, 2, 4].map((spd) => (
-            <button
-              key={spd}
-              type="button"
-              onClick={() => {
-                soundFx.playSnapNode();
-                onSpeedChange(spd);
-              }}
-              className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
-                playbackSpeed === spd
-                  ? 'bg-accent text-bg shadow-sm'
-                  : 'text-fg-muted hover:text-fg hover:bg-surface-1'
-              }`}
-              title={`${spd}x playback speed`}
-            >
-              {spd}x
-            </button>
-          ))}
+        {/* Simulation Time-Scale Slider (0.25x, 0.5x, 1x, 2x) */}
+        <div className="flex flex-col gap-1 min-w-[136px] rounded-lg border border-border bg-surface-2 px-2.5 py-1">
+          <div className="flex items-center justify-between text-[10px] text-fg-subtle">
+            <span>Speed</span>
+            <span className="font-bold text-accent font-mono tabular-nums">{playbackSpeed}x</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={3}
+            step={1}
+            value={
+              playbackSpeed === 0.25 ? 0 :
+              playbackSpeed === 0.5 ? 1 :
+              playbackSpeed === 1 ? 2 : 3
+            }
+            onChange={(e) => {
+              const speeds = [0.25, 0.5, 1, 2] as const;
+              const chosen = speeds[Number(e.target.value)];
+              soundFx.playSnapNode();
+              onSpeedChange(chosen);
+            }}
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-surface-3 accent-accent"
+            aria-label="Simulation time-scale slider"
+            title={`Simulation speed: ${playbackSpeed}x (0.25x, 0.5x, 1x, 2x)`}
+          />
+          <div className="flex justify-between text-[9px] font-mono text-fg-subtle px-0.5">
+            {[0.25, 0.5, 1, 2].map((spd) => (
+              <button
+                key={spd}
+                type="button"
+                onClick={() => {
+                  soundFx.playSnapNode();
+                  onSpeedChange(spd);
+                }}
+                className={`hover:text-accent transition-colors ${
+                  playbackSpeed === spd ? 'text-accent font-bold' : ''
+                }`}
+                title={`Set speed to ${spd}x`}
+              >
+                {spd}x
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

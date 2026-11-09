@@ -8,6 +8,10 @@ export interface BuildModePhysicsHUDProps {
   vehicleMetrics?: VehicleBuildMetrics;
   showCoGMarker?: boolean;
   onToggleCoGMarker?: () => void;
+  heatmapEnabled?: boolean;
+  onToggleHeatmap?: () => void;
+  playbackSpeed?: number;
+  onSpeedChange?: (speed: number) => void;
   className?: string;
 }
 
@@ -18,6 +22,10 @@ export function BuildModePhysicsHUD({
   vehicleMetrics,
   showCoGMarker = true,
   onToggleCoGMarker,
+  heatmapEnabled = true,
+  onToggleHeatmap,
+  playbackSpeed,
+  onSpeedChange,
   className = '',
 }: BuildModePhysicsHUDProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -70,6 +78,19 @@ export function BuildModePhysicsHUD({
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {onToggleHeatmap && (
+              <button
+                onClick={onToggleHeatmap}
+                title={heatmapEnabled ? 'Disable structural stress heatmap' : 'Enable structural stress heatmap (Blue=Safe -> Red=Critical Failure Risk)'}
+                className={`rounded px-1.5 py-0.5 text-[10px] font-mono transition-colors border ${
+                  heatmapEnabled
+                    ? 'border-red-500/50 bg-red-950/30 text-red-400 font-semibold'
+                    : 'border-border text-fg-subtle hover:text-fg'
+                }`}
+              >
+                🌡 Heatmap {heatmapEnabled ? 'ON' : 'OFF'}
+              </button>
+            )}
             {onToggleCoGMarker && (
               <button
                 onClick={onToggleCoGMarker}
@@ -170,10 +191,69 @@ export function BuildModePhysicsHUD({
           <div className="flex items-center justify-between text-[10px] text-fg-subtle font-mono">
             <span>{trussMetrics.memberCount} members · {trussMetrics.jointCount} joints</span>
             {trussMetrics.criticalMembersCount > 0 && (
-              <span className="text-amber-400">{trussMetrics.criticalMembersCount} near yield</span>
+              <span className="text-amber-400 font-semibold">{trussMetrics.criticalMembersCount} near yield</span>
             )}
           </div>
         </div>
+
+        {/* Visual Heatmap Stress Scale Legend */}
+        {heatmapEnabled && (
+          <div className="mt-2 flex flex-col gap-1 rounded-lg border border-border/60 bg-surface-1/40 p-2 text-[10px] font-mono">
+            <div className="flex items-center justify-between text-fg-subtle">
+              <span>Stress Heatmap:</span>
+              <span className="text-red-400 font-bold">Red = Critical Risk</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-gradient-to-r from-blue-600 via-emerald-500 via-amber-500 to-red-500" />
+            <div className="flex justify-between text-[9px] text-fg-subtle">
+              <span>0% Safe</span>
+              <span>50%</span>
+              <span>75%</span>
+              <span className="text-red-400">100%+ Yield Fail</span>
+            </div>
+          </div>
+        )}
+
+        {/* Simulation Time-Scale Slider in HUD */}
+        {onSpeedChange && playbackSpeed !== undefined && (
+          <div className="mt-2 flex flex-col gap-1 rounded-lg border border-border/60 bg-surface-1/40 p-2 text-xs">
+            <div className="flex items-center justify-between text-[11px] text-fg-muted font-medium">
+              <span>Simulation Time-Scale:</span>
+              <span className="font-mono font-bold text-accent tabular-nums">{playbackSpeed}x</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={3}
+              step={1}
+              value={
+                playbackSpeed === 0.25 ? 0 :
+                playbackSpeed === 0.5 ? 1 :
+                playbackSpeed === 1 ? 2 : 3
+              }
+              onChange={(e) => {
+                const speeds = [0.25, 0.5, 1, 2] as const;
+                onSpeedChange(speeds[Number(e.target.value)]);
+              }}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-surface-3 accent-accent"
+              aria-label="Simulation time-scale slider"
+              title={`Simulation speed: ${playbackSpeed}x (0.25x, 0.5x, 1x, 2x)`}
+            />
+            <div className="flex justify-between text-[9px] font-mono text-fg-subtle px-0.5">
+              {[0.25, 0.5, 1, 2].map((spd) => (
+                <button
+                  key={spd}
+                  type="button"
+                  onClick={() => onSpeedChange(spd)}
+                  className={`hover:text-accent transition-colors ${
+                    playbackSpeed === spd ? 'text-accent font-bold' : ''
+                  }`}
+                >
+                  {spd}x
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
