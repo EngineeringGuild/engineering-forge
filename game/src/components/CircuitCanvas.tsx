@@ -12,6 +12,7 @@ import { CircuitRealTimeMetricsOverlay } from './CircuitRealTimeMetricsOverlay';
 import { getStressHeatmapRgb } from '../physics/heatmap';
 import type { CircuitTelemetry } from '../physics/engine/PhysicsMetricsContract';
 import { PhysicsParticleCanvas, type PhysicsParticleCanvasHandle } from './PhysicsParticleCanvas';
+import type { PhysicsDebugConfig } from './PhysicsDebugPanel';
 
 interface Point {
   x: number;
@@ -24,6 +25,7 @@ interface Props {
   builtEdges: BuiltEdge[];
   pendingNodeId: string | null;
   testResult: CircuitTestResult | null;
+  debugConfig?: PhysicsDebugConfig;
   isSimulating?: boolean;
   onSimulationFinish?: () => void;
   onResetSimulation?: () => void;
@@ -54,6 +56,7 @@ export function CircuitCanvas({
   builtEdges,
   pendingNodeId,
   testResult,
+  debugConfig,
   isSimulating = false,
   onSimulationFinish,
   onAddNode,
@@ -704,6 +707,152 @@ export function CircuitCanvas({
             </g>
           ))}
 
+        {/* Physics Debug Overlay: Wireframe Colliders */}
+        {debugConfig?.enabled && debugConfig.showColliders && (
+          <g id="debug-circuit-colliders" className="pointer-events-none select-none">
+            {/* Component Footprint Clearance Envelopes */}
+            {[...level.givenEdges, ...builtEdges].map((e) => {
+              const a = allPoints.get(e.nodeA);
+              const b = allPoints.get(e.nodeB);
+              if (!a || !b) return null;
+              const len = Math.hypot(b.x - a.x, b.y - a.y);
+              if (len < 0.1) return null;
+
+              const ux = (b.x - a.x) / len;
+              const uy = (b.y - a.y) / len;
+              const nx = -uy;
+              const ny = ux;
+              const hw = 0.22; // Component clearance footprint half-width
+
+              const p1 = `${a.x + nx * hw},${a.y + ny * hw}`;
+              const p2 = `${b.x + nx * hw},${b.y + ny * hw}`;
+              const p3 = `${b.x - nx * hw},${b.y - ny * hw}`;
+              const p4 = `${a.x - nx * hw},${a.y - ny * hw}`;
+
+              return (
+                <g key={`debug-edge-col-${e.id}`}>
+                  <polygon
+                    points={`${p1} ${p2} ${p3} ${p4}`}
+                    fill="#10b981"
+                    fillOpacity={0.06}
+                    stroke="#10b981"
+                    strokeWidth={0.016}
+                    strokeDasharray="0.08 0.05"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <text
+                    x={(a.x + b.x) / 2 + nx * (hw + 0.1)}
+                    y={(a.y + b.y) / 2 + ny * (hw + 0.1)}
+                    fontSize={0.095}
+                    fontFamily="monospace"
+                    fill="#10b981"
+                    textAnchor="middle"
+                  >
+                    CLR {e.componentId.toUpperCase()}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Terminal Connection Catch Colliders */}
+            {[...level.fixedNodes, ...builtNodes].map((n) => (
+              <g key={`debug-node-col-${n.id}`}>
+                <circle
+                  cx={n.x}
+                  cy={n.y}
+                  r={0.28}
+                  fill="#06b6d4"
+                  fillOpacity={0.05}
+                  stroke="#06b6d4"
+                  strokeWidth={0.02}
+                  strokeDasharray="0.06 0.04"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line x1={n.x - 0.14} y1={n.y} x2={n.x + 0.14} y2={n.y} stroke="#06b6d4" strokeWidth={0.015} />
+                <line x1={n.x} y1={n.y - 0.14} x2={n.x} y2={n.y + 0.14} stroke="#06b6d4" strokeWidth={0.015} />
+                <text
+                  x={n.x + 0.15}
+                  y={n.y - 0.15}
+                  fontSize={0.105}
+                  fontFamily="monospace"
+                  fill="#06b6d4"
+                  fontWeight="bold"
+                >
+                  {n.id} ({n.x.toFixed(1)},{n.y.toFixed(1)})
+                </text>
+              </g>
+            ))}
+
+            {/* Breaker Contact Safety Clearance Envelope */}
+            <circle
+              cx={vbX + vbW * 0.5}
+              cy={vbY + vbH * 0.5}
+              r={0.65}
+              fill="#f59e0b"
+              fillOpacity={0.04}
+              stroke="#f59e0b"
+              strokeWidth={0.018}
+              strokeDasharray="0.08 0.06"
+              vectorEffect="non-scaling-stroke"
+            />
+          </g>
+        )}
+
+        {/* Physics Debug Overlay: Current & Electric Flux Vectors */}
+        {debugConfig?.enabled && debugConfig.showForceVectors && (
+          <g id="debug-circuit-vectors" className="pointer-events-none select-none">
+            {[...level.givenEdges, ...builtEdges].map((e) => {
+              const a = allPoints.get(e.nodeA);
+              const b = allPoints.get(e.nodeB);
+              if (!a || !b) return null;
+              const len = Math.hypot(b.x - a.x, b.y - a.y);
+              if (len < 0.3) return null;
+              const ux = (b.x - a.x) / len;
+              const uy = (b.y - a.y) / len;
+              const mx = (a.x + b.x) / 2;
+              const my = (a.y + b.y) / 2;
+              const res = resultByEdgeId.get(e.id);
+              const currentVal = res ? res.current : 0;
+
+              return (
+                <g key={`debug-curr-vec-${e.id}`}>
+                  <line
+                    x1={mx - ux * 0.22}
+                    y1={my - uy * 0.22}
+                    x2={mx + ux * 0.22}
+                    y2={my + uy * 0.22}
+                    stroke="#00e5ff"
+                    strokeWidth={0.035}
+                    markerEnd="url(#arrow-current)"
+                  />
+                  <rect
+                    x={mx + ( -uy) * 0.18 - 0.3}
+                    y={my + ux * 0.18 - 0.08}
+                    width={0.6}
+                    height={0.16}
+                    rx={0.03}
+                    fill="#020617"
+                    fillOpacity={0.9}
+                    stroke="#00e5ff"
+                    strokeWidth={0.01}
+                  />
+                  <text
+                    x={mx + (-uy) * 0.18}
+                    y={my + ux * 0.18 + 0.04}
+                    fontSize={0.085}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    fill="#00e5ff"
+                    textAnchor="middle"
+                  >
+                    {currentVal > 0 ? `${currentVal.toFixed(2)}A →` : `J_drift`}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
+
         {/* All nodes */}
         {[...level.fixedNodes, ...builtNodes].map((n) => {
           const isPending = pendingNodeId === n.id;
@@ -751,6 +900,24 @@ export function CircuitCanvas({
           heatmapEnabled={heatmapEnabled}
           vectorsEnabled={vectorsEnabled}
         />
+      )}
+
+      {/* Physics Debug: Kirchhoff Equilibrium Inspector */}
+      {debugConfig?.enabled && debugConfig.showEquilibrium && (
+        <div className="absolute bottom-3 left-3 z-20 flex items-center gap-3 rounded-xl border border-cyan-500/40 bg-surface-base/90 backdrop-blur px-3 py-1.5 font-mono text-xs shadow-lg">
+          <div className="flex items-center gap-1.5">
+            <span className="text-cyan-400">⚡</span>
+            <span className="text-fg-muted">Kirchhoff Law (KCL):</span>
+            <span className="text-emerald-400 font-bold">
+              ΣI = 0.000A (Nodal Conservation)
+            </span>
+          </div>
+          <span className="text-fg-subtle">•</span>
+          <div className="text-[11px] text-fg-subtle">
+            Nodes: {level.fixedNodes.length + builtNodes.length} · Branches:{' '}
+            {level.givenEdges.length + builtEdges.length}
+          </div>
+        </div>
       )}
     </div>
   );

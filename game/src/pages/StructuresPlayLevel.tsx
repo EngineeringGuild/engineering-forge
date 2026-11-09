@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BridgeCanvas } from '../components/BridgeCanvas';
 import { ResultOverlay } from '../components/ResultOverlay';
@@ -21,6 +21,9 @@ import { autosaveManager } from '../state/AutosaveManager';
 import { progressManager } from '../state/ProgressManager';
 import { BlueprintShareModal } from '../components/BlueprintShareModal';
 import { SoundSettingsModal } from '../components/SoundSettingsModal';
+import { PhysicsDebugPanel, type PhysicsDebugConfig } from '../components/PhysicsDebugPanel';
+import { DesignSaveModal } from '../components/DesignSaveModal';
+import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
 import type { UniversalBlueprint, StructuresBlueprintData } from '../state/BlueprintManager';
 
 export function StructuresPlayLevel() {
@@ -37,6 +40,13 @@ export function StructuresPlayLevel() {
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [debugConfig, setDebugConfig] = useState<PhysicsDebugConfig>({
+    enabled: false,
+    showColliders: true,
+    showForceVectors: true,
+    showEquilibrium: true,
+  });
 
   const level = levelId ? getLevel(levelId) : undefined;
   const isLevelUnlocked = useGameStore((s) => s.isLevelUnlocked);
@@ -102,6 +112,54 @@ export function StructuresPlayLevel() {
       },
     };
   }, [levelId, builtNodes, builtMembers]);
+
+  const [savedCount, setSavedCount] = useState(() =>
+    level ? designSaveManager.getDesignsForLevel('structures', level.id).length : 0,
+  );
+
+  useEffect(() => {
+    if (!level) return;
+    return designSaveManager.subscribe(() => {
+      setSavedCount(designSaveManager.getDesignsForLevel('structures', level.id).length);
+    });
+  }, [level]);
+
+  const debugStats = useMemo(() => {
+    if (!level) return undefined;
+    const j = level.fixedNodes.length + builtNodes.length;
+    const m = level.deckMembers.length + builtMembers.length;
+    const diff = m - (2 * j - 3);
+    return {
+      colliderCount: j + m + level.fixedNodes.length,
+      vectorCount: builtNodes.length + level.fixedNodes.length + builtMembers.length,
+      equilibriumStatus: (diff >= 0 ? 'balanced' : 'unbalanced') as 'balanced' | 'unbalanced',
+      equilibriumDetail:
+        diff === 0
+          ? 'Determinate (m=2j-3)'
+          : diff > 0
+            ? `Redundant (+${diff})`
+            : `Mechanism (${diff})`,
+    };
+  }, [level, builtNodes, builtMembers]);
+
+  const handleRestoreSavedDesign = useCallback(
+    (
+      design: SavedDesign<{
+        builtNodes: typeof builtNodes;
+        builtMembers: typeof builtMembers;
+        selectedMaterial: string;
+        nextId: number;
+      }>,
+    ) => {
+      restoreBuild(
+        design.data.builtNodes,
+        design.data.builtMembers,
+        design.data.nextId,
+        design.data.selectedMaterial,
+      );
+    },
+    [restoreBuild],
+  );
 
   const handleOpenManifest = () => {
     if (!level) return;
@@ -286,6 +344,24 @@ export function StructuresPlayLevel() {
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Toggle-able Physics Debug Overlay Panel */}
+          <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
+
+          {/* Design Save & Resume System */}
+          <button
+            onClick={() => setShowSaveModal(true)}
+            title="Save current design or resume previously saved designs"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>💾</span>
+            <span>Designs</span>
+            {savedCount > 0 && (
+              <span className="rounded-full bg-accent/20 px-1.5 py-0.2 text-[10px] font-mono font-bold text-accent">
+                {savedCount}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setShowBlueprintModal(true)}
             title="Universal Blueprint Exchange (Share, Export, Import, Library)"
@@ -399,6 +475,7 @@ export function StructuresPlayLevel() {
           builtMembers={builtMembers}
           pendingNodeId={pendingNodeId}
           testResult={testResult}
+          debugConfig={debugConfig}
           isSimulating={isSimulating}
           onSimulationFinish={handleSimulationFinish}
           onResetSimulation={handleResetSimulation}
@@ -465,6 +542,30 @@ export function StructuresPlayLevel() {
         <SoundSettingsModal
           isOpen={showSoundSettings}
           onClose={() => setShowSoundSettings(false)}
+        />
+      )}
+
+      {/* LocalStorage-based User Design Save & Resume Modal */}
+      {showSaveModal && (
+        <DesignSaveModal
+          isOpen={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          discipline="structures"
+          levelId={level.id}
+          levelName={level.name}
+          currentData={{
+            builtNodes,
+            builtMembers,
+            selectedMaterial,
+            nextId: useGameStore.getState().nextId,
+          }}
+          currentStats={{
+            partCount: builtMembers.length,
+            cost,
+            summary: `${builtNodes.length} joints, ${builtMembers.length} members`,
+          }}
+          onRestoreDesign={handleRestoreSavedDesign}
+          canSave={builtNodes.length > 0 || builtMembers.length > 0}
         />
       )}
     </div>

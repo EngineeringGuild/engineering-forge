@@ -11,6 +11,7 @@ import { getStressHeatmapRgb } from '../physics/heatmap';
 import { SimulationControlPanel } from './SimulationControlPanel';
 import { RealTimeMetricsOverlay } from './RealTimeMetricsOverlay';
 import { PhysicsParticleCanvas, type PhysicsParticleCanvasHandle } from './PhysicsParticleCanvas';
+import type { PhysicsDebugConfig } from './PhysicsDebugPanel';
 
 interface Point {
   x: number;
@@ -23,6 +24,7 @@ interface Props {
   builtMembers: BuiltMember[];
   pendingNodeId: string | null;
   testResult: TestResult | null;
+  debugConfig?: PhysicsDebugConfig;
   isSimulating?: boolean;
   onSimulationFinish?: () => void;
   onResetSimulation?: () => void;
@@ -49,6 +51,7 @@ export function BridgeCanvas({
   builtMembers,
   pendingNodeId,
   testResult,
+  debugConfig,
   isSimulating = false,
   onSimulationFinish,
   onResetSimulation,
@@ -716,6 +719,230 @@ export function BridgeCanvas({
           </marker>
         </defs>
 
+        {/* Physics Debug Overlay: Wireframe Colliders */}
+        {debugConfig?.enabled && debugConfig.showColliders && (
+          <g id="debug-colliders" className="pointer-events-none select-none">
+            {/* Fixed Foundation Ground Colliders */}
+            {level.fixedNodes.map((fn) => (
+              <g key={`debug-ground-${fn.id}`}>
+                <rect
+                  x={fn.x - 0.45}
+                  y={fn.y + 0.1}
+                  width={0.9}
+                  height={0.55}
+                  fill="#06b6d4"
+                  fillOpacity={0.06}
+                  stroke="#06b6d4"
+                  strokeWidth={0.02}
+                  strokeDasharray="0.06 0.04"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <text
+                  x={fn.x}
+                  y={fn.y + 0.42}
+                  fontSize={0.11}
+                  fontFamily="monospace"
+                  fill="#06b6d4"
+                  textAnchor="middle"
+                  opacity={0.8}
+                >
+                  FOUNDATION [{fn.id}]
+                </text>
+              </g>
+            ))}
+
+            {/* Member Oriented Bounding Box Colliders */}
+            {[...level.deckMembers, ...builtMembers].map((m) => {
+              const a = displayPoints.get(m.nodeA);
+              const b = displayPoints.get(m.nodeB);
+              if (!a || !b) return null;
+              const len = Math.hypot(b.x - a.x, b.y - a.y);
+              if (len < 0.1) return null;
+
+              const ux = (b.x - a.x) / len;
+              const uy = (b.y - a.y) / len;
+              const nx = -uy;
+              const ny = ux;
+
+              const hw = 'materialId' in m && m.materialId === 'wood' ? 0.15 : 'materialId' in m && m.materialId === 'cable' ? 0.07 : 0.11;
+              const p1 = `${a.x + nx * hw},${a.y + ny * hw}`;
+              const p2 = `${b.x + nx * hw},${b.y + ny * hw}`;
+              const p3 = `${b.x - nx * hw},${b.y - ny * hw}`;
+              const p4 = `${a.x - nx * hw},${a.y - ny * hw}`;
+
+              return (
+                <g key={`debug-mem-col-${m.id}`}>
+                  <polygon
+                    points={`${p1} ${p2} ${p3} ${p4}`}
+                    fill="#10b981"
+                    fillOpacity={0.08}
+                    stroke="#10b981"
+                    strokeWidth={0.018}
+                    strokeDasharray="0.08 0.05"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {/* Cross-section caliper tick */}
+                  <line
+                    x1={(a.x + b.x) / 2 - nx * hw * 1.3}
+                    y1={(a.y + b.y) / 2 - ny * hw * 1.3}
+                    x2={(a.x + b.x) / 2 + nx * hw * 1.3}
+                    y2={(a.y + b.y) / 2 + ny * hw * 1.3}
+                    stroke="#10b981"
+                    strokeWidth={0.015}
+                  />
+                </g>
+              );
+            })}
+
+            {/* Node Joint Pin Colliders & Clearance Circles */}
+            {[...level.fixedNodes, ...builtNodes].map((n) => {
+              const pt = displayPoints.get(n.id) ?? n;
+              return (
+                <g key={`debug-node-col-${n.id}`}>
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={0.28}
+                    fill="#06b6d4"
+                    fillOpacity={0.05}
+                    stroke="#06b6d4"
+                    strokeWidth={0.02}
+                    strokeDasharray="0.06 0.04"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <line x1={pt.x - 0.14} y1={pt.y} x2={pt.x + 0.14} y2={pt.y} stroke="#06b6d4" strokeWidth={0.015} />
+                  <line x1={pt.x} y1={pt.y - 0.14} x2={pt.x} y2={pt.y + 0.14} stroke="#06b6d4" strokeWidth={0.015} />
+                  <text
+                    x={pt.x + 0.15}
+                    y={pt.y - 0.15}
+                    fontSize={0.11}
+                    fontFamily="monospace"
+                    fill="#06b6d4"
+                    fontWeight="bold"
+                  >
+                    {n.id} ({pt.x.toFixed(1)},{pt.y.toFixed(1)})
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
+
+        {/* Physics Debug Overlay: Design Force Vectors */}
+        {debugConfig?.enabled && debugConfig.showForceVectors && (
+          <g id="debug-force-vectors" className="pointer-events-none select-none">
+            {/* Free Joint Dead-Load Gravity Vectors */}
+            {builtNodes.map((n) => {
+              const pt = displayPoints.get(n.id) ?? n;
+              return (
+                <g key={`debug-grav-${n.id}`}>
+                  <line
+                    x1={pt.x}
+                    y1={pt.y}
+                    x2={pt.x}
+                    y2={pt.y + 0.45}
+                    stroke="#f59e0b"
+                    strokeWidth={0.035}
+                    markerEnd="url(#arrow-load)"
+                  />
+                  <rect
+                    x={pt.x + 0.06}
+                    y={pt.y + 0.16}
+                    width={0.44}
+                    height={0.18}
+                    rx={0.03}
+                    fill="#020617"
+                    fillOpacity={0.9}
+                    stroke="#f59e0b"
+                    strokeWidth={0.01}
+                  />
+                  <text
+                    x={pt.x + 0.28}
+                    y={pt.y + 0.29}
+                    fontSize={0.09}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    fill="#f59e0b"
+                    textAnchor="middle"
+                  >
+                    Fg ↓
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Pinned Support Foundation Reaction Vectors */}
+            {level.fixedNodes.map((n) => {
+              const pt = displayPoints.get(n.id) ?? n;
+              return (
+                <g key={`debug-react-prev-${n.id}`}>
+                  <line
+                    x1={pt.x}
+                    y1={pt.y + 0.6}
+                    x2={pt.x}
+                    y2={pt.y + 0.08}
+                    stroke="#06b6d4"
+                    strokeWidth={0.04}
+                    markerEnd="url(#arrow-reaction)"
+                  />
+                  <rect
+                    x={pt.x + 0.06}
+                    y={pt.y + 0.24}
+                    width={0.44}
+                    height={0.18}
+                    rx={0.03}
+                    fill="#020617"
+                    fillOpacity={0.9}
+                    stroke="#06b6d4"
+                    strokeWidth={0.01}
+                  />
+                  <text
+                    x={pt.x + 0.28}
+                    y={pt.y + 0.37}
+                    fontSize={0.09}
+                    fontFamily="monospace"
+                    fontWeight="bold"
+                    fill="#06b6d4"
+                    textAnchor="middle"
+                  >
+                    Ry ↑
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Axial Load Path Vectors along Built Members in Design Mode */}
+            {!isSimulating &&
+              !testResult &&
+              builtMembers.map((m) => {
+                const a = displayPoints.get(m.nodeA);
+                const b = displayPoints.get(m.nodeB);
+                if (!a || !b) return null;
+                const len = Math.hypot(b.x - a.x, b.y - a.y);
+                if (len < 0.45) return null;
+                const ux = (b.x - a.x) / len;
+                const uy = (b.y - a.y) / len;
+                const mx = (a.x + b.x) / 2;
+                const my = (a.y + b.y) / 2;
+
+                return (
+                  <g key={`debug-path-${m.id}`} opacity={0.85}>
+                    <line
+                      x1={mx - ux * 0.18}
+                      y1={my - uy * 0.18}
+                      x2={mx + ux * 0.18}
+                      y2={my + uy * 0.18}
+                      stroke="#38bdf8"
+                      strokeWidth={0.02}
+                      strokeDasharray="0.04 0.03"
+                      markerEnd="url(#arrow-tension)"
+                    />
+                  </g>
+                );
+              })}
+          </g>
+        )}
+
         {/* Nodes */}
         {[...level.fixedNodes, ...builtNodes].map((n) => {
           const pt = displayPoints.get(n.id) ?? n;
@@ -785,6 +1012,41 @@ export function BridgeCanvas({
           heatmapEnabled={heatmapEnabled}
           vectorsEnabled={vectorsEnabled}
         />
+      )}
+
+      {/* Physics Debug: Static Determinacy & Equilibrium Inspector */}
+      {debugConfig?.enabled && debugConfig.showEquilibrium && (
+        <div className="absolute bottom-3 left-3 z-20 flex items-center gap-3 rounded-xl border border-cyan-500/40 bg-surface-base/90 backdrop-blur px-3 py-1.5 font-mono text-xs shadow-lg">
+          <div className="flex items-center gap-1.5">
+            <span className="text-cyan-400">⚖️</span>
+            <span className="text-fg-muted">Determinacy:</span>
+            {(() => {
+              const j = level.fixedNodes.length + builtNodes.length;
+              const m = level.deckMembers.length + builtMembers.length;
+              const diff = m - (2 * j - 3);
+              if (diff === 0) {
+                return <span className="text-emerald-400 font-bold">Statically Determinate (m = 2j - 3)</span>;
+              }
+              if (diff > 0) {
+                return (
+                  <span className="text-cyan-400 font-bold">
+                    Indeterminate (+{diff} deg redundancy)
+                  </span>
+                );
+              }
+              return (
+                <span className="text-amber-400 font-bold">
+                  Underconstrained (Mechanism: {diff})
+                </span>
+              );
+            })()}
+          </div>
+          <span className="text-fg-subtle">•</span>
+          <div className="text-[11px] text-fg-subtle">
+            Nodes: {level.fixedNodes.length + builtNodes.length} · Members:{' '}
+            {level.deckMembers.length + builtMembers.length}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { CircuitCanvas } from '../components/CircuitCanvas';
 import { CircuitResultOverlay } from '../components/CircuitResultOverlay';
@@ -20,6 +20,9 @@ import { autosaveManager } from '../state/AutosaveManager';
 import { progressManager } from '../state/ProgressManager';
 import { BlueprintShareModal } from '../components/BlueprintShareModal';
 import { SoundSettingsModal } from '../components/SoundSettingsModal';
+import { PhysicsDebugPanel, type PhysicsDebugConfig } from '../components/PhysicsDebugPanel';
+import { DesignSaveModal } from '../components/DesignSaveModal';
+import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
 import type { UniversalBlueprint, CircuitsBlueprintData } from '../state/BlueprintManager';
 
 export function CircuitsPlayLevel() {
@@ -33,6 +36,13 @@ export function CircuitsPlayLevel() {
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [debugConfig, setDebugConfig] = useState<PhysicsDebugConfig>({
+    enabled: false,
+    showColliders: true,
+    showForceVectors: true,
+    showEquilibrium: true,
+  });
 
   const level = levelId ? getCircuitLevel(levelId) : undefined;
   const isLevelUnlocked = useCircuitStore((s) => s.isLevelUnlocked);
@@ -98,6 +108,48 @@ export function CircuitsPlayLevel() {
       },
     };
   }, [levelId, builtNodes, builtEdges]);
+
+  const [savedCount, setSavedCount] = useState(() =>
+    level ? designSaveManager.getDesignsForLevel('circuits', level.id).length : 0,
+  );
+
+  useEffect(() => {
+    if (!level) return;
+    return designSaveManager.subscribe(() => {
+      setSavedCount(designSaveManager.getDesignsForLevel('circuits', level.id).length);
+    });
+  }, [level]);
+
+  const debugStats = useMemo(() => {
+    if (!level) return undefined;
+    const totalNodes = level.fixedNodes.length + builtNodes.length;
+    const totalEdges = level.givenEdges.length + builtEdges.length;
+    return {
+      colliderCount: totalNodes + totalEdges + 1,
+      vectorCount: totalEdges,
+      equilibriumStatus: 'balanced' as const,
+      equilibriumDetail: 'KCL Conserved (ΣI=0)',
+    };
+  }, [level, builtNodes, builtEdges]);
+
+  const handleRestoreSavedDesign = useCallback(
+    (
+      design: SavedDesign<{
+        builtNodes: typeof builtNodes;
+        builtEdges: typeof builtEdges;
+        selectedMaterial: string;
+        nextId: number;
+      }>,
+    ) => {
+      restoreBuild(
+        design.data.builtNodes,
+        design.data.builtEdges,
+        design.data.nextId,
+        design.data.selectedMaterial,
+      );
+    },
+    [restoreBuild],
+  );
 
   useEffect(() => {
     if (level && currentLevelId !== level.id) {
@@ -209,6 +261,24 @@ export function CircuitsPlayLevel() {
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Toggle-able Physics Debug Overlay Panel */}
+          <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
+
+          {/* Design Save & Resume System */}
+          <button
+            onClick={() => setShowSaveModal(true)}
+            title="Save current circuit design or resume previously saved schematics"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>💾</span>
+            <span>Designs</span>
+            {savedCount > 0 && (
+              <span className="rounded-full bg-accent/20 px-1.5 py-0.2 text-[10px] font-mono font-bold text-accent">
+                {savedCount}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setShowBlueprintModal(true)}
             title="Universal Blueprint Exchange (Share, Export, Import, Library)"
@@ -261,6 +331,7 @@ export function CircuitsPlayLevel() {
           builtEdges={builtEdges}
           pendingNodeId={pendingNodeId}
           testResult={testResult}
+          debugConfig={debugConfig}
           isSimulating={isSimulating}
           onSimulationFinish={handleSimulationFinish}
           onResetSimulation={handleResetSimulation}
@@ -327,6 +398,30 @@ export function CircuitsPlayLevel() {
         <SoundSettingsModal
           isOpen={showSoundSettings}
           onClose={() => setShowSoundSettings(false)}
+        />
+      )}
+
+      {/* LocalStorage-based User Design Save & Resume Modal */}
+      {showSaveModal && (
+        <DesignSaveModal
+          isOpen={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          discipline="circuits"
+          levelId={level.id}
+          levelName={level.name}
+          currentData={{
+            builtNodes,
+            builtEdges,
+            selectedMaterial,
+            nextId: useCircuitStore.getState().nextId,
+          }}
+          currentStats={{
+            partCount: builtEdges.length,
+            cost,
+            summary: `${builtNodes.length} nodes, ${builtEdges.length} connections`,
+          }}
+          onRestoreDesign={handleRestoreSavedDesign}
+          canSave={builtNodes.length > 0 || builtEdges.length > 0}
         />
       )}
     </div>

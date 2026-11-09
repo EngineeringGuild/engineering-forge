@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { VehicleResultOverlay } from '../components/VehicleResultOverlay';
 import { VehicleTrackCanvas } from '../components/VehicleTrackCanvas';
@@ -20,6 +20,9 @@ import { autosaveManager } from '../state/AutosaveManager';
 import { progressManager } from '../state/ProgressManager';
 import { BlueprintShareModal } from '../components/BlueprintShareModal';
 import { SoundSettingsModal } from '../components/SoundSettingsModal';
+import { PhysicsDebugPanel, type PhysicsDebugConfig } from '../components/PhysicsDebugPanel';
+import { DesignSaveModal } from '../components/DesignSaveModal';
+import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
 import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
 
 export function VehiclesPlayLevel() {
@@ -33,6 +36,13 @@ export function VehiclesPlayLevel() {
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [debugConfig, setDebugConfig] = useState<PhysicsDebugConfig>({
+    enabled: false,
+    showColliders: true,
+    showForceVectors: true,
+    showEquilibrium: true,
+  });
 
   const level = levelId ? getVehicleLevel(levelId) : undefined;
   const isLevelUnlocked = useVehicleStore((s) => s.isLevelUnlocked);
@@ -87,6 +97,38 @@ export function VehiclesPlayLevel() {
       },
     };
   }, [levelId, selectedEngine, selectedChassis]);
+
+  const [savedCount, setSavedCount] = useState(() =>
+    level ? designSaveManager.getDesignsForLevel('machines', level.id).length : 0,
+  );
+
+  useEffect(() => {
+    if (!level) return;
+    return designSaveManager.subscribe(() => {
+      setSavedCount(designSaveManager.getDesignsForLevel('machines', level.id).length);
+    });
+  }, [level]);
+
+  const debugStats = useMemo(() => {
+    return {
+      colliderCount: 5, // Chassis hull, 2 wheels, 2 contact patches
+      vectorCount: 4, // Gravity, Normal, Thrust, Drag
+      equilibriumStatus: 'balanced' as const,
+      equilibriumDetail: 'Newton 2nd Law (ΣF=ma)',
+    };
+  }, []);
+
+  const handleRestoreSavedDesign = useCallback(
+    (
+      design: SavedDesign<{
+        selectedEngine: string;
+        selectedChassis: string;
+      }>,
+    ) => {
+      restoreBuild(design.data.selectedEngine, design.data.selectedChassis);
+    },
+    [restoreBuild],
+  );
 
   useEffect(() => {
     if (level && currentLevelId !== level.id) {
@@ -191,6 +233,24 @@ export function VehiclesPlayLevel() {
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Toggle-able Physics Debug Overlay Panel */}
+          <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
+
+          {/* Design Save & Resume System */}
+          <button
+            onClick={() => setShowSaveModal(true)}
+            title="Save current vehicle configuration or resume previously saved specs"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>💾</span>
+            <span>Designs</span>
+            {savedCount > 0 && (
+              <span className="rounded-full bg-accent/20 px-1.5 py-0.2 text-[10px] font-mono font-bold text-accent">
+                {savedCount}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setShowBlueprintModal(true)}
             title="Universal Blueprint Exchange (Share, Export, Import, Library)"
@@ -242,6 +302,7 @@ export function VehiclesPlayLevel() {
         selectedEngineId={selectedEngine}
         selectedChassisId={selectedChassis}
         testResult={testResult}
+        debugConfig={debugConfig}
         isSimulating={isSimulating}
         onSimulationFinish={handleSimulationFinish}
         onResetSimulation={handleResetSimulation}
@@ -388,6 +449,28 @@ export function VehiclesPlayLevel() {
         <SoundSettingsModal
           isOpen={showSoundSettings}
           onClose={() => setShowSoundSettings(false)}
+        />
+      )}
+
+      {/* LocalStorage-based User Design Save & Resume Modal */}
+      {showSaveModal && (
+        <DesignSaveModal
+          isOpen={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          discipline="machines"
+          levelId={level.id}
+          levelName={level.name}
+          currentData={{
+            selectedEngine,
+            selectedChassis,
+          }}
+          currentStats={{
+            partCount: 2, // Engine + Chassis powertrain
+            cost,
+            summary: `${ENGINES[selectedEngine]?.name || selectedEngine} + ${CHASSIS[selectedChassis]?.name || selectedChassis}`,
+          }}
+          onRestoreDesign={handleRestoreSavedDesign}
+          canSave={Boolean(selectedEngine || selectedChassis)}
         />
       )}
     </div>

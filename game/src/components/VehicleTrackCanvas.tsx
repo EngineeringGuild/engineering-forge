@@ -12,12 +12,14 @@ import {
   type VehicleTelemetry,
 } from '../physics/engine/PhysicsMetricsContract';
 import { PhysicsParticleCanvas, type PhysicsParticleCanvasHandle } from './PhysicsParticleCanvas';
+import type { PhysicsDebugConfig } from './PhysicsDebugPanel';
 
 interface Props {
   level: VehicleLevelDef;
   selectedEngineId: string;
   selectedChassisId: string;
   testResult: VehicleTestResult | null;
+  debugConfig?: PhysicsDebugConfig;
   isSimulating: boolean;
   onSimulationFinish?: () => void;
   onResetSimulation?: () => void;
@@ -28,6 +30,7 @@ export function VehicleTrackCanvas({
   selectedEngineId,
   selectedChassisId,
   testResult,
+  debugConfig,
   isSimulating,
   onSimulationFinish,
   onResetSimulation,
@@ -474,6 +477,49 @@ export function VehicleTrackCanvas({
               )}
             </g>
           )}
+
+          {/* Physics Debug: Wireframe Colliders on Vehicle */}
+          {debugConfig?.enabled && debugConfig.showColliders && (
+            <g className="pointer-events-none select-none">
+              {/* Chassis Collision Envelope */}
+              <rect
+                x="-26"
+                y="-20"
+                width="52"
+                height="24"
+                rx="2"
+                fill="#10b981"
+                fillOpacity="0.08"
+                stroke="#10b981"
+                strokeWidth="1.2"
+                strokeDasharray="3 2"
+              />
+              <text x="0" y="-22" fontSize="5.5" fontFamily="monospace" fill="#10b981" textAnchor="middle">
+                CHASSIS HULL [{selectedChassisId}]
+              </text>
+              {/* Wheel Circular Colliders & Contact Patches */}
+              <circle cx="-18" cy="8" r="10" fill="#06b6d4" fillOpacity="0.06" stroke="#06b6d4" strokeWidth="1" strokeDasharray="2 1.5" />
+              <circle cx="18" cy="8" r="10" fill="#06b6d4" fillOpacity="0.06" stroke="#06b6d4" strokeWidth="1" strokeDasharray="2 1.5" />
+              <rect x="-22" y="16.5" width="8" height="3" fill="#f59e0b" fillOpacity="0.25" stroke="#f59e0b" strokeWidth="0.8" />
+              <rect x="14" y="16.5" width="8" height="3" fill="#f59e0b" fillOpacity="0.25" stroke="#f59e0b" strokeWidth="0.8" />
+            </g>
+          )}
+
+          {/* Physics Debug: Design FBD Force Vectors (When not simulating) */}
+          {debugConfig?.enabled && debugConfig.showForceVectors && !isSimulating && !testResult && (
+            <g className="pointer-events-none select-none">
+              {/* Weight vector downwards */}
+              <line x1="0" y1="0" x2="0" y2="24" stroke="#f59e0b" strokeWidth="1.8" markerEnd="url(#arrow-thrust)" />
+              <text x="8" y="16" fontSize="6" fontFamily="monospace" fill="#f59e0b" fontWeight="bold">
+                W = mg
+              </text>
+              {/* Normal force perpendicular to track */}
+              <line x1="0" y1="5" x2="0" y2="-22" stroke="#10b981" strokeWidth="1.8" markerEnd="url(#arrow-normal)" />
+              <text x="8" y="-12" fontSize="6" fontFamily="monospace" fill="#10b981" fontWeight="bold">
+                Fn = mg·cosθ
+              </text>
+            </g>
+          )}
         </g>
       </svg>
       {/* Particle Simulation Canvas for tire smoke and slip sparks */}
@@ -488,6 +534,23 @@ export function VehicleTrackCanvas({
           vectorsEnabled={vectorsEnabled}
           targetSpeedKmh={level.targetSpeed ? level.targetSpeed * 3.6 : 100}
         />
+      )}
+
+      {/* Physics Debug: FBD Equilibrium Inspector */}
+      {debugConfig?.enabled && debugConfig.showEquilibrium && (
+        <div className="absolute bottom-3 left-3 z-20 flex items-center gap-3 rounded-xl border border-cyan-500/40 bg-surface-base/90 backdrop-blur px-3 py-1.5 font-mono text-xs shadow-lg">
+          <div className="flex items-center gap-1.5">
+            <span className="text-cyan-400">⚖️</span>
+            <span className="text-fg-muted">FBD Balance:</span>
+            <span className="text-emerald-400 font-bold">
+              Fn = {(liveTelemetry?.normalForceN ?? 8000).toFixed(0)}N · Ft = {(liveTelemetry?.thrustN ?? 4500).toFixed(0)}N
+            </span>
+          </div>
+          <span className="text-fg-subtle">•</span>
+          <div className="text-[11px] text-fg-subtle">
+            Incline: {incline}° · Mass: {(ENGINES[selectedEngineId]?.cost ?? 1000) > 0 ? (CHASSIS[selectedChassisId]?.mass ?? 800) + (level.payloadMass ?? 0) : 1000}kg
+          </div>
+        </div>
       )}
     </div>
   );
