@@ -15,6 +15,7 @@ import {
 import { soundFx } from '../audio/soundFx';
 import { EducatorRubricModal } from '../components/EducatorRubricModal';
 import { LiveClassroomComparator } from '../components/LiveClassroomComparator';
+import { EducatorDiagnosticsModal } from '../components/EducatorDiagnosticsModal';
 
 export function EducatorAcademyPage() {
   const { tracks, addTrack, deleteTrack, importTrack } = useEducatorStore();
@@ -25,6 +26,7 @@ export function EducatorAcademyPage() {
   const [importFeedback, setImportFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [rubricLevelModal, setRubricLevelModal] = useState<EducatorLevelDef | null>(null);
   const [comparatorLevelModal, setComparatorLevelModal] = useState<EducatorLevelDef | null>(null);
+  const [diagnosticsLevelModal, setDiagnosticsLevelModal] = useState<EducatorLevelDef | null>(null);
 
   // New Track form state
   const [title, setTitle] = useState('');
@@ -341,7 +343,18 @@ export function EducatorAcademyPage() {
                           <span>Orçamento: ${lvl.inventory.budgetLimit}</span>
                           <span>{lvl.geometry.spanWidthMeters}m Vão</span>
                         </div>
-                        <div className="mt-2 pt-2 border-t border-border/40 flex justify-end gap-2">
+                        <div className="mt-2 pt-2 border-t border-border/40 flex flex-wrap justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playTactileClick();
+                              setDiagnosticsLevelModal(lvl);
+                            }}
+                            className="px-2 py-1 bg-surface-1 hover:bg-rose-950/60 hover:text-rose-300 border border-border hover:border-rose-500/50 rounded text-[11px] text-fg-subtle transition-all flex items-center gap-1"
+                          >
+                            <span>🔬</span>
+                            <span>Diagnóstico da Turma</span>
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -387,6 +400,14 @@ export function EducatorAcademyPage() {
           <LiveClassroomComparator
             level={comparatorLevelModal}
             onClose={() => setComparatorLevelModal(null)}
+          />
+        )}
+
+        {/* Classroom Diagnostics Modal */}
+        {diagnosticsLevelModal && (
+          <EducatorDiagnosticsModal
+            level={diagnosticsLevelModal}
+            onClose={() => setDiagnosticsLevelModal(null)}
           />
         )}
 

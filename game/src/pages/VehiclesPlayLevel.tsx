@@ -28,6 +28,7 @@ import { computeVehicleBuildMetrics } from '../physics/buildModePhysics';
 import { DifficultySelector } from '../components/DifficultySelector';
 import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
 import { VehicleNftMintModal } from '../components/VehicleNftMintModal';
+import { GarageCustomizerModal } from '../components/GarageCustomizerModal';
 
 export function VehiclesPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
@@ -37,6 +38,7 @@ export function VehiclesPlayLevel() {
   const [showBlueprintModal, setShowBlueprintModal] = useState(false);
   const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [showNftModal, setShowNftModal] = useState(false);
+  const [showGarageModal, setShowGarageModal] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
@@ -247,6 +249,19 @@ export function VehiclesPlayLevel() {
 
           {/* Toggle-able Physics Debug Overlay Panel */}
           <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
+
+          {/* Inventor's Garage Tuner */}
+          <button
+            onClick={() => {
+              soundFx.playTactileClick();
+              setShowGarageModal(true);
+            }}
+            title="Garagem do Inventor: Calibração Dinâmica de Chassis, CoG e Suspensão"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-500/50 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-950/40 hover:border-cyan-400 transition-colors"
+          >
+            <span>🏎️</span>
+            <span className="font-mono text-xs font-semibold">Garagem</span>
+          </button>
 
           {/* Web3 Digital Twin NFT Mint */}
           <button
@@ -524,6 +539,11 @@ export function VehiclesPlayLevel() {
           }}
           onClose={() => setShowNftModal(false)}
         />
+      )}
+
+      {/* Inventor's Garage Dynamic Tuner Modal */}
+      {showGarageModal && (
+        <GarageCustomizerModal onClose={() => setShowGarageModal(false)} />
       )}
     </div>
   );

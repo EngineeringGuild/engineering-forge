@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useGlobalProgress } from '../state/useProgressTracker';
 import { SoundSettingsModal } from '../components/SoundSettingsModal';
 import { AchievementsModal } from '../components/AchievementsModal';
+import { TechTreeModal } from '../components/TechTreeModal';
+import { useForgeEconomyStore } from '../state/forgeEconomyStore';
 import { soundFx } from '../audio/soundFx';
 
 interface PackCard {
@@ -75,6 +77,8 @@ export function PackSelect() {
   const globalProgress = useGlobalProgress();
   const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showTechTree, setShowTechTree] = useState(false);
+  const wallet = useForgeEconomyStore((s) => s.wallet);
 
   const rank = useMemo(() => getEngineerRank(globalProgress.percent), [globalProgress.percent]);
 
@@ -98,6 +102,18 @@ export function PackSelect() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                soundFx.playTactileClick();
+                setShowTechTree(true);
+              }}
+              onMouseEnter={() => soundFx.playSubtleHover()}
+              title="Árvore Tecnológica & Pesquisa da Forja"
+              className="flex items-center gap-1.5 rounded border border-cyan-500/40 bg-surface-2/80 px-2.5 py-1 font-mono text-xs text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all active:scale-95"
+            >
+              <span>🧬</span>
+              <span>P&D ({wallet.researchPoints} RP)</span>
+            </button>
             <button
               onClick={() => {
                 soundFx.playTactileClick();
@@ -390,6 +406,10 @@ export function PackSelect() {
           isOpen={showAchievements}
           onClose={() => setShowAchievements(false)}
         />
+
+        {showTechTree && (
+          <TechTreeModal onClose={() => setShowTechTree(false)} />
+        )}
       </div>
     </div>
   );

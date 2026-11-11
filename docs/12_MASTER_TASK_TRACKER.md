@@ -128,9 +128,9 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 - [x] `TSK-EDU-07`: Exportador e importador de arquivos `.forge-class` com assinatura de integridade.
 - [x] `TSK-EDU-08`: Gerenciador de turmas local com atribuição de desafios sequenciais (`educatorStore.ts`).
 
-#### Lote 9.4: Telemetria Pedagógica & Projeção ao Vivo (Fases E4 e E5)
-- [ ] `TSK-EDU-09`: Detector de erros conceituais recorrentes da turma (flambagem, curto-circuito, estol).
-- [ ] `TSK-EDU-10`: Heatmap de colapso coletivo sobreposto ao canvas do professor.
+#### Lote 9.4: Telemetria Pedagógica & Projeção ao Vivo (Fases E4 e E5) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-EDU-09`: Detector de erros conceituais recorrentes da turma (flambagem, curto-circuito, estol) (`educatorDiagnostics.ts`).
+- [x] `TSK-EDU-10`: Heatmap de colapso coletivo sobreposto ao canvas do professor (`EducatorDiagnosticsModal.tsx`).
 - [x] `TSK-EDU-11`: Painel de projeção para sala de aula com simulação side-by-side de duas soluções e ranking anônimo (`LiveClassroomComparator.tsx`).
 
 ---
@@ -159,8 +159,8 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 
 ---
 
-### 📋 ONDA 6: FASE 12 — Economia da Forja, Garagem & Tech Tree (DOC-10)
-- [ ] `TSK-ECO-01`: Sistema monetário da Forja (Créditos $\mathcal{F}\$, Sucata de Aço, Pontos de P&D e XP de Engenheiro).
-- [ ] `TSK-ECO-02`: Interface interativa da Árvore Tecnológica com desbloqueio de materiais e peças avançadas.
-- [ ] `TSK-ECO-03`: Garagem do Inventor com customização de chassis, rodas, trem de força e centro de massa.
+### 🚀 ONDA 6: FASE 12 — Economia da Forja, Garagem & Tech Tree (DOC-10)
+- [x] `TSK-ECO-01`: Sistema monetário da Forja (Créditos $\mathcal{F}\$, Sucata de Aço, Pontos de P&D e XP de Engenheiro) (`forgeEconomyStore.ts`).
+- [x] `TSK-ECO-02`: Interface interativa da Árvore Tecnológica com desbloqueio de materiais e peças avançadas (`TechTreeModal.tsx`).
+- [x] `TSK-ECO-03`: Garagem do Inventor com customização de chassis, rodas, trem de força e centro de massa (`garageVehicle.ts`, `GarageCustomizerModal.tsx`).
 - [ ] `TSK-ECO-04`: Sistema de patentes e royalties de blueprints entre jogadores da guilda.
