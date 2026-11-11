@@ -27,6 +27,7 @@ import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
 import { computeVehicleBuildMetrics } from '../physics/buildModePhysics';
 import { DifficultySelector } from '../components/DifficultySelector';
 import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
+import { VehicleNftMintModal } from '../components/VehicleNftMintModal';
 
 export function VehiclesPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
@@ -35,6 +36,7 @@ export function VehiclesPlayLevel() {
   const [showGlossary, setShowGlossary] = useState(false);
   const [showBlueprintModal, setShowBlueprintModal] = useState(false);
   const [showSoundSettings, setShowSoundSettings] = useState(false);
+  const [showNftModal, setShowNftModal] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
@@ -245,6 +247,19 @@ export function VehiclesPlayLevel() {
 
           {/* Toggle-able Physics Debug Overlay Panel */}
           <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
+
+          {/* Web3 Digital Twin NFT Mint */}
+          <button
+            onClick={() => {
+              soundFx.playTactileClick();
+              setShowNftModal(true);
+            }}
+            title="Mint Proof-of-Engineering Web3 Vehicle NFT Digital Twin"
+            className="flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-950/20 px-3 py-2 text-sm text-amber-300 hover:bg-amber-950/40 hover:border-amber-400 transition-colors"
+          >
+            <span>💎</span>
+            <span className="font-mono text-xs font-semibold">Web3 NFT</span>
+          </button>
 
           {/* Design Save & Resume System */}
           <button
@@ -488,6 +503,26 @@ export function VehiclesPlayLevel() {
           }}
           onRestoreDesign={handleRestoreSavedDesign}
           canSave={Boolean(selectedEngine || selectedChassis)}
+        />
+      )}
+
+      {/* Web3 Digital Twin Vehicle NFT Mint Modal */}
+      {showNftModal && (
+        <VehicleNftMintModal
+          telemetry={{
+            vehicleId: `veh-${level.id}-${selectedEngine}-${selectedChassis}`,
+            vehicleName: `${ENGINES[selectedEngine]?.name || 'Engine'} + ${CHASSIS[selectedChassis]?.name || 'Chassis'}`,
+            builderAddress: '0x3cA17E9b8eA45F1c9022649B7b2F3d2D78a10Ec1',
+            totalMassKg: vehicleMetrics.totalMassKg,
+            enginePowerWatts: (ENGINES[selectedEngine]?.force ?? 3000) * 12,
+            maxVelocityMs: testResult?.passed ? 15.5 : 8.0,
+            tireFrictionMu: 0.85,
+            safetyFactorNominal: testResult?.passed ? 1.6 : 0.9,
+            energyJoulesConsumed: 450000,
+            slopeAngleDegPassed: level.inclineDegrees ?? 0,
+            timestamp: 1731320000000,
+          }}
+          onClose={() => setShowNftModal(false)}
         />
       )}
     </div>

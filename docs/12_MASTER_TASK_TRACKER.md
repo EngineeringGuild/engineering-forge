@@ -119,9 +119,9 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 - [x] `TSK-EDU-02`: Restritor de inventário pedagógico (materiais permitidos, teto de peças, orçamento rígido).
 - [x] `TSK-EDU-03`: Formulário de metadados didáticos (objetivos pedagógicos, códigos BNCC/NGSS, dicas graduais).
 
-#### Lote 9.2: Gabarito Analítico & Rubrica Automática (Fase E2)
-- [ ] `TSK-EDU-04`: Otimizador computacional de topologias para cálculo da fronteira de Pareto (custo ótimo vs SF).
-- [ ] `TSK-EDU-05`: Emissor de folha de gabarito técnico do professor com memória de cálculo em PDF/Print.
+#### Lote 9.2: Gabarito Analítico & Rubrica Automática (Fase E2) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-EDU-04`: Otimizador computacional de topologias para cálculo da fronteira de Pareto (custo ótimo vs SF) (`educatorSolver.ts`).
+- [x] `TSK-EDU-05`: Emissor de folha de gabarito técnico do professor com memória de cálculo e exportação (`EducatorRubricModal.tsx`).
 
 #### Lote 9.3: Empacotamento de Atividades & Turmas (Fase E3) — ✅ CONCLUÍDO & HOMOLOGADO
 - [x] `TSK-EDU-06`: Serializador/deserializador de trilhas didáticas completas em URL Hash compacta (`educatorPackaging.ts`).
@@ -131,7 +131,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 #### Lote 9.4: Telemetria Pedagógica & Projeção ao Vivo (Fases E4 e E5)
 - [ ] `TSK-EDU-09`: Detector de erros conceituais recorrentes da turma (flambagem, curto-circuito, estol).
 - [ ] `TSK-EDU-10`: Heatmap de colapso coletivo sobreposto ao canvas do professor.
-- [ ] `TSK-EDU-11`: Painel de projeção para sala de aula com simulação side-by-side de duas soluções e ranking anônimo.
+- [x] `TSK-EDU-11`: Painel de projeção para sala de aula com simulação side-by-side de duas soluções e ranking anônimo (`LiveClassroomComparator.tsx`).
 
 ---
 
@@ -143,11 +143,11 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 - [x] `TSK-CAD-03`: Calibrador de folga de impressão FDM/SLA (tolerância de $0.15\text{mm}$ a $0.45\text{mm}$).
 - [x] `TSK-CAD-04`: Exportador vetorial `.dxf` (AutoCAD R12) e `.svg` (1:1 calibrado) com algoritmo de nesting 2D em pranchas (`dxfExporter.ts`, `CadExportModal.tsx`).
 
-#### Lote 10.2: Web3 Vehicle NFT Minting & Proof of Engineering (Fases M3 e M4)
-- [ ] `TSK-NFT-01`: Oráculo de homologação: assinatura criptográfica de aprovação em teste físico nominal.
-- [ ] `TSK-NFT-02`: Gerador de metadados on-chain (ERC-721 / Metaplex) com telemetria física real do veículo.
-- [ ] `TSK-NFT-03`: Renderizador de Digital Twin vetorial SVG e empacotamento GLB 3D.
-- [ ] `TSK-NFT-04`: Interface de conexão com carteiras e cunhagem do Certificado Técnico de Homologação.
+#### Lote 10.2: Web3 Vehicle NFT Minting & Proof of Engineering (Fases M3 e M4) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-NFT-01`: Oráculo de homologação: assinatura criptográfica de aprovação em teste físico nominal (`proofOfEngineering.ts`).
+- [x] `TSK-NFT-02`: Gerador de metadados on-chain (ERC-721 / Metaplex) com telemetria física real do veículo (`metadataGenerator.ts`).
+- [x] `TSK-NFT-03`: Renderizador de Digital Twin vetorial SVG e empacotamento com atributos físicos dinâmicos.
+- [x] `TSK-NFT-04`: Interface de conexão com carteiras e cunhagem do Certificado Técnico de Homologação (`VehicleNftMintModal.tsx`).
 
 ---
 

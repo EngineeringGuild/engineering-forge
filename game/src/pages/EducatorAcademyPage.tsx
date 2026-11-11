@@ -13,6 +13,8 @@ import {
   exportToClassPackage,
 } from '../educator/educatorPackaging';
 import { soundFx } from '../audio/soundFx';
+import { EducatorRubricModal } from '../components/EducatorRubricModal';
+import { LiveClassroomComparator } from '../components/LiveClassroomComparator';
 
 export function EducatorAcademyPage() {
   const { tracks, addTrack, deleteTrack, importTrack } = useEducatorStore();
@@ -21,6 +23,8 @@ export function EducatorAcademyPage() {
   const [copiedTrackId, setCopiedTrackId] = useState<string | null>(null);
   const [importInput, setImportInput] = useState('');
   const [importFeedback, setImportFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [rubricLevelModal, setRubricLevelModal] = useState<EducatorLevelDef | null>(null);
+  const [comparatorLevelModal, setComparatorLevelModal] = useState<EducatorLevelDef | null>(null);
 
   // New Track form state
   const [title, setTitle] = useState('');
@@ -337,6 +341,30 @@ export function EducatorAcademyPage() {
                           <span>Orçamento: ${lvl.inventory.budgetLimit}</span>
                           <span>{lvl.geometry.spanWidthMeters}m Vão</span>
                         </div>
+                        <div className="mt-2 pt-2 border-t border-border/40 flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playTactileClick();
+                              setComparatorLevelModal(lvl);
+                            }}
+                            className="px-2 py-1 bg-surface-1 hover:bg-cyan-950/60 hover:text-cyan-300 border border-border hover:border-cyan-500/50 rounded text-[11px] text-fg-subtle transition-all flex items-center gap-1"
+                          >
+                            <span>📺</span>
+                            <span>Modo Projetor</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playTactileClick();
+                              setRubricLevelModal(lvl);
+                            }}
+                            className="px-2 py-1 bg-surface-1 hover:bg-amber-950/60 hover:text-amber-300 border border-border hover:border-amber-500/50 rounded text-[11px] text-fg-subtle transition-all flex items-center gap-1"
+                          >
+                            <span>📊</span>
+                            <span>Gabarito Analítico (Pareto)</span>
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -344,6 +372,22 @@ export function EducatorAcademyPage() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Rubric Modal */}
+        {rubricLevelModal && (
+          <EducatorRubricModal
+            level={rubricLevelModal}
+            onClose={() => setRubricLevelModal(null)}
+          />
+        )}
+
+        {/* Classroom Comparator Modal */}
+        {comparatorLevelModal && (
+          <LiveClassroomComparator
+            level={comparatorLevelModal}
+            onClose={() => setComparatorLevelModal(null)}
+          />
         )}
 
         {/* Tab 2: Create Track Form */}
