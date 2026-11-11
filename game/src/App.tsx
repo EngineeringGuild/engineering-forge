@@ -9,6 +9,7 @@ import { VehiclesPlayLevel } from './pages/VehiclesPlayLevel';
 import { MechatronicsLevelSelect } from './pages/MechatronicsLevelSelect';
 import { MechatronicsPlayLevel } from './pages/MechatronicsPlayLevel';
 import { LabPage } from './pages/LabPage';
+import { EducatorAcademyPage } from './pages/EducatorAcademyPage';
 import { AchievementBanner } from './components/AchievementBanner';
 
 export function App() {
@@ -17,6 +18,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<PackSelect />} />
         <Route path="/lab" element={<LabPage />} />
+        <Route path="/educator" element={<EducatorAcademyPage />} />
         <Route path="/structures" element={<StructuresLevelSelect />} />
         <Route path="/structures/level/:levelId" element={<StructuresPlayLevel />} />
         <Route path="/circuits" element={<CircuitsLevelSelect />} />

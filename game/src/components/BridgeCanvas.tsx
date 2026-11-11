@@ -357,21 +357,158 @@ export function BridgeCanvas({
     }
   }
 
+  // Accessible Keyboard Spatial Navigation State
+  const [keyboardFocused, setKeyboardFocused] = useState(false);
+  const [cursorPos, setCursorPos] = useState<Point>(() => ({
+    x: Math.round(((buildArea.minX + buildArea.maxX) / 2) / gridSize) * gridSize,
+    y: Math.round(((buildArea.minY + buildArea.maxY) / 2) / gridSize) * gridSize,
+  }));
+  const [ariaStatus, setAriaStatus] = useState<string>('Bridge build canvas. Use arrow keys to explore the grid.');
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<SVGSVGElement>) => {
+      if (isSimulating) return;
+
+      let dx = 0;
+      let dy = 0;
+      if (e.key === 'ArrowLeft') dx = -gridSize;
+      else if (e.key === 'ArrowRight') dx = gridSize;
+      else if (e.key === 'ArrowUp') dy = -gridSize;
+      else if (e.key === 'ArrowDown') dy = gridSize;
+
+      if (dx !== 0 || dy !== 0) {
+        e.preventDefault();
+        setCursorPos((prev) => {
+          const nextX = Math.min(Math.max(prev.x + dx, buildArea.minX), buildArea.maxX);
+          const nextY = Math.min(Math.max(prev.y + dy, buildArea.minY), buildArea.maxY);
+          const snappedX = Math.round(nextX / gridSize) * gridSize;
+          const snappedY = Math.round(nextY / gridSize) * gridSize;
+
+          soundFx.playSubtleHover();
+
+          const overNode = [...basePoints.entries()].find(
+            ([, pt]) => Math.hypot(pt.x - snappedX, pt.y - snappedY) < gridSize / 4,
+          );
+          if (overNode) {
+            setAriaStatus(`Cursor at ${snappedX}m, ${snappedY}m over node ${overNode[0]}.`);
+          } else {
+            setAriaStatus(`Cursor at ${snappedX}m, ${snappedY}m.`);
+          }
+
+          return { x: snappedX, y: snappedY };
+        });
+        return;
+      }
+
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        const overNode = [...basePoints.entries()].find(
+          ([, pt]) => Math.hypot(pt.x - cursorPos.x, pt.y - cursorPos.y) < gridSize / 4,
+        );
+        if (overNode) {
+          soundFx.playSnapNode();
+          onSelectNode(overNode[0]);
+          setAriaStatus(`Selected node ${overNode[0]}.`);
+        } else {
+          soundFx.playSnapNode();
+          onAddNode(cursorPos.x, cursorPos.y);
+          setAriaStatus(`Added node at ${cursorPos.x}m, ${cursorPos.y}m.`);
+        }
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const overNode = [...basePoints.entries()].find(
+          ([, pt]) => Math.hypot(pt.x - cursorPos.x, pt.y - cursorPos.y) < gridSize / 4,
+        );
+        if (overNode) {
+          soundFx.playSnapNode();
+          onSelectNode(overNode[0]);
+          setAriaStatus(`Connected or selected node ${overNode[0]}.`);
+        }
+        return;
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        const overBuiltNode = builtNodes.find(
+          (n) => Math.hypot(n.x - cursorPos.x, n.y - cursorPos.y) < gridSize / 4,
+        );
+        if (overBuiltNode) {
+          soundFx.playSnapNode();
+          onRemoveNode(overBuiltNode.id);
+          setAriaStatus(`Removed node ${overBuiltNode.id}.`);
+        }
+        return;
+      }
+    },
+    [basePoints, buildArea, builtNodes, cursorPos, gridSize, isSimulating, onAddNode, onRemoveNode, onSelectNode]
+  );
+
   // Cart position on bridge deck
   const cartPos = currentFrame?.cartPos;
 
   return (
     <div className="relative w-full h-full">
+      <div className="sr-only" aria-live="polite">
+        {ariaStatus}
+      </div>
       <svg
         ref={svgRef}
+        tabIndex={0}
+        role="application"
+        aria-label="Bridge construction canvas. Use arrow keys to navigate grid, Space to place or select nodes, Enter to connect, and Delete to remove."
         viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
-        className="w-full h-full touch-none select-none"
+        className="w-full h-full touch-none select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         onClick={handleBackgroundClick}
+        onFocus={() => setKeyboardFocused(true)}
+        onBlur={() => setKeyboardFocused(false)}
+        onKeyDown={handleKeyDown}
       >
         {/* Grid dots */}
         {gridDots.map((d, i) => (
           <circle key={i} cx={d.x} cy={d.y} r={0.02} fill="var(--border)" />
         ))}
+
+        {/* Accessible Keyboard Grid Reticle */}
+        {keyboardFocused && !isSimulating && (
+          <g transform={`translate(${cursorPos.x}, ${cursorPos.y})`} className="pointer-events-none">
+            <circle
+              r={0.24}
+              fill="none"
+              stroke="var(--accent)"
+              strokeWidth={0.03}
+              strokeDasharray="0.08 0.04"
+            />
+            <circle r={0.06} fill="var(--accent)" />
+            <line x1={-0.35} y1={0} x2={-0.12} y2={0} stroke="var(--accent)" strokeWidth={0.02} />
+            <line x1={0.12} y1={0} x2={0.35} y2={0} stroke="var(--accent)" strokeWidth={0.02} />
+            <line x1={0} y1={-0.35} x2={0} y2={-0.12} stroke="var(--accent)" strokeWidth={0.02} />
+            <line x1={0} y1={0.12} x2={0} y2={0.35} stroke="var(--accent)" strokeWidth={0.02} />
+            <rect
+              x={0.2}
+              y={-0.38}
+              width={1.6}
+              height={0.28}
+              rx={0.04}
+              fill="var(--surface-1)"
+              stroke="var(--border)"
+              strokeWidth={0.015}
+              opacity={0.92}
+            />
+            <text
+              x={0.28}
+              y={-0.2}
+              fontSize={0.14}
+              fontFamily="monospace"
+              fontWeight="bold"
+              fill="var(--accent)"
+            >
+              {cursorPos.x.toFixed(1)}m, {cursorPos.y.toFixed(1)}m
+            </text>
+          </g>
+        )}
 
         {/* Deck (road) members */}
         {level.deckMembers.map((m) => {

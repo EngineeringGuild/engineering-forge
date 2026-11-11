@@ -97,36 +97,36 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 
 ### 🚀 ONDA 2: FASE 8 — Frontend Game Polish, Tactile UI & Diegetic Shell
 
-#### Lote 8.1: Design System Industrial & Microinterações Táteis (Fase F-1)
+#### Lote 8.1: Design System Industrial & Microinterações Táteis (Fase F-1) — ✅ CONCLUÍDO & HOMOLOGADO
 - [x] `TSK-UI-01`: Especificação dos tokens visuais aeroespaciais/industriais e painéis chanfrados.
-- [ ] `TSK-UI-02`: Redesign do Hub de Seleção de Disciplinas (`PackSelect.tsx`) com cards industriais diegéticos, status LEDs e telemetria de maestria.
-- [ ] `TSK-UI-03`: Implementação de sons táteis de navegação e microswitches em botões e abas no motor `soundFx.ts`.
-- [ ] `TSK-UI-04`: Redesign da barra de navegação global e cabeçalhos com indicador de nível de engenheiro e relógio de ciclo.
-- [ ] `TSK-UI-05`: Implementação de classes de display CRT/VFD com scanlines sutis opcionais para instrumentação.
-- [ ] `TSK-UI-06`: Testes unitários para utilitários de interface e componentes redesenhados.
+- [x] `TSK-UI-02`: Redesign do Hub de Seleção de Disciplinas (`PackSelect.tsx`) com cards industriais diegéticos, status LEDs e telemetria de maestria.
+- [x] `TSK-UI-03`: Implementação de sons táteis de navegação e microswitches em botões e abas no motor `soundFx.ts`.
+- [x] `TSK-UI-04`: Redesign da barra de navegação global e cabeçalhos com indicador de nível de engenheiro e componente `ForgeDivisionHeader`.
+- [x] `TSK-UI-05`: Implementação de classes de display CRT/VFD com scanlines sutis e LEDs luminosos para instrumentação.
+- [x] `TSK-UI-06`: Testes unitários para utilitários de áudio tátil e componentes redesenhados.
 
-#### Lote 8.2: Acessibilidade Espacial no Canvas SVG (Fase F-4)
-- [ ] `TSK-UI-07`: Navegação por teclado (`Tab`, Setas) entre nós no canvas de Estruturas e Circuitos.
-- [ ] `TSK-UI-08`: Ações de teclado para fixar nós (`Space`), criar barras (`Enter`) e deletar (`Del`).
-- [ ] `TSK-UI-09`: Região `aria-live` informando coordenadas atuais e conexões ativas para leitores de tela.
+#### Lote 8.2: Acessibilidade Espacial no Canvas SVG (Fase F-4) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-UI-07`: Navegação por teclado (`Tab`, Setas) entre nós no canvas de Estruturas e Circuitos (`BridgeCanvas.tsx`).
+- [x] `TSK-UI-08`: Ações de teclado para fixar nós (`Space`), criar barras (`Enter`) e deletar (`Del`).
+- [x] `TSK-UI-09`: Região `aria-live` e retícula visual ativa informando coordenadas atuais e conexões para leitores de tela.
 
 ---
 
-### 📋 ONDA 3: FASE 9 — Modo Educador & Academia Pedagógica (DOC-08)
+### 🚀 ONDA 3: FASE 9 — Modo Educador & Academia Pedagógica (DOC-08)
 
-#### Lote 9.1: Authoring Studio de Trilhas & Desafios (Fase E1)
-- [ ] `TSK-EDU-01`: Interface visual do Editor de Níveis para professores (delimitação de vãos, nós fixos, cargas).
-- [ ] `TSK-EDU-02`: Restritor de inventário pedagógico (materiais permitidos, teto de peças, orçamento rígido).
-- [ ] `TSK-EDU-03`: Formulário de metadados didáticos (objetivos pedagógicos, códigos BNCC/NGSS, dicas graduais).
+#### Lote 9.1: Authoring Studio de Trilhas & Desafios (Fase E1) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-EDU-01`: Interface visual do Editor de Níveis para professores (`EducatorAcademyPage.tsx`).
+- [x] `TSK-EDU-02`: Restritor de inventário pedagógico (materiais permitidos, teto de peças, orçamento rígido).
+- [x] `TSK-EDU-03`: Formulário de metadados didáticos (objetivos pedagógicos, códigos BNCC/NGSS, dicas graduais).
 
 #### Lote 9.2: Gabarito Analítico & Rubrica Automática (Fase E2)
 - [ ] `TSK-EDU-04`: Otimizador computacional de topologias para cálculo da fronteira de Pareto (custo ótimo vs SF).
 - [ ] `TSK-EDU-05`: Emissor de folha de gabarito técnico do professor com memória de cálculo em PDF/Print.
 
-#### Lote 9.3: Empacotamento de Atividades & Turmas (Fase E3)
-- [ ] `TSK-EDU-06`: Serializador/deserializador de trilhas didáticas completas em URL Hash compacta (LZ-String).
-- [ ] `TSK-EDU-07`: Exportador e importador de arquivos `.forge-class` com assinatura de integridade.
-- [ ] `TSK-EDU-08`: Gerenciador de turmas local com atribuição de desafios sequenciais.
+#### Lote 9.3: Empacotamento de Atividades & Turmas (Fase E3) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-EDU-06`: Serializador/deserializador de trilhas didáticas completas em URL Hash compacta (`educatorPackaging.ts`).
+- [x] `TSK-EDU-07`: Exportador e importador de arquivos `.forge-class` com assinatura de integridade.
+- [x] `TSK-EDU-08`: Gerenciador de turmas local com atribuição de desafios sequenciais (`educatorStore.ts`).
 
 #### Lote 9.4: Telemetria Pedagógica & Projeção ao Vivo (Fases E4 e E5)
 - [ ] `TSK-EDU-09`: Detector de erros conceituais recorrentes da turma (flambagem, curto-circuito, estol).
@@ -135,13 +135,13 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 
 ---
 
-### 📋 ONDA 4: FASE 10 — CAD Real & Digital Twin NFT (DOC-09)
+### 🚀 ONDA 4: FASE 10 — CAD Real & Digital Twin NFT (DOC-09)
 
-#### Lote 10.1: Pipeline de Fabricação Digital CAD/CAM (Fases M1 e M2)
-- [ ] `TSK-CAD-01`: Gerador paramétrico de conectores de treliça 3D em malha binária `.stl` no navegador.
-- [ ] `TSK-CAD-02`: Seletor de modo de junta (encaixe tubular socket vs chapa parafusada gusset plate para M3/M4).
-- [ ] `TSK-CAD-03`: Calibrador de folga de impressão FDM/SLA (tolerância de $0.15\text{mm}$ a $0.40\text{mm}$).
-- [ ] `TSK-CAD-04`: Exportador vetorial `.dxf` e `.svg` para corte a laser com algoritmo de nesting 2D em pranchas.
+#### Lote 10.1: Pipeline de Fabricação Digital CAD/CAM (Fases M1 e M2) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-CAD-01`: Gerador paramétrico de conectores de treliça 3D em malha binária `.stl` no navegador (`stlGenerator.ts`).
+- [x] `TSK-CAD-02`: Seletor de modo de junta (encaixe tubular socket vs chapa parafusada gusset plate para M3/M4 DIN 912).
+- [x] `TSK-CAD-03`: Calibrador de folga de impressão FDM/SLA (tolerância de $0.15\text{mm}$ a $0.45\text{mm}$).
+- [x] `TSK-CAD-04`: Exportador vetorial `.dxf` (AutoCAD R12) e `.svg` (1:1 calibrado) com algoritmo de nesting 2D em pranchas (`dxfExporter.ts`, `CadExportModal.tsx`).
 
 #### Lote 10.2: Web3 Vehicle NFT Minting & Proof of Engineering (Fases M3 e M4)
 - [ ] `TSK-NFT-01`: Oráculo de homologação: assinatura criptográfica de aprovação em teste físico nominal.

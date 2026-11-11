@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { soundFx } from '../audio/soundFx';
 
 export interface LevelSelectItem {
   id: string;
@@ -39,7 +40,7 @@ export function LevelSelectList({
   return (
     <div className="space-y-4">
       {showProgressHeader && (
-        <div className="rounded-xl border border-border bg-surface-1/80 p-4 backdrop-blur-sm">
+        <div className="industrial-panel rounded-xl p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success/20 text-success border border-success/30">
@@ -51,15 +52,15 @@ export function LevelSelectList({
                   />
                 </svg>
               </span>
-              <span className="font-mono text-xs uppercase tracking-wider text-fg-muted font-medium">
-                Pack Progress
+              <span className="font-mono text-xs uppercase tracking-wider text-fg-subtle font-medium">
+                DISCIPLINE DIVISION PROGRESS
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-              <span className="text-fg-muted">
+              <span className="text-fg-subtle">
                 Completed: <strong className="text-fg">{completedCount}/{totalCount}</strong>
               </span>
-              <span className="text-fg-muted">
+              <span className="text-fg-subtle">
                 Stars: <strong className="text-warning">★ {earnedStars}/{maxStars}</strong>
               </span>
               <span
@@ -71,13 +72,13 @@ export function LevelSelectList({
                     : 'border border-border bg-surface-2 text-fg-subtle'
                 }`}
               >
-                {completedCount === totalCount && totalCount > 0 ? 'All Completed' : `${percent}%`}
+                {completedCount === totalCount && totalCount > 0 ? '✓ All Completed' : `${percent}%`}
               </span>
             </div>
           </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2 border border-border/50">
             <div
-              className="h-full rounded-full bg-success transition-all duration-500 shadow-[0_0_10px_rgba(22,163,74,0.5)]"
+              className="h-full rounded-full bg-gradient-to-r from-accent to-success transition-all duration-500 shadow-[0_0_10px_rgba(22,163,74,0.4)]"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -99,11 +100,13 @@ export function LevelSelectList({
             ? 'border-border/50 bg-surface-1/40 opacity-50'
             : completed
             ? 'border-success/60 bg-surface-1/90 shadow-[0_0_15px_-2px_rgba(22,163,74,0.35)] ring-1 ring-success/30 hover:border-success hover:shadow-[0_0_20px_-2px_rgba(22,163,74,0.5)]'
-            : 'border-border bg-surface-1 hover:border-accent hover:shadow-[0_0_12px_-3px_rgba(255,106,44,0.25)]';
+            : 'border-border/90 bg-surface-1/90 hover:border-accent hover:shadow-[0_0_12px_-3px_rgba(255,106,44,0.25)]';
 
           const content = (
             <div
-              className={`flex items-center justify-between rounded-xl border px-5 py-4 transition-all duration-200 ${cardStyle}`}
+              onMouseEnter={() => unlocked && soundFx.playSubtleHover()}
+              onClick={() => unlocked && soundFx.playTactileClick()}
+              className={`flex items-center justify-between rounded-xl border px-5 py-4 transition-all duration-200 active:scale-[0.99] ${cardStyle}`}
             >
               <div className="flex items-center gap-3.5 text-left">
                 {completed ? (
@@ -170,7 +173,9 @@ export function LevelSelectList({
           return (
             <li key={level.id}>
               {unlocked ? (
-                <Link to={`${basePath}/${level.id}`}>{content}</Link>
+                <Link to={`${basePath}/${level.id}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-xl">
+                  {content}
+                </Link>
               ) : (
                 <div className="cursor-not-allowed" aria-disabled="true">
                   {content}

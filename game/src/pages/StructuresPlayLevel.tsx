@@ -27,6 +27,7 @@ import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager'
 import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
 import { computeTrussBuildMetrics } from '../physics/buildModePhysics';
 import { DifficultySelector } from '../components/DifficultySelector';
+import { CadExportModal } from '../components/CadExportModal';
 import type { UniversalBlueprint, StructuresBlueprintData } from '../state/BlueprintManager';
 
 export function StructuresPlayLevel() {
@@ -35,6 +36,7 @@ export function StructuresPlayLevel() {
   const [showHint, setShowHint] = useState(false);
   const [showGlossary, setShowGlossary] = useState(false);
   const [showBlueprintModal, setShowBlueprintModal] = useState(false);
+  const [showCadModal, setShowCadModal] = useState(false);
   const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [showManifest, setShowManifest] = useState(false);
   const [manifestText, setManifestText] = useState('');
@@ -410,6 +412,14 @@ export function StructuresPlayLevel() {
             <span>Blueprint</span>
           </button>
           <button
+            onClick={() => setShowCadModal(true)}
+            title="Export to 3D Print (.STL) or Laser Cut (.DXF/.SVG) per DOC-09"
+            className="flex items-center gap-1.5 rounded-lg border border-accent/50 bg-surface-2 px-3 py-2 text-sm text-fg hover:border-accent hover:text-accent transition-colors shadow-sm"
+          >
+            <span>🖨️</span>
+            <span>CAD / CAM</span>
+          </button>
+          <button
             onClick={() => setShowSoundSettings(true)}
             title="Audio & Sound Synthesizer Settings"
             className="flex items-center justify-center rounded-lg border border-border px-2.5 py-2 text-sm text-fg-muted hover:border-accent hover:text-fg transition-colors"
@@ -599,6 +609,17 @@ export function StructuresPlayLevel() {
           domain="structures"
           getBlueprint={getBlueprint}
           onLoadBlueprint={handleLoadBlueprint}
+        />
+      )}
+
+      {/* CAD / 3D Print & Laser Cut Export Modal (DOC-09) */}
+      {showCadModal && (
+        <CadExportModal
+          isOpen={showCadModal}
+          onClose={() => setShowCadModal(false)}
+          builtNodes={builtNodes}
+          builtMembers={builtMembers}
+          levelTitle={level.name}
         />
       )}
 

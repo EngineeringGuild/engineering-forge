@@ -319,27 +319,34 @@ export function PackSelect() {
 
         {/* Secondary Educational & Manufacturing Portal Teasers */}
         <section className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="industrial-panel rounded-xl p-4 border border-border/80">
+          <Link
+            to="/educator"
+            onMouseEnter={() => soundFx.playSubtleHover()}
+            onClick={() => soundFx.playTactileClick()}
+            className="industrial-panel rounded-xl p-4 border border-border/80 hover:border-accent hover:shadow-[0_0_15px_-3px_rgba(255,106,44,0.3)] transition-all block group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
             <div className="flex items-center justify-between mb-2">
               <span className="font-mono text-[10px] uppercase tracking-wider text-accent font-semibold flex items-center gap-1.5">
                 <span className="led-indicator led-cyan" />
                 ACADEMY CORRIDOR
               </span>
               <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-2 border border-border text-fg-subtle">
-                DOC-08
+                DISPONÍVEL
               </span>
             </div>
-            <h4 className="font-display font-bold text-fg text-base">Modo Educador & Salas de Aula</h4>
+            <h4 className="font-display font-bold text-fg text-base group-hover:text-accent transition-colors">
+              Modo Educador & Salas de Aula
+            </h4>
             <p className="text-xs text-fg-muted mt-1">
               Trilhas didáticas estruturadas para professores de física e ciências, restrições de inventário e gabaritos automáticos.
             </p>
             <div className="mt-3">
-              <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent">
-                <span>Roteiro Homologado em DOC-08</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent group-hover:translate-x-1 transition-transform">
+                <span>Acessar Academia do Educador</span>
                 <span>→</span>
               </span>
             </div>
-          </div>
+          </Link>
 
           <div className="industrial-panel rounded-xl p-4 border border-border/80">
             <div className="flex items-center justify-between mb-2">
