@@ -6,7 +6,10 @@ import { CircuitsLevelSelect } from './pages/CircuitsLevelSelect';
 import { CircuitsPlayLevel } from './pages/CircuitsPlayLevel';
 import { VehiclesLevelSelect } from './pages/VehiclesLevelSelect';
 import { VehiclesPlayLevel } from './pages/VehiclesPlayLevel';
+import { MechatronicsLevelSelect } from './pages/MechatronicsLevelSelect';
+import { MechatronicsPlayLevel } from './pages/MechatronicsPlayLevel';
 import { LabPage } from './pages/LabPage';
+import { AchievementBanner } from './components/AchievementBanner';
 
 export function App() {
   return (
@@ -20,7 +23,10 @@ export function App() {
         <Route path="/circuits/level/:levelId" element={<CircuitsPlayLevel />} />
         <Route path="/machines" element={<VehiclesLevelSelect />} />
         <Route path="/machines/level/:levelId" element={<VehiclesPlayLevel />} />
+        <Route path="/mechatronics" element={<MechatronicsLevelSelect />} />
+        <Route path="/mechatronics/level/:levelId" element={<MechatronicsPlayLevel />} />
       </Routes>
+      <AchievementBanner />
     </BrowserRouter>
   );
 }

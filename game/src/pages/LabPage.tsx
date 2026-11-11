@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MaterialTestBench } from '../components/MaterialTestBench';
 import { SandboxWorkspace } from '../components/SandboxWorkspace';
+import { TroubleshootingLab } from '../components/TroubleshootingLab';
 
 export function LabPage() {
-  const [activeTab, setActiveTab] = useState<'bench' | 'sandbox'>('sandbox');
+  const [activeTab, setActiveTab] = useState<'sandbox' | 'troubleshoot' | 'bench'>('sandbox');
 
   return (
     <div className="mx-auto flex min-h-svh max-w-5xl flex-col gap-6 p-6 font-mono">
@@ -25,11 +26,15 @@ export function LabPage() {
           <h1 className="text-2xl font-bold tracking-tight text-fg mt-1">
             {activeTab === 'sandbox'
               ? "The Tinkerer's Workshop & Free Sandbox"
+              : activeTab === 'troubleshoot'
+              ? 'Reverse Engineering & Failure Diagnostics'
               : 'Materials & Multi-Physics Continuum Bench'}
           </h1>
           <p className="text-sm text-fg-muted font-sans mt-0.5">
             {activeTab === 'sandbox'
-              ? 'Unconstrained sandbox mode: build infinite-budget bridge chasm spans, custom breadboard networks, and dialled vehicle test runs.'
+              ? 'Unconstrained sandbox mode: build infinite-budget bridge chasm spans, custom breadboard networks, and dialled vehicle test runs with virtual lab instruments.'
+              : activeTab === 'troubleshoot'
+              ? 'Diagnostic puzzles: troubleshoot structural buckling, overcurrent short circuits, and mechanical powertrain stalls using the multimeter and telemetry.'
               : 'Interactive test bench: verify Euler-Bernoulli beam flexure, Euler compressive buckling, Pacejka tire traction, electro-thermal Joule coupling, and aerodynamic FSI.'}
           </p>
         </div>
@@ -48,6 +53,16 @@ export function LabPage() {
               🛠️ Free Sandbox
             </button>
             <button
+              onClick={() => setActiveTab('troubleshoot')}
+              className={`rounded-lg px-3 py-1.5 font-bold text-xs transition-colors ${
+                activeTab === 'troubleshoot'
+                  ? 'bg-amber-500 text-zinc-950 font-bold shadow-sm'
+                  : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              🔍 Troubleshooting
+            </button>
+            <button
               onClick={() => setActiveTab('bench')}
               className={`rounded-lg px-3 py-1.5 font-bold text-xs transition-colors ${
                 activeTab === 'bench'
@@ -62,7 +77,13 @@ export function LabPage() {
       </header>
 
       {/* Active Tab View */}
-      {activeTab === 'sandbox' ? <SandboxWorkspace /> : <MaterialTestBench />}
+      {activeTab === 'sandbox' ? (
+        <SandboxWorkspace />
+      ) : activeTab === 'troubleshoot' ? (
+        <TroubleshootingLab />
+      ) : (
+        <MaterialTestBench />
+      )}
     </div>
   );
 }

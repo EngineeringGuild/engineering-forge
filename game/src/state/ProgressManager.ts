@@ -10,11 +10,15 @@
 import { LEVELS } from '../content/levels';
 import { CIRCUIT_LEVELS } from '../content/circuitLevels';
 import { VEHICLE_LEVELS } from '../content/vehicleLevels';
+import { MECHATRONICS_LEVELS } from '../content/mechatronicsLevels';
 import { useGameStore } from './gameStore';
 import { useCircuitStore } from './circuitStore';
 import { useVehicleStore } from './vehicleStore';
+import { useMechatronicsStore } from './mechatronicsStore';
+import { useAchievementStore } from './achievementStore';
+import { useDifficultyStore } from './difficultyStore';
 
-export type PackId = 'structures' | 'circuits' | 'machines';
+export type PackId = 'structures' | 'circuits' | 'machines' | 'mechatronics';
 
 export interface LevelAchievementRecord {
   levelId: string;
@@ -65,6 +69,7 @@ export class ProgressManager {
       useGameStore.subscribe(() => this.notify());
       useCircuitStore.subscribe(() => this.notify());
       useVehicleStore.subscribe(() => this.notify());
+      useMechatronicsStore.subscribe(() => this.notify());
       window.addEventListener('storage', (e) => {
         if (Object.values(PROGRESS_STORAGE_KEYS).includes(e.key ?? '')) {
           this.notify();
@@ -165,6 +170,27 @@ export class ProgressManager {
           isAllCompleted: total > 0 && completed === total,
         };
       }
+      case 'mechatronics': {
+        const progress = useMechatronicsStore.getState().progress;
+        const total = MECHATRONICS_LEVELS.length;
+        const completed = MECHATRONICS_LEVELS.filter((l) => (progress[l.id]?.stars ?? 0) > 0).length;
+        const earnedStars = MECHATRONICS_LEVELS.reduce(
+          (acc, l) => acc + (progress[l.id]?.stars ?? 0),
+          0,
+        );
+        const maxStars = total * 3;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return {
+          packId,
+          packName: 'Mechatronics',
+          completed,
+          total,
+          earnedStars,
+          maxStars,
+          percent,
+          isAllCompleted: total > 0 && completed === total,
+        };
+      }
     }
   }
 
@@ -175,11 +201,12 @@ export class ProgressManager {
     const structures = this.getPackProgress('structures');
     const circuits = this.getPackProgress('circuits');
     const machines = this.getPackProgress('machines');
+    const mechatronics = this.getPackProgress('mechatronics');
 
-    const completedLevels = structures.completed + circuits.completed + machines.completed;
-    const totalLevels = structures.total + circuits.total + machines.total;
-    const earnedStars = structures.earnedStars + circuits.earnedStars + machines.earnedStars;
-    const maxStars = structures.maxStars + circuits.maxStars + machines.maxStars;
+    const completedLevels = structures.completed + circuits.completed + machines.completed + mechatronics.completed;
+    const totalLevels = structures.total + circuits.total + machines.total + mechatronics.total;
+    const earnedStars = structures.earnedStars + circuits.earnedStars + machines.earnedStars + mechatronics.earnedStars;
+    const maxStars = structures.maxStars + circuits.maxStars + machines.maxStars + mechatronics.maxStars;
     const percent = totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
 
     return {
@@ -193,6 +220,7 @@ export class ProgressManager {
         structures,
         circuits,
         machines,
+        mechatronics,
       },
     };
   }
@@ -215,6 +243,10 @@ export class ProgressManager {
         return useCircuitStore.getState().progress[levelId]?.stars ?? 0;
       case 'machines':
         return useVehicleStore.getState().progress[levelId]?.stars ?? 0;
+      case 'mechatronics':
+        return useMechatronicsStore.getState().progress[levelId]?.stars ?? 0;
+      default:
+        return 0;
     }
   }
 
@@ -229,6 +261,10 @@ export class ProgressManager {
         return useCircuitStore.getState().isLevelUnlocked(levelId);
       case 'machines':
         return useVehicleStore.getState().isLevelUnlocked(levelId);
+      case 'mechatronics':
+        return useMechatronicsStore.getState().isLevelUnlocked(levelId);
+      default:
+        return false;
     }
   }
 
@@ -316,8 +352,107 @@ export class ProgressManager {
         });
         break;
       }
+      case 'mechatronics': {
+        const store = useMechatronicsStore.getState();
+        const existing = store.progress[levelId];
+        const bestStars = (existing ? Math.max(existing.stars, stars) : stars) as 1 | 2 | 3;
+        const bestCost = existing?.bestCost !== undefined ? Math.min(existing.bestCost, cost) : cost;
+        const bestTimeSeconds =
+          timeSeconds !== undefined && timeSeconds > 0
+            ? existing?.bestTimeSeconds
+              ? Math.min(existing.bestTimeSeconds, timeSeconds)
+              : timeSeconds
+            : existing?.bestTimeSeconds;
+        useMechatronicsStore.setState({
+          progress: {
+            ...store.progress,
+            [levelId]: {
+              stars: bestStars,
+              bestCost,
+              bestTimeSeconds,
+              completedAt: existing?.completedAt ?? new Date().toISOString(),
+            },
+          },
+        });
+        break;
+      }
     }
+
+    // Trigger milestone achievements upon level completion
+    try {
+      const achStore = useAchievementStore.getState();
+      const diff = useDifficultyStore.getState().getDifficultyForLevel(levelId);
+      if (diff === 'hard') {
+        achStore.unlockAchievement('hardcore_engineer');
+      }
+      if (timeSeconds !== undefined && timeSeconds > 0 && timeSeconds < 3.0) {
+        achStore.unlockAchievement('sub_second_solver');
+      }
+
+      if (packId === 'structures') {
+        achStore.unlockAchievement('first_bridge');
+        const structProg = useGameStore.getState().progress;
+        if (LEVELS.every((l) => (structProg[l.id]?.stars ?? 0) > 0)) {
+          achStore.unlockAchievement('master_builder');
+        }
+      } else if (packId === 'circuits') {
+        achStore.unlockAchievement('first_spark');
+        const circProg = useCircuitStore.getState().progress;
+        if (CIRCUIT_LEVELS.every((l) => (circProg[l.id]?.stars ?? 0) > 0)) {
+          achStore.unlockAchievement('master_electrician');
+        }
+      } else if (packId === 'machines') {
+        achStore.unlockAchievement('first_drive');
+        const vehProg = useVehicleStore.getState().progress;
+        if (VEHICLE_LEVELS.every((l) => (vehProg[l.id]?.stars ?? 0) > 0)) {
+          achStore.unlockAchievement('master_machinist');
+        }
+      } else if (packId === 'mechatronics') {
+        achStore.unlockAchievement('mechatronics_maestro');
+      }
+    } catch {
+      // Safe fallback if achievement store is unavailable
+    }
+
     this.notify();
+  }
+
+  /**
+   * Returns an array of level IDs completed for a given pack.
+   */
+  public getCompletedLevels(packId: PackId): string[] {
+    switch (packId) {
+      case 'structures': {
+        const prog = useGameStore.getState().progress;
+        return LEVELS.filter((l) => (prog[l.id]?.stars ?? 0) > 0).map((l) => l.id);
+      }
+      case 'circuits': {
+        const prog = useCircuitStore.getState().progress;
+        return CIRCUIT_LEVELS.filter((l) => (prog[l.id]?.stars ?? 0) > 0).map((l) => l.id);
+      }
+      case 'machines': {
+        const prog = useVehicleStore.getState().progress;
+        return VEHICLE_LEVELS.filter((l) => (prog[l.id]?.stars ?? 0) > 0).map((l) => l.id);
+      }
+      case 'mechatronics': {
+        const prog = useMechatronicsStore.getState().progress;
+        return MECHATRONICS_LEVELS.filter((l) => (prog[l.id]?.stars ?? 0) > 0).map((l) => l.id);
+      }
+      default:
+        return [];
+    }
+  }
+
+  /**
+   * Returns a map of all completed level IDs across all packs.
+   */
+  public getAllCompletedLevels(): Record<PackId, string[]> {
+    return {
+      structures: this.getCompletedLevels('structures'),
+      circuits: this.getCompletedLevels('circuits'),
+      machines: this.getCompletedLevels('machines'),
+      mechatronics: this.getCompletedLevels('mechatronics'),
+    };
   }
 
   /**
@@ -334,6 +469,9 @@ export class ProgressManager {
       case 'machines':
         useVehicleStore.setState({ progress: {} });
         break;
+      case 'mechatronics':
+        useMechatronicsStore.setState({ progress: {} });
+        break;
     }
     this.notify();
   }
@@ -345,6 +483,7 @@ export class ProgressManager {
     useGameStore.setState({ progress: {} });
     useCircuitStore.setState({ progress: {} });
     useVehicleStore.setState({ progress: {} });
+    useMechatronicsStore.setState({ progress: {} });
     this.notify();
   }
 }

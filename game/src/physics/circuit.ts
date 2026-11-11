@@ -38,7 +38,12 @@ export interface EdgeResult {
 
 export type CircuitAnalysis =
   | { status: 'open' }
-  | { status: 'analyzed'; edges: EdgeResult[]; anyBurnedOut: boolean };
+  | {
+      status: 'analyzed';
+      edges: EdgeResult[];
+      anyBurnedOut: boolean;
+      nodeVoltages: Map<string, number>;
+    };
 
 /**
  * Solves a resistive DC network via nodal analysis: assembles the conductance
@@ -112,9 +117,15 @@ export function analyzeCircuit(model: CircuitModel): CircuitAnalysis {
     };
   });
 
+  const nodeVoltages = new Map<string, number>();
+  nodes.forEach((node, i) => {
+    nodeVoltages.set(node.id, V[i]);
+  });
+
   return {
     status: 'analyzed',
     edges: results,
     anyBurnedOut: results.some((r) => r.burnedOut),
+    nodeVoltages,
   };
 }

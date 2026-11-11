@@ -118,6 +118,13 @@ class SoundEngine {
   }
 
   /**
+   * Catastrophic fracture / structural snap alias
+   */
+  public playStructuralSnap(): void {
+    this.playBreak();
+  }
+
+  /**
    * Catastrophic fracture / structural snap
    */
   public playBreak(): void {
@@ -342,6 +349,81 @@ class SoundEngine {
       osc.stop(ctx.currentTime + i * 0.12 + 0.3);
     });
   }
+
+  /**
+   * Electric motor rotational hum
+   */
+  public playMotorHum(pitch: number = 1.0): void {
+    if (this.isMuted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(80 * pitch, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(140 * pitch, ctx.currentTime + 0.3);
+
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  }
+
+  /**
+   * Electromechanical relay snap/click
+   */
+  public playRelayClick(): void {
+    if (this.isMuted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1800, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.04);
+  }
+
+  /**
+   * Microswitch / Limit switch ping
+   */
+  public playLimitSwitchPing(): void {
+    if (this.isMuted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(2400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+  }
 }
 
 export const soundFx = new SoundEngine();
+

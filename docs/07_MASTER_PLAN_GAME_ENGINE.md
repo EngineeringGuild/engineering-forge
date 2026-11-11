@@ -46,21 +46,22 @@ O objetivo supremo do **Engineering Forge** é despertar a vocação de engenhar
 
 ## 3. Roteiro de Versões Evolutivas
 
-### 🚀 Versão 1.0 — "The Living Physics" (Em Execução)
-- **Carga Móvel e Deformação Dinâmica (Estruturas):** Veículo atravessando o tabuleiro em tempo real; deflexão elástica visível; rompimento catastrófico animado da barra mais solicitada com partículas de fragmentos.
-- **Fluxo Visual de Elétrons (Circuitos):** Partículas luminosas percorrendo fios com velocidade proporcional à corrente $I$; chave faca (knife switch) animada; aquecimento incandescente da lâmpada; curto-circuito com faíscas.
-- **Pista de Testes Animada (Máquinas):** Arrancada contínua com rodas girando, velocímetro dinâmico, fumaça de patinagem de pneus quando o torque satura o atrito $\mu m g$, e animação de subida de rampa.
-- **Sonoplastia Procedural Nativa (Web Audio API):** Síntese pura sem assets pesados — estalo de tensão, rompimento estrutural, zumbido elétrico de 60Hz, faísca, ronco de motor e fanfarra de vitória.
+### 🚀 Versão 1.0 — "The Living Physics" (✅ Concluída)
+- **Carga Móvel e Deformação Dinâmica (Estruturas):** Veículo atravessando o tabuleiro em tempo real; deflexão elástica visível; rompimento catastrófico animado da barra mais solicitada com partículas de fragmentos (`physics/trussDynamic.ts`).
+- **Fluxo Visual de Elétrons (Circuitos):** Partículas luminosas percorrendo fios com velocidade proporcional à corrente $I$; chave faca (knife switch) animada; aquecimento incandescente da lâmpada; curto-circuito com faíscas (`physics/circuit.ts`).
+- **Pista de Testes Animada (Máquinas):** Arrancada contínua com rodas girando, velocímetro dinâmico, fumaça de patinagem de pneus quando o torque satura o atrito $\mu m g$, e animação de subida de rampa (`physics/vehicle.ts`).
+- **Sonoplastia Procedural Nativa (Web Audio API):** Síntese pura sem assets pesados — estalo de tensão, rompimento estrutural, zumbido elétrico de 60Hz, faísca, ronco de motor, relé eletromecânico, chave fim de curso e fanfarra de vitória (`audio/soundFx.ts`).
 
-### ⚡ Versão 2.0 — "The Tinkerer's Workshop & Sandbox"
-- **Oficina Sandbox Livre:** Vão infinito, protoboard livre e pista plana sem limites de orçamento.
-- **Instrumentação Analítica (Modo Raio-X):** Multímetro virtual para arrastar pontas de prova; diagrama de corpo livre com setas de vetores de força nos nós.
-- **Blueprints Compartilháveis:** Exportação de estruturas e circuitos em strings Base64 / links de compartilhamento.
+### ⚡ Versão 2.0 — "The Tinkerer's Workshop & Sandbox" (✅ Concluída)
+- **Oficina Sandbox Livre (`components/SandboxWorkspace.tsx`):** Vão ajustável de 8m a 32m com carga de até 120kN, protoboard com barramento DC de 3V a 48V, e pista veicular configurável (-15° a +30°, carga até 1000kg).
+- **Instrumentação Analítica (Modo Raio-X):** Multímetro digital virtual (`DigitalMultimeter.tsx`) com 4 modos e pontas móveis; Osciloscópio digital (`LabOscilloscope.tsx`) com formas de onda em tempo real; diagrama de corpo livre com vetores de força e heatmap FEA de tensão.
+- **Laboratório de Engenharia Reversa (`components/TroubleshootingLab.tsx`):** 3 quebra-cabeças interativos de falha física (flambagem, curto-circuito, estol em rampa).
+- **Blueprints Compartilháveis & Relatórios BOM:** Exportação de estruturas e circuitos em strings Base64 / JSON (`BlueprintManager.ts`) e emissão de folha técnica industrial (`TechnicalSpecReportModal.tsx`).
 
-### 🔬 Versão 3.0 — "Mechatronics Fusion"
-- **Desafios Interdisciplinares:** Ponte levadiça acionada por motor elétrico e circuito de segurança com chave fim de curso.
-- **Veículo Elétrico em Ponte Treliçada:** Cálculo de peso do veículo vs. capacidade da ponte com recarga solar.
-- **Pack de Automação:** Portas lógicas táteis (AND, OR, NOT) e engrenagens mecânicas.
+### 🔬 Versão 3.0 — "Mechatronics Fusion & Systems Engineering" (✅ Concluída)
+- **Desafios Interdisciplinares:** Ponte levadiça acionada por guincho elétrico DC e circuito de controle com relé e chave fim de curso (`components/MechatronicsCanvas.tsx`, `pages/MechatronicsPlayLevel.tsx`).
+- **Pack de Automação & Lógica:** Portas lógicas digitais táteis (`AND`, `OR`, `NOT`, `XOR`, `BUFFER`) para intertravamento de segurança de tráfego.
+- **Seletor de Dificuldade Física & Conquistas:** Calibração de gravidade e resistência de materiais (Easy/Medium/Hard) e Estante de Troféus com pontuação de XP (`state/achievementStore.ts`).
 
 ### 🌐 Versão 4.0 — "The Guild Engineering Academy"
 - **Desafios Semanais Globais:** Níveis procedurais com histogramas de custo/eficiência mundiais.

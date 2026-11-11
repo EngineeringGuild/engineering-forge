@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGlobalProgress } from '../state/useProgressTracker';
 import { SoundSettingsModal } from '../components/SoundSettingsModal';
+import { AchievementsModal } from '../components/AchievementsModal';
 
 interface PackCard {
   id: string;
@@ -34,6 +35,13 @@ const PACKS: PackCard[] = [
     status: 'available',
   },
   {
+    id: 'mechatronics',
+    path: '/mechatronics',
+    name: 'Mechatronics',
+    tagline: 'Couple electric winches, relays, and logic interlocks to control dynamic bridges.',
+    status: 'available',
+  },
+  {
     id: 'lab',
     path: '/lab',
     name: 'Lab & Sandbox',
@@ -45,18 +53,29 @@ const PACKS: PackCard[] = [
 export function PackSelect() {
   const globalProgress = useGlobalProgress();
   const [showSoundSettings, setShowSoundSettings] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
       <header className="relative mb-8 text-center">
-        <button
-          onClick={() => setShowSoundSettings(true)}
-          title="Audio & Sound Settings"
-          className="absolute right-0 top-0 flex items-center gap-1.5 rounded-lg border border-border bg-surface-1 px-3 py-1.5 font-mono text-xs text-fg-muted hover:border-accent hover:text-fg transition-colors"
-        >
-          <span>🔊</span>
-          <span>Audio</span>
-        </button>
+        <div className="absolute right-0 top-0 flex items-center gap-2">
+          <button
+            onClick={() => setShowAchievements(true)}
+            title="Engineering Milestones & Trophy Shelf"
+            className="flex items-center gap-1.5 rounded-lg border border-warning/40 bg-surface-1 px-3 py-1.5 font-mono text-xs text-warning hover:bg-warning/10 transition-colors"
+          >
+            <span>🏆</span>
+            <span>Trophies</span>
+          </button>
+          <button
+            onClick={() => setShowSoundSettings(true)}
+            title="Audio & Sound Settings"
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-1 px-3 py-1.5 font-mono text-xs text-fg-muted hover:border-accent hover:text-fg transition-colors"
+          >
+            <span>🔊</span>
+            <span>Audio</span>
+          </button>
+        </div>
         <p className="font-mono text-xs uppercase tracking-widest text-accent">
           Engineering Forge
         </p>
@@ -103,7 +122,7 @@ export function PackSelect() {
       <ol className="flex flex-col gap-3">
         {PACKS.map((pack) => {
           const available = pack.status === 'available';
-          const packData = pack.id !== 'lab' ? globalProgress.packs[pack.id as 'structures' | 'circuits' | 'machines'] : null;
+          const packData = pack.id !== 'lab' ? globalProgress.packs[pack.id as 'structures' | 'circuits' | 'machines' | 'mechatronics'] : null;
           const completed = packData?.completed ?? 0;
           const total = packData?.total ?? 0;
           const allCompleted = packData?.isAllCompleted ?? false;
@@ -177,6 +196,11 @@ export function PackSelect() {
       <SoundSettingsModal
         isOpen={showSoundSettings}
         onClose={() => setShowSoundSettings(false)}
+      />
+
+      <AchievementsModal
+        isOpen={showAchievements}
+        onClose={() => setShowAchievements(false)}
       />
     </div>
   );

@@ -26,6 +26,7 @@ import { DesignSaveModal } from '../components/DesignSaveModal';
 import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
 import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
 import { computeTrussBuildMetrics } from '../physics/buildModePhysics';
+import { DifficultySelector } from '../components/DifficultySelector';
 import type { UniversalBlueprint, StructuresBlueprintData } from '../state/BlueprintManager';
 
 export function StructuresPlayLevel() {
@@ -379,6 +380,9 @@ export function StructuresPlayLevel() {
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Difficulty Selector (Easy / Medium / Hard) */}
+          <DifficultySelector levelId={level.id} compact />
+
           {/* Toggle-able Physics Debug Overlay Panel */}
           <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
 

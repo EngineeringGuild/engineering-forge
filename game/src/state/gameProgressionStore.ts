@@ -11,11 +11,13 @@ import { persist } from 'zustand/middleware';
 import { LEVELS } from '../content/levels';
 import { CIRCUIT_LEVELS } from '../content/circuitLevels';
 import { VEHICLE_LEVELS } from '../content/vehicleLevels';
+import { MECHATRONICS_LEVELS } from '../content/mechatronicsLevels';
 import { useGameStore } from './gameStore';
 import { useCircuitStore } from './circuitStore';
 import { useVehicleStore } from './vehicleStore';
+import { useMechatronicsStore } from './mechatronicsStore';
 
-export type EngineeringCategory = 'structures' | 'circuits' | 'machines';
+export type EngineeringCategory = 'structures' | 'circuits' | 'machines' | 'mechatronics';
 
 export interface LevelProgressRecord {
   id: string;
@@ -80,6 +82,7 @@ const CATEGORY_LEVEL_DEFS: Record<EngineeringCategory, Array<{ id: string; name:
   structures: LEVELS,
   circuits: CIRCUIT_LEVELS,
   machines: VEHICLE_LEVELS,
+  mechatronics: MECHATRONICS_LEVELS,
 };
 
 function getRecordKey(category: EngineeringCategory, levelId: string): string {
@@ -115,6 +118,8 @@ export const useGameProgressionStore = create<GameProgressionState>()(
             return useCircuitStore.getState().isLevelUnlocked(levelId);
           case 'machines':
             return useVehicleStore.getState().isLevelUnlocked(levelId);
+          case 'mechatronics':
+            return useMechatronicsStore.getState().isLevelUnlocked(levelId);
         }
       },
 
@@ -130,6 +135,8 @@ export const useGameProgressionStore = create<GameProgressionState>()(
             return (useCircuitStore.getState().progress[levelId]?.stars ?? 0) > 0;
           case 'machines':
             return (useVehicleStore.getState().progress[levelId]?.stars ?? 0) > 0;
+          case 'mechatronics':
+            return (useMechatronicsStore.getState().progress[levelId]?.stars ?? 0) > 0;
         }
       },
 
@@ -144,6 +151,8 @@ export const useGameProgressionStore = create<GameProgressionState>()(
             return useCircuitStore.getState().progress[levelId]?.stars ?? 0;
           case 'machines':
             return useVehicleStore.getState().progress[levelId]?.stars ?? 0;
+          case 'mechatronics':
+            return useMechatronicsStore.getState().progress[levelId]?.stars ?? 0;
         }
       },
 
@@ -383,6 +392,22 @@ export const useGameProgressionStore = create<GameProgressionState>()(
             });
             break;
           }
+          case 'mechatronics': {
+            const store = useMechatronicsStore.getState();
+            const existing = store.progress[levelId];
+            useMechatronicsStore.setState({
+              progress: {
+                ...store.progress,
+                [levelId]: {
+                  stars: Math.max(existing?.stars ?? 0, stars) as 1 | 2 | 3,
+                  bestCost: existing?.bestCost !== undefined ? Math.min(existing.bestCost, cost) : cost,
+                  bestTimeSeconds: timeSeconds ?? existing?.bestTimeSeconds,
+                  completedAt: existing?.completedAt ?? new Date().toISOString(),
+                },
+              },
+            });
+            break;
+          }
         }
       },
 
@@ -430,6 +455,23 @@ export const useGameProgressionStore = create<GameProgressionState>()(
             records[getRecordKey('machines', id)] = {
               id,
               category: 'machines',
+              unlocked: true,
+              completed: true,
+              stars: data.stars,
+              bestCost: data.bestCost,
+              bestTimeSeconds: data.bestTimeSeconds,
+              completedAt: data.completedAt,
+            };
+          }
+        }
+
+        // Sync mechatronics
+        const mechaProgress = useMechatronicsStore.getState().progress;
+        for (const [id, data] of Object.entries(mechaProgress)) {
+          if (data && data.stars > 0) {
+            records[getRecordKey('mechatronics', id)] = {
+              id,
+              category: 'mechatronics',
               unlocked: true,
               completed: true,
               stars: data.stars,

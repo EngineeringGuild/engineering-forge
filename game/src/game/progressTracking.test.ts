@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LEVELS } from '../content/levels';
 import { CIRCUIT_LEVELS } from '../content/circuitLevels';
 import { VEHICLE_LEVELS } from '../content/vehicleLevels';
+import { MECHATRONICS_LEVELS } from '../content/mechatronicsLevels';
 
 describe('Level Progress Tracking Logic', () => {
   it('identifies completed levels correctly based on stars > 0', () => {
@@ -78,7 +79,7 @@ describe('Level Progress Tracking Logic', () => {
     const globalProg = progressManager.getGlobalProgress();
     expect(globalProg.completedLevels).toBe(1);
     expect(globalProg.totalLevels).toBe(
-      LEVELS.length + CIRCUIT_LEVELS.length + VEHICLE_LEVELS.length,
+      LEVELS.length + CIRCUIT_LEVELS.length + VEHICLE_LEVELS.length + MECHATRONICS_LEVELS.length,
     );
     expect(globalProg.earnedStars).toBe(3);
 

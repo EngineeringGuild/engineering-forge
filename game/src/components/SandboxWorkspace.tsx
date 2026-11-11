@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { BridgeCanvas } from './BridgeCanvas';
 import { CircuitCanvas } from './CircuitCanvas';
 import { VehicleTrackCanvas } from './VehicleTrackCanvas';
@@ -20,41 +20,71 @@ import { analyzeVehicle, type VehicleAnalysis } from '../physics/vehicle';
 import { exportToGuildRegister } from '../physics/engine/PhysicsRegistry';
 import { AutosaveIndicator } from './AutosaveIndicator';
 import { useAutosaveProject } from '../state/useAutosaveProject';
+import { BuildModePhysicsHUD } from './BuildModePhysicsHUD';
+import { computeTrussBuildMetrics } from '../physics/buildModePhysics';
+import { DigitalMultimeter } from './DigitalMultimeter';
+import { LabOscilloscope, type ScopeDataPoint } from './LabOscilloscope';
+import { TechnicalSpecReportModal } from './TechnicalSpecReportModal';
 
 export type SandboxDomain = 'structures' | 'circuits' | 'vehicles';
 
-// Default Infinite / Free Sandbox Level Definitions
-const SANDBOX_STRUCTURES_LEVEL: LevelDef = {
-  id: 'sandbox-structures',
-  order: 999,
-  name: 'Structures Free Sandbox',
-  tagline: 'Infinite budget chasm: design arches, cantilevers, or suspension bridges freely.',
-  hint: 'No budget constraints. Build any truss configuration and test load capacity.',
-  fixedNodes: [
-    { id: 'anchor-left-low', x: 0, y: 0, support: 'pin', isDeck: true },
-    { id: 'deck-mid-1', x: 4, y: 0, support: 'none', isDeck: true },
-    { id: 'deck-mid-2', x: 8, y: 0, support: 'none', isDeck: true },
-    { id: 'deck-mid-3', x: 12, y: 0, support: 'none', isDeck: true },
-    { id: 'anchor-right-low', x: 16, y: 0, support: 'roller', isDeck: true },
-  ],
-  deckMembers: [
-    { id: 'deck-0-1', nodeA: 'anchor-left-low', nodeB: 'deck-mid-1' },
-    { id: 'deck-1-2', nodeA: 'deck-mid-1', nodeB: 'deck-mid-2' },
-    { id: 'deck-2-3', nodeA: 'deck-mid-2', nodeB: 'deck-mid-3' },
-    { id: 'deck-3-4', nodeA: 'deck-mid-3', nodeB: 'anchor-right-low' },
-  ],
-  loads: [
-    { nodeId: 'deck-mid-1', force: 45_000 },
-    { nodeId: 'deck-mid-2', force: 60_000 },
-    { nodeId: 'deck-mid-3', force: 45_000 },
-  ],
-  budget: 999_999, // Infinite / unconstrained budget
-  unlockedMaterials: ['wood', 'steel', 'cable', 'strut'],
-  buildArea: { minX: -2, maxX: 18, minY: -8, maxY: 6 },
-  gridSize: 0.5,
-};
+// Dynamic Parametric Structures Level Generator
+function getParametricStructuresLevel(spanM: number, loadKn: number): LevelDef {
+  const midPointsCount = Math.floor(spanM / 4) - 1;
+  const fixedNodes: LevelDef['fixedNodes'] = [
+    { id: 'anchor-left', x: 0, y: 0, support: 'pin', isDeck: true },
+  ];
+  for (let i = 1; i <= midPointsCount; i++) {
+    fixedNodes.push({
+      id: `deck-mid-${i}`,
+      x: i * 4,
+      y: 0,
+      support: 'none',
+      isDeck: true,
+    });
+  }
+  fixedNodes.push({
+    id: 'anchor-right',
+    x: spanM,
+    y: 0,
+    support: 'roller',
+    isDeck: true,
+  });
 
-const SANDBOX_CIRCUITS_LEVEL: CircuitLevelDef = {
+  const deckMembers: LevelDef['deckMembers'] = [];
+  for (let i = 0; i < fixedNodes.length - 1; i++) {
+    deckMembers.push({
+      id: `deck-${i}-${i + 1}`,
+      nodeA: fixedNodes[i].id,
+      nodeB: fixedNodes[i + 1].id,
+    });
+  }
+
+  const loads: LevelDef['loads'] = [];
+  for (let i = 1; i <= midPointsCount; i++) {
+    loads.push({
+      nodeId: `deck-mid-${i}`,
+      force: loadKn * 1000,
+    });
+  }
+
+  return {
+    id: `sandbox-structures-${spanM}m`,
+    order: 999,
+    name: `Structures Sandbox (${spanM}m Span)`,
+    tagline: `Parametric free span: ${spanM}m bridge with ${(loadKn * 1000).toLocaleString()}N transit load.`,
+    hint: 'Infinite budget. Build custom trusses and test structural capacity.',
+    fixedNodes,
+    deckMembers,
+    loads,
+    budget: 999_999,
+    unlockedMaterials: ['wood', 'steel', 'cable', 'strut'],
+    buildArea: { minX: -2, maxX: spanM + 2, minY: -Math.max(8, spanM * 0.4), maxY: 6 },
+    gridSize: 0.5,
+  };
+}
+
+const DEFAULT_CIRCUITS_LEVEL: CircuitLevelDef = {
   id: 'sandbox-circuits',
   order: 999,
   name: 'Circuits Free Breadboard',
@@ -76,25 +106,22 @@ const SANDBOX_CIRCUITS_LEVEL: CircuitLevelDef = {
   gridSize: 0.5,
 };
 
-const SANDBOX_VEHICLES_LEVEL: VehicleLevelDef = {
-  id: 'sandbox-vehicles',
-  order: 999,
-  name: 'Vehicles Proving Ground',
-  tagline: 'Custom test track: dial incline, distance, and cargo mass to benchmark powertrains.',
-  hint: 'Freely adjust runway incline, distance, and payload to test Pacejka tire traction.',
-  distance: 120,
-  targetSpeed: 25,
-  inclineDegrees: 0,
-  payloadMass: 0,
-  budget: 999_999,
-  unlockedEngines: ['small', 'large', 'turbo'],
-  unlockedChassis: ['light', 'heavy'],
-};
-
 export function SandboxWorkspace() {
   const [domain, setDomain] = useState<SandboxDomain>('structures');
 
-  // Structures Sandbox State
+  // Virtual Lab Instruments Toggles
+  const [multimeterOpen, setMultimeterOpen] = useState(false);
+  const [oscilloscopeOpen, setOscilloscopeOpen] = useState(false);
+  const [specReportOpen, setSpecReportOpen] = useState(false);
+
+  // Common Simulator Controls
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const [heatmapEnabled, setHeatmapEnabled] = useState<boolean>(true);
+  const [showCoGMarker, setShowCoGMarker] = useState<boolean>(true);
+
+  // Structures Sandbox State & Parametric Sliders
+  const [structSpanM, setStructSpanM] = useState<number>(16);
+  const [structLoadKn, setStructLoadKn] = useState<number>(60);
   const [structNodes, setStructNodes] = useState<BuiltNode[]>([]);
   const [structMembers, setStructMembers] = useState<BuiltMember[]>([]);
   const [structSelectedMaterial, setStructSelectedMaterial] = useState('steel');
@@ -103,7 +130,7 @@ export function SandboxWorkspace() {
   const [structAnalysis, setStructAnalysis] = useState<TrussAnalysis | null>(null);
   const [structNextId, setStructNextId] = useState(1);
 
-  // Circuits Sandbox State
+  // Circuits Sandbox State & Parametric Voltage
   const [circuitNodes, setCircuitNodes] = useState<BuiltNode[]>([]);
   const [circuitEdges, setCircuitEdges] = useState<BuiltEdge[]>([]);
   const [circuitSelectedComponent, setCircuitSelectedComponent] = useState('wire');
@@ -113,7 +140,7 @@ export function SandboxWorkspace() {
   const [circuitNextId, setCircuitNextId] = useState(1);
   const [customVoltage, setCustomVoltage] = useState(24);
 
-  // Vehicles Sandbox State
+  // Vehicles Sandbox State & Parametric Proving Ground
   const [vehicleEngine, setVehicleEngine] = useState('large');
   const [vehicleChassis, setVehicleChassis] = useState('light');
   const [vehicleDistance, setVehicleDistance] = useState(120);
@@ -126,6 +153,86 @@ export function SandboxWorkspace() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportCode, setExportCode] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Generate dynamic LevelDefs based on parametric settings
+  const dynamicStructuresLevel = useMemo(
+    () => getParametricStructuresLevel(structSpanM, structLoadKn),
+    [structSpanM, structLoadKn],
+  );
+
+  const dynamicCircuitLevel: CircuitLevelDef = useMemo(
+    () => ({
+      ...DEFAULT_CIRCUITS_LEVEL,
+      sourceVoltage: customVoltage,
+    }),
+    [customVoltage],
+  );
+
+  const dynamicVehicleLevel: VehicleLevelDef = useMemo(
+    () => ({
+      id: 'sandbox-vehicles',
+      order: 999,
+      name: 'Vehicles Proving Ground',
+      tagline: 'Custom test track: dial incline, distance, and cargo mass to benchmark powertrains.',
+      hint: 'Freely adjust runway incline, distance, and payload to test Pacejka tire traction.',
+      distance: vehicleDistance,
+      targetSpeed: 25,
+      inclineDegrees: vehicleIncline,
+      payloadMass: vehiclePayload,
+      budget: 999_999,
+      unlockedEngines: ['small', 'large', 'turbo'],
+      unlockedChassis: ['light', 'heavy'],
+    }),
+    [vehicleDistance, vehicleIncline, vehiclePayload],
+  );
+
+  // Live Truss statics & metrics for Structures HUD
+  const trussMetrics = useMemo(() => {
+    return computeTrussBuildMetrics(dynamicStructuresLevel, structNodes, structMembers);
+  }, [dynamicStructuresLevel, structNodes, structMembers]);
+
+  // Feed simulated waveform data into the Oscilloscope
+  const scopeData = useMemo<ScopeDataPoint[]>(() => {
+    if (structSimulating && structAnalysis) {
+      const maxU = structAnalysis.status === 'analyzed'
+        ? Math.max(0, ...structAnalysis.members.map((m) => m.utilization))
+        : 1.0;
+      const pts: ScopeDataPoint[] = [];
+      for (let t = 0; t <= 3.2; t += 0.08) {
+        const factor = Math.sin((t / 3.2) * Math.PI);
+        pts.push({
+          timeS: t,
+          channelA: factor * maxU * 100, // % stress
+          channelB: factor * (trussMetrics.totalMassKg / 10), // deflection mm proxy
+        });
+      }
+      return pts;
+    } else if (circuitSimulating && circuitAnalysis) {
+      const pts: ScopeDataPoint[] = [];
+      const v = customVoltage;
+      for (let t = 0; t <= 2.0; t += 0.05) {
+        pts.push({
+          timeS: t,
+          channelA: v,
+          channelB: v / 10, // Current proxy
+        });
+      }
+      return pts;
+    } else if (vehicleSimulating && vehicleResult) {
+      const pts: ScopeDataPoint[] = [];
+      const vFinal = vehicleResult.finalSpeed;
+      for (let t = 0; t <= 4.0; t += 0.1) {
+        const speed = Math.min(vFinal, (t / 4.0) * vFinal);
+        pts.push({
+          timeS: t,
+          channelA: speed * 3.6, // km/h
+          channelB: vehicleResult.acceleration,
+        });
+      }
+      return pts;
+    }
+    return [];
+  }, [structSimulating, structAnalysis, circuitSimulating, circuitAnalysis, vehicleSimulating, vehicleResult, customVoltage, trussMetrics.totalMassKg]);
 
   // Autosave for free sandbox workspace
   const {
@@ -143,6 +250,8 @@ export function SandboxWorkspace() {
     component?: string;
     nextId?: number;
     voltage?: number;
+    spanM?: number;
+    loadKn?: number;
     engine?: string;
     chassis?: string;
     distance?: number;
@@ -158,6 +267,8 @@ export function SandboxWorkspace() {
           members: structMembers,
           material: structSelectedMaterial,
           nextId: structNextId,
+          spanM: structSpanM,
+          loadKn: structLoadKn,
         };
       }
       if (domain === 'circuits') {
@@ -183,6 +294,8 @@ export function SandboxWorkspace() {
         if (saved.members) setStructMembers(saved.members);
         if (saved.material) setStructSelectedMaterial(saved.material);
         if (saved.nextId) setStructNextId(saved.nextId);
+        if (saved.spanM) setStructSpanM(saved.spanM);
+        if (saved.loadKn) setStructLoadKn(saved.loadKn);
       } else if (domain === 'circuits' && saved.nodes) {
         setCircuitNodes(saved.nodes);
         if (saved.edges) setCircuitEdges(saved.edges);
@@ -204,7 +317,7 @@ export function SandboxWorkspace() {
     },
   });
 
-  // --- STRUCTURES HANDLERS ---
+  // Structures Handlers
   const handleAddStructNode = (x: number, y: number) => {
     const id = `node-${structNextId}`;
     setStructNodes((prev) => [...prev, { id, x, y }]);
@@ -237,7 +350,7 @@ export function SandboxWorkspace() {
   };
 
   const handleRunStructTest = () => {
-    const model = toTrussModel(SANDBOX_STRUCTURES_LEVEL, structNodes, structMembers);
+    const model = toTrussModel(dynamicStructuresLevel, structNodes, structMembers);
     const analysis = analyzeTruss(model);
     setStructAnalysis(analysis);
     setStructSimulating(true);
@@ -252,7 +365,7 @@ export function SandboxWorkspace() {
     clearDraft();
   };
 
-  // --- CIRCUITS HANDLERS ---
+  // Circuits Handlers
   const handleAddCircuitNode = (x: number, y: number) => {
     const id = `cnode-${circuitNextId}`;
     setCircuitNodes((prev) => [...prev, { id, x, y }]);
@@ -285,11 +398,7 @@ export function SandboxWorkspace() {
   };
 
   const handleRunCircuitTest = () => {
-    const customCircuitLevel: CircuitLevelDef = {
-      ...SANDBOX_CIRCUITS_LEVEL,
-      sourceVoltage: customVoltage,
-    };
-    const model = toCircuitModel(customCircuitLevel, circuitNodes, circuitEdges);
+    const model = toCircuitModel(dynamicCircuitLevel, circuitNodes, circuitEdges);
     const analysis = analyzeCircuit(model);
     setCircuitAnalysis(analysis);
     setCircuitSimulating(true);
@@ -304,14 +413,7 @@ export function SandboxWorkspace() {
     clearDraft();
   };
 
-  // --- VEHICLES HANDLERS ---
-  const dynamicVehicleLevel: VehicleLevelDef = {
-    ...SANDBOX_VEHICLES_LEVEL,
-    distance: vehicleDistance,
-    inclineDegrees: vehicleIncline,
-    payloadMass: vehiclePayload,
-  };
-
+  // Vehicles Handlers
   const handleRunVehicleTest = () => {
     const engine = ENGINES[vehicleEngine];
     const chassis = CHASSIS[vehicleChassis];
@@ -331,11 +433,11 @@ export function SandboxWorkspace() {
     setVehicleResult(null);
   };
 
-  // --- BLUEPRINT EXPORT GENERATOR ---
+  // Blueprint Export Generator
   const handleExportBlueprint = () => {
     let manifest = '';
     if (domain === 'structures') {
-      const allNodes = [...SANDBOX_STRUCTURES_LEVEL.fixedNodes, ...structNodes];
+      const allNodes = [...dynamicStructuresLevel.fixedNodes, ...structNodes];
       const entries = allNodes.map((n) => ({
         group: 'SANDBOX_NODE',
         element: n.id,
@@ -383,13 +485,13 @@ export function SandboxWorkspace() {
     }
   };
 
-  const structCost = totalCost(SANDBOX_STRUCTURES_LEVEL, structNodes, structMembers);
-  const circuitCost = totalCircuitCost(SANDBOX_CIRCUITS_LEVEL, circuitNodes, circuitEdges);
+  const structCost = totalCost(dynamicStructuresLevel, structNodes, structMembers);
+  const circuitCost = totalCircuitCost(dynamicCircuitLevel, circuitNodes, circuitEdges);
   const vehicleCost = totalVehicleCost(vehicleEngine, vehicleChassis);
 
   return (
     <div className="flex flex-col gap-6 rounded-2xl border border-border bg-surface-1 p-6 font-mono text-xs shadow-xl">
-      {/* Top Controls: Domain Switcher & Actions */}
+      {/* Top Controls: Domain Switcher & Virtual Instruments Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-xl border border-accent/30 text-accent">
@@ -401,16 +503,16 @@ export function SandboxWorkspace() {
                 Free Engineering Sandbox & Tinkerer's Workshop
               </h2>
               <span className="rounded-md bg-accent/20 border border-accent/40 px-2 py-0.5 text-[10px] text-accent font-semibold">
-                UNCONSTRAINED PROTOTYPING
+                FASE 6 SUITE
               </span>
             </div>
             <p className="text-xs text-fg-muted font-sans">
-              Build unconstrained trusses, custom circuits, and tuned powertrains without budget caps or strict objectives.
+              Unconstrained multi-discipline workshop with virtual DMM, real-time oscilloscope, and automated specification generation.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Domain switcher */}
           <div className="flex items-center gap-1 rounded-xl bg-surface-2 p-1 border border-border">
             <button
@@ -445,43 +547,141 @@ export function SandboxWorkspace() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <AutosaveIndicator
-              lastSavedTime={lastSavedTime}
-              isSaving={isSaving}
-              wasRestored={wasRestored}
-              onSaveNow={saveNow}
-              onClearDraft={clearDraft}
-              onDismissRestored={dismissRestoredNotice}
-            />
+          {/* Virtual Instrument Tool Toggles */}
+          <div className="flex items-center gap-1.5">
+            {domain === 'circuits' && (
+              <button
+                onClick={() => setMultimeterOpen((m) => !m)}
+                title="Toggle Virtual Digital Multimeter"
+                className={`flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  multimeterOpen
+                    ? 'border-amber-400 bg-amber-500/20 text-amber-300'
+                    : 'border-border bg-surface-2 text-fg hover:border-amber-400'
+                }`}
+              >
+                <span>📟</span>
+                <span>Multimeter</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setOscilloscopeOpen((o) => !o)}
+              title="Toggle Live Storage Oscilloscope"
+              className={`flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                oscilloscopeOpen
+                  ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300'
+                  : 'border-border bg-surface-2 text-fg hover:border-cyan-400'
+              }`}
+            >
+              <span>📈</span>
+              <span>Oscilloscope</span>
+            </button>
+
+            <button
+              onClick={() => setSpecReportOpen(true)}
+              title="Generate Engineering Specification Sheet & BOM"
+              className="flex items-center gap-1 rounded-xl border border-border bg-surface-2 px-3 py-1.5 text-xs font-semibold text-fg hover:border-accent hover:text-accent transition-colors"
+            >
+              <span>📋</span>
+              <span>Spec & BOM</span>
+            </button>
 
             <button
               onClick={handleExportBlueprint}
-              className="flex items-center gap-1.5 rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors"
+              title="Export Blueprint JSON / Manifest"
+              className="flex items-center gap-1 rounded-xl border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent/20 transition-colors"
             >
               <span>📜</span>
-              <span>Export Blueprint</span>
+              <span>Export</span>
             </button>
           </div>
+
+          <AutosaveIndicator
+            lastSavedTime={lastSavedTime}
+            isSaving={isSaving}
+            wasRestored={wasRestored}
+            onSaveNow={saveNow}
+            onClearDraft={clearDraft}
+            onDismissRestored={dismissRestoredNotice}
+          />
         </div>
       </div>
 
       {/* DOMAIN 1: STRUCTURES FREE CANVAS */}
       {domain === 'structures' && (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between text-xs text-fg-muted">
-            <span>
-              Total Members: <strong className="text-fg">{structMembers.length}</strong> | Total Joints:{' '}
-              <strong className="text-fg">{structNodes.length + 5}</strong>
-            </span>
-            <span className="font-mono text-accent">
-              Prototyping Cost: ${structCost.toFixed(0)} (Budget: ∞)
-            </span>
+          {/* Parametric Span & Load Config Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-surface-2/60 p-3 text-xs">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-fg-muted font-bold">Chasm Span:</span>
+                {[8, 16, 24, 32].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setStructSpanM(s);
+                      setStructNodes([]);
+                      setStructMembers([]);
+                    }}
+                    className={`rounded px-2.5 py-1 text-xs font-bold border transition-colors ${
+                      structSpanM === s
+                        ? 'border-accent bg-accent/20 text-accent'
+                        : 'border-border bg-surface-1 text-fg-muted hover:text-fg'
+                    }`}
+                  >
+                    {s}m
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-fg-muted font-bold">Transit Load:</span>
+                {[20, 60, 120].map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => setStructLoadKn(l)}
+                    className={`rounded px-2.5 py-1 text-xs font-bold border transition-colors ${
+                      structLoadKn === l
+                        ? 'border-cyan-400 bg-cyan-950/40 text-cyan-300'
+                        : 'border-border bg-surface-1 text-fg-muted hover:text-fg'
+                    }`}
+                  >
+                    {l} kN
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs">
+              <span>
+                Total Bars: <strong className="text-fg">{structMembers.length}</strong> | Joints:{' '}
+                <strong className="text-fg">{structNodes.length + dynamicStructuresLevel.fixedNodes.length}</strong>
+              </span>
+              <span className="font-mono text-accent">
+                Cost: ${structCost.toFixed(0)} (Budget: ∞)
+              </span>
+            </div>
           </div>
 
-          <div className="h-[460px] overflow-hidden rounded-2xl border border-border bg-surface-2/30">
+          <div className="relative h-[480px] overflow-hidden rounded-2xl border border-border bg-surface-2/30">
+            {/* Live Build Mode Physics HUD Overlay */}
+            {!structSimulating && !structAnalysis && (
+              <div className="absolute top-3 left-3 z-20 pointer-events-auto">
+                <BuildModePhysicsHUD
+                  discipline="structures"
+                  trussMetrics={trussMetrics}
+                  showCoGMarker={showCoGMarker}
+                  onToggleCoGMarker={() => setShowCoGMarker((v) => !v)}
+                  heatmapEnabled={heatmapEnabled}
+                  onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+                  playbackSpeed={playbackSpeed}
+                  onSpeedChange={setPlaybackSpeed}
+                />
+              </div>
+            )}
+
             <BridgeCanvas
-              level={SANDBOX_STRUCTURES_LEVEL}
+              level={dynamicStructuresLevel}
               builtNodes={structNodes}
               builtMembers={structMembers}
               pendingNodeId={structPendingNode}
@@ -499,6 +699,12 @@ export function SandboxWorkspace() {
                       }
                   : null
               }
+              heatmapEnabled={heatmapEnabled}
+              onToggleHeatmap={() => setHeatmapEnabled((v) => !v)}
+              playbackSpeed={playbackSpeed}
+              onSpeedChange={setPlaybackSpeed}
+              cog={trussMetrics.cog}
+              showCoGMarker={showCoGMarker}
               isSimulating={structSimulating}
               onSimulationFinish={() => setStructSimulating(false)}
               onResetSimulation={() => setStructSimulating(false)}
@@ -507,6 +713,22 @@ export function SandboxWorkspace() {
               onRemoveNode={handleRemoveStructNode}
               onRemoveMember={handleRemoveStructMember}
             />
+
+            {/* Floating Oscilloscope Overlay */}
+            {oscilloscopeOpen && (
+              <div className="absolute bottom-4 left-4 z-30 shadow-2xl">
+                <LabOscilloscope
+                  title="Structural Dynamics Scope"
+                  channelALabel="Peak Stress"
+                  channelAUnit="% Yield"
+                  channelBLabel="Deflection Sag"
+                  channelBUnit="mm"
+                  data={scopeData}
+                  isOpen={oscilloscopeOpen}
+                  onClose={() => setOscilloscopeOpen(false)}
+                />
+              </div>
+            )}
           </div>
 
           <Toolbar
@@ -514,13 +736,13 @@ export function SandboxWorkspace() {
             cost={structCost}
             materials={MATERIALS}
             selectedMaterial={structSelectedMaterial}
-            unlockedMaterials={SANDBOX_STRUCTURES_LEVEL.unlockedMaterials}
+            unlockedMaterials={dynamicStructuresLevel.unlockedMaterials}
             onSelectMaterial={setStructSelectedMaterial}
             onTest={handleRunStructTest}
             onReset={handleResetStructBuild}
             onResetSimulation={() => setStructSimulating(false)}
             testing={structSimulating}
-            testLabel="Simulate Free Bridge"
+            testLabel="Simulate Bridge Chasm"
           />
         </div>
       )}
@@ -528,9 +750,9 @@ export function SandboxWorkspace() {
       {/* DOMAIN 2: CIRCUITS FREE CANVAS */}
       {domain === 'circuits' && (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-fg-muted">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-surface-2/60 p-3 text-xs">
             <div className="flex items-center gap-3">
-              <span>Source Voltage:</span>
+              <span className="font-bold text-fg-muted">Source Voltage:</span>
               <input
                 type="range"
                 min="3"
@@ -538,19 +760,25 @@ export function SandboxWorkspace() {
                 step="1"
                 value={customVoltage}
                 onChange={(e) => setCustomVoltage(parseInt(e.target.value, 10))}
-                className="w-32 accent-accent"
+                className="w-36 accent-accent cursor-pointer"
               />
-              <span className="font-bold text-accent">{customVoltage} V</span>
+              <span className="font-bold text-accent font-mono">{customVoltage} V DC</span>
             </div>
 
-            <span className="font-mono text-accent">
-              Wiring Cost: ${circuitCost.toFixed(0)} (Budget: ∞)
-            </span>
+            <div className="flex items-center gap-3 text-xs">
+              <span>
+                Total Nodes: <strong className="text-fg">{circuitNodes.length + 4}</strong> | Branches:{' '}
+                <strong className="text-fg">{circuitEdges.length + 1}</strong>
+              </span>
+              <span className="font-mono text-accent">
+                Wiring Cost: ${circuitCost.toFixed(0)} (Budget: ∞)
+              </span>
+            </div>
           </div>
 
-          <div className="h-[460px] overflow-hidden rounded-2xl border border-border bg-surface-2/30">
+          <div className="relative h-[480px] overflow-hidden rounded-2xl border border-border bg-surface-2/30">
             <CircuitCanvas
-              level={{ ...SANDBOX_CIRCUITS_LEVEL, sourceVoltage: customVoltage }}
+              level={dynamicCircuitLevel}
               builtNodes={circuitNodes}
               builtEdges={circuitEdges}
               pendingNodeId={circuitPendingNode}
@@ -577,6 +805,38 @@ export function SandboxWorkspace() {
               onRemoveNode={handleRemoveCircuitNode}
               onRemoveEdge={handleRemoveCircuitEdge}
             />
+
+            {/* Floating Digital Multimeter Tool */}
+            {multimeterOpen && (
+              <div className="absolute top-4 right-4 z-30 shadow-2xl">
+                <DigitalMultimeter
+                  nodes={[...dynamicCircuitLevel.fixedNodes, ...circuitNodes]}
+                  nodalVoltages={
+                    circuitAnalysis?.status === 'analyzed'
+                      ? Object.fromEntries(circuitAnalysis.nodeVoltages.entries())
+                      : { 'ps-pos': customVoltage, 'ps-neg': 0 }
+                  }
+                  isOpen={multimeterOpen}
+                  onClose={() => setMultimeterOpen(false)}
+                />
+              </div>
+            )}
+
+            {/* Floating Oscilloscope Overlay */}
+            {oscilloscopeOpen && (
+              <div className="absolute bottom-4 left-4 z-30 shadow-2xl">
+                <LabOscilloscope
+                  title="Waveform DSO"
+                  channelALabel="Supply Voltage"
+                  channelAUnit="V"
+                  channelBLabel="Current"
+                  channelBUnit="A"
+                  data={scopeData}
+                  isOpen={oscilloscopeOpen}
+                  onClose={() => setOscilloscopeOpen(false)}
+                />
+              </div>
+            )}
           </div>
 
           <Toolbar
@@ -584,13 +844,13 @@ export function SandboxWorkspace() {
             cost={circuitCost}
             materials={COMPONENTS}
             selectedMaterial={circuitSelectedComponent}
-            unlockedMaterials={SANDBOX_CIRCUITS_LEVEL.unlockedMaterials}
+            unlockedMaterials={dynamicCircuitLevel.unlockedMaterials}
             onSelectMaterial={setCircuitSelectedComponent}
             onTest={handleRunCircuitTest}
             onReset={handleResetCircuitBuild}
             onResetSimulation={() => setCircuitSimulating(false)}
             testing={circuitSimulating}
-            testLabel="Simulate Breadboard"
+            testLabel="Simulate Electrical Breadboard"
           />
         </div>
       )}
@@ -598,8 +858,8 @@ export function SandboxWorkspace() {
       {/* DOMAIN 3: VEHICLES PROVING GROUND */}
       {domain === 'vehicles' && (
         <div className="flex flex-col gap-6">
-          {/* Custom Proving Ground Parameters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 rounded-xl border border-border bg-surface-2/50 p-4">
+          {/* Custom Proving Ground Parameters Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 rounded-xl border border-border bg-surface-2/60 p-4">
             <div className="flex flex-col gap-1">
               <div className="flex justify-between text-[11px]">
                 <span className="text-fg-muted">Runway Distance:</span>
@@ -612,7 +872,7 @@ export function SandboxWorkspace() {
                 step="10"
                 value={vehicleDistance}
                 onChange={(e) => setVehicleDistance(parseInt(e.target.value, 10))}
-                className="accent-accent"
+                className="accent-accent cursor-pointer"
               />
             </div>
 
@@ -628,7 +888,7 @@ export function SandboxWorkspace() {
                 step="1"
                 value={vehicleIncline}
                 onChange={(e) => setVehicleIncline(parseInt(e.target.value, 10))}
-                className="accent-accent"
+                className="accent-accent cursor-pointer"
               />
             </div>
 
@@ -644,20 +904,20 @@ export function SandboxWorkspace() {
                 step="50"
                 value={vehiclePayload}
                 onChange={(e) => setVehiclePayload(parseInt(e.target.value, 10))}
-                className="accent-accent"
+                className="accent-accent cursor-pointer"
               />
             </div>
 
             <div className="flex items-center justify-end gap-2">
               <button
                 onClick={handleResetVehicle}
-                className="rounded-lg border border-border px-3 py-2 text-xs text-fg-muted hover:text-fg"
+                className="rounded-lg border border-border px-3 py-2 text-xs text-fg-muted hover:text-fg transition-colors"
               >
                 Reset
               </button>
               <button
                 onClick={handleRunVehicleTest}
-                className="rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-fg hover:opacity-90"
+                className="rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-fg hover:opacity-90 transition-opacity"
               >
                 Launch Test Run
               </button>
@@ -707,37 +967,54 @@ export function SandboxWorkspace() {
             </div>
           </div>
 
-          {/* Dynamic Track Canvas */}
-          <VehicleTrackCanvas
-            level={dynamicVehicleLevel}
-            selectedEngineId={vehicleEngine}
-            selectedChassisId={vehicleChassis}
-            testResult={
-              vehicleResult
-                ? {
-                    analysis: {
-                      effectiveForce: vehicleResult.effectiveForce,
-                      tractionLimit: vehicleResult.tractionLimit,
-                      tractionLimited: vehicleResult.tractionLimited,
-                      acceleration: vehicleResult.acceleration,
-                      finalSpeed: vehicleResult.finalSpeed,
-                      stalled: vehicleResult.stalled,
-                      slipRatio: 0.12,
-                    },
-                    passed: !vehicleResult.stalled,
-                    stars: vehicleResult.stalled ? 0 : 3,
-                    cost: vehicleCost,
-                  }
-                : null
-            }
-            isSimulating={vehicleSimulating}
-            onSimulationFinish={() => setVehicleSimulating(false)}
-            onResetSimulation={() => setVehicleSimulating(false)}
-          />
+          {/* Dynamic Track Canvas & Floating Scope */}
+          <div className="relative">
+            <VehicleTrackCanvas
+              level={dynamicVehicleLevel}
+              selectedEngineId={vehicleEngine}
+              selectedChassisId={vehicleChassis}
+              testResult={
+                vehicleResult
+                  ? {
+                      analysis: {
+                        effectiveForce: vehicleResult.effectiveForce,
+                        tractionLimit: vehicleResult.tractionLimit,
+                        tractionLimited: vehicleResult.tractionLimited,
+                        acceleration: vehicleResult.acceleration,
+                        finalSpeed: vehicleResult.finalSpeed,
+                        stalled: vehicleResult.stalled,
+                        slipRatio: 0.12,
+                      },
+                      passed: !vehicleResult.stalled,
+                      stars: vehicleResult.stalled ? 0 : 3,
+                      cost: vehicleCost,
+                    }
+                  : null
+              }
+              isSimulating={vehicleSimulating}
+              onSimulationFinish={() => setVehicleSimulating(false)}
+              onResetSimulation={() => setVehicleSimulating(false)}
+            />
+
+            {oscilloscopeOpen && (
+              <div className="absolute bottom-4 left-4 z-30 shadow-2xl">
+                <LabOscilloscope
+                  title="Vehicle Telemetry Scope"
+                  channelALabel="Speed"
+                  channelAUnit="km/h"
+                  channelBLabel="Acceleration"
+                  channelBUnit="m/s²"
+                  data={scopeData}
+                  isOpen={oscilloscopeOpen}
+                  onClose={() => setOscilloscopeOpen(false)}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Blueprint Export Modal */}
+      {/* Blueprint Export Manifest Modal */}
       {exportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in">
           <div className="relative flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
@@ -786,6 +1063,33 @@ export function SandboxWorkspace() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Technical Spec & Bill of Materials Report Modal */}
+      {specReportOpen && (
+        <TechnicalSpecReportModal
+          isOpen={specReportOpen}
+          onClose={() => setSpecReportOpen(false)}
+          discipline={domain}
+          structNodes={structNodes}
+          structMembers={structMembers}
+          totalCost={domain === 'structures' ? structCost : domain === 'circuits' ? circuitCost : vehicleCost}
+          maxStressPercent={trussMetrics.peakStressPercent}
+          safetyFactor={trussMetrics.peakStressPercent > 0 ? 100 / trussMetrics.peakStressPercent : 10}
+          cog={trussMetrics.cog}
+          totalMassKg={trussMetrics.totalMassKg}
+          circuitNodes={circuitNodes}
+          circuitEdges={circuitEdges}
+          voltage={customVoltage}
+          totalCurrentA={customVoltage / 10}
+          totalPowerW={(customVoltage * customVoltage) / 10}
+          engineId={vehicleEngine}
+          chassisId={vehicleChassis}
+          distanceM={vehicleDistance}
+          inclineDeg={vehicleIncline}
+          payloadKg={vehiclePayload}
+          topSpeedKmh={(vehicleResult?.finalSpeed ?? 0) * 3.6}
+        />
       )}
     </div>
   );

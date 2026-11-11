@@ -45,6 +45,7 @@ export function CompletionBadge({ category, className = '', compact = false }: C
     structures: 'ASME Section III / AISC 360-16 LRFD Truss Analysis Standard',
     circuits: 'IEEE Std 141 / Kirchhoff Nodal Current & Voltage Verification',
     machines: 'ISO 80000-3 & Pacejka Coulomb Traction Boundary Framework',
+    mechatronics: 'ISO/IEC/IEEE 15288 & IEC 61131-3 Systems Mechatronics & Interlock Standard',
   }[category];
 
   if (compact) {

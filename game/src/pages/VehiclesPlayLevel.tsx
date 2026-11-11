@@ -25,6 +25,7 @@ import { DesignSaveModal } from '../components/DesignSaveModal';
 import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager';
 import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
 import { computeVehicleBuildMetrics } from '../physics/buildModePhysics';
+import { DifficultySelector } from '../components/DifficultySelector';
 import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
 
 export function VehiclesPlayLevel() {
@@ -239,6 +240,9 @@ export function VehiclesPlayLevel() {
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Difficulty Selector (Easy / Medium / Hard) */}
+          <DifficultySelector levelId={level.id} compact />
+
           {/* Toggle-able Physics Debug Overlay Panel */}
           <PhysicsDebugPanel config={debugConfig} onChange={setDebugConfig} stats={debugStats} />
 

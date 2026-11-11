@@ -29,7 +29,10 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 4i | Estruturas nível 5 "The King Post": material compressão-only (`strut`), espelho do cabo tração-only | Estruturas | ✅ concluído (DEC-010-018) |
 | 4j | Máquinas nível 4 "The Sweet Spot": mecanismo de janela de velocidade (`maxSpeed`) — primeira vez que "rápido demais" reprova, não só "devagar/caro demais" | Máquinas | ✅ concluído (DEC-010-019) |
 | 4k | Circuitos nível 5 "Two Paths, One Bulb": primeira vez que nenhum resistor sozinho resolve o nível, exigindo dois caminhos em paralelo | Circuitos | ✅ concluído (DEC-010-020) |
-| 5 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **bloqueado** — projeto Cloudflare Pages não existe na conta, ver `06_OPERATIONS.md` §Segurança/Deploy |
+| 5 | "The Living Physics" & Metagame: Partículas (faíscas/fratura), Heatmap FEA de tensão, HUD de dinâmica em tempo real, Undo/Redo stack, e Time-Scale slider (0.25x-2x) | Estruturas, Circuitos, Máquinas | ✅ concluído |
+| 6 | "The Tinkerer's Workshop & Virtual Laboratory": Sandbox paramétrico livre, Multímetro Digital (DMM), Osciloscópio (DSO), Lab de Troubleshooting reverso, Gerador de BOM/Spec Sheet (ASME/IEEE/ISO) e Bancada Multi-Física | Sandbox, Virtual Lab | ✅ concluído |
+| 7 | "Mechatronics Fusion & Systems Engineering": Fusão interdisciplinar mecatrônica — guinchos elétricos, pontes levadiças (bascule), relés, chaves fim de curso, portas lógicas (AND/OR/NOT), Seletor de Dificuldade Física (Easy/Med/Hard) e Sistema de Conquistas (Trophy Shelf) | Mecatrônica, Sistemas | ✅ concluído |
+| 8 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **em preparação** |
 
 ## Fase 1 — Estruturas (concluída)
 
@@ -269,5 +272,37 @@ física válida" já visto nos níveis anteriores. Jogado ponta a ponta no brows
 relevantes (resistor pequeno sozinho, resistor grande sozinho, dois pequenos, misto), todos os
 números batendo com o cálculo prévio. Ver `03_DECISIONS.md` DEC-010-020, `02_ARCHITECTURE.md`
 §Circuitos (inclui a nota sobre a restrição real de "sem aresta duplicada" da UI).
+
+## Fase 5 — "The Living Physics" & Metagame Refinement (concluída)
+
+1. **Sistema de Partículas Dinâmico (`physics/engine/ParticleSystem.ts`):** Renderização nativa em canvas de pó de fratura estrutural sob colapso e faíscas incandescentes em curto-circuitos ou queima de componentes.
+2. **Overlay Heatmap de Tensão FEA (`physics/heatmap.ts`):** Color-coding contínuo verde (seguro) → âmbar (limiar) → vermelho (risco crítico) baseado na razão de tensão axial vs. admissível.
+3. **Pilha de Desfazer/Refazer (Undo/Redo):** Histórico completo de modificações de juntas e barras/fios com atalhos padrão `Ctrl+Z` e `Ctrl+Y`.
+4. **Slider de Velocidade da Simulação:** Controle temporal contínuo (0.25x, 0.5x, 1x, 2x) para depuração microscópica de colapsos e transições de corrente.
+5. **HUD de Física em Tempo Real no Build Mode (`components/BuildModePhysicsHUD.tsx`):** Exibe massa total, centro de gravidade (CoG) com marcador visual, tensão de pico e fator de segurança (SF) durante a fase de projeto.
+
+## Fase 6 — "The Tinkerer's Workshop & Virtual Laboratory" (concluída)
+
+1. **Sandbox Paramétrico Livre (`components/SandboxWorkspace.tsx`):**
+   - Estruturas: ajuste de vãos (8m, 16m, 24m, 32m) e cargas vivas de trânsito (20kN, 60kN, 120kN).
+   - Circuitos: barramento DC ajustável de 3V a 48V.
+   - Veículos: pista customizável (50m a 500m), inclinações (-15° a +30°) e carga útil (0 a 1000kg).
+2. **Instrumentos Virtuais de Bancada:**
+   - Multímetro Digital (`components/DigitalMultimeter.tsx`): medição de V, A, Ω e continuidade com pontas de prova móveis (Vermelha/Preta).
+   - Osciloscópio Digital (`components/LabOscilloscope.tsx`): visualização de forma de onda dual-channel com ajuste de timebase, triggers e freeze.
+3. **Laboratório de Troubleshooting & Engenharia Reversa (`components/TroubleshootingLab.tsx`):** Três quebra-cabeças diagnósticos de falha física injetada (flambagem de diagonal em treliça, desarme por sobrecorrente em circuito e estol de trem de força em rampa de 15°).
+4. **Gerador de Relatórios Técnicos & BOM (`components/TechnicalSpecReportModal.tsx`):** Emissão de relatórios técnicos certificados em conformidade com normas ASME/IEEE/ISO e Lista de Materiais itemizada.
+5. **Bancada de Ensaios Contínuos (`components/MaterialTestBench.tsx`):** Ensaios de flexão de vigas de Euler-Bernoulli, flambagem de Euler, curva de atrito de Pacejka, aquecimento resistivo Joule e arrasto aerodinâmico.
+
+## Fase 7 — "Mechatronics Fusion & Systems Engineering" (concluída)
+
+1. **Motor de Fusão Mecatrônica (`physics/mechatronics.ts`):**
+   - Lógica digital combinacional com portas `AND`, `OR`, `NOT`, `XOR` e `BUFFER`.
+   - Acoplamento eletromecânico: conversão de corrente elétrica em torque e tração de cabo em guinchos DC ($T = K_t \cdot I \cdot \text{Ratio} / r$).
+   - Cinemática de pontes levadiças basculantes considerando inércia de vão, contrapeso e amortecimento.
+2. **Desafios Interdisciplinares (`content/mechatronicsLevels.ts`):** Três desafios práticos de engenharia de sistemas ("The Automated Drawbridge", "The Solar Funicular Ascent" e "Fail-Safe Logic Interlock").
+3. **Seletor de Dificuldade Física (`state/difficultyStore.ts`, `components/DifficultySelector.tsx`):** Seleção por nível ou global de Easy (0.8x gravidade, +25% folga estrutural), Medium (nominal) e Hard (1.15x gravidade, -15% limite de tensão, conquista Hardcore).
+4. **Sistema de Conquistas & Estante de Troféus (`state/achievementStore.ts`, `components/AchievementsModal.tsx`):** Milestones com XP e banners deslizantes de feedback lúdico.
+5. **Rastreamento Unificado de Progresso (`state/ProgressManager.ts`):** Persistência centralizada em `localStorage` para todas as 4 disciplinas.
 
 Linear: issues a criar sob o projeto IDEA-010 quando o roadmap for revisado por Caio.
