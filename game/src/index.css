@@ -67,3 +67,58 @@ body {
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 }
+
+/* Industrial Diegetic Game UI Utilities */
+.industrial-panel {
+  background: linear-gradient(135deg, rgba(21, 26, 34, 0.95) 0%, rgba(17, 21, 27, 0.98) 100%);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.industrial-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 106, 44, 0.4), transparent);
+}
+
+.led-indicator {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+}
+
+.led-green {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.led-amber {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.led-red {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.led-cyan {
+  background-color: #06b6d4;
+  box-shadow: 0 0 8px #06b6d4;
+}
+
+.scanline-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+

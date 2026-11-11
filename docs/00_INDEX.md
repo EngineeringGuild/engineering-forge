@@ -21,7 +21,12 @@ máquinas — e a física decide se aguentam. Ver `01_VISION.md` para o pitch co
 | [04_ROADMAP](04_ROADMAP.md) | Fases ↔ Linear, packs de conteúdo | draft |
 | [05_MARKETING](05_MARKETING.md) | Posicionamento, funil, aquisição | draft |
 | [06_OPERATIONS](06_OPERATIONS.md) | Deploy, ambientes, custos, KPIs | draft |
-| [07_MASTER_PLAN_GAME_ENGINE](07_MASTER_PLAN_GAME_ENGINE.md) | Master Plan evolutivo v1.0–v4.0: da ferramenta ao jogo vivo para formar crianças | approved |
+| [07_MASTER_PLAN_GAME_ENGINE](07_MASTER_PLAN_GAME_ENGINE.md) | Master Plan evolutivo v1.0–v6.0: integrador do motor e ecossistema | approved |
+| [08_MASTER_PLAN_MODO_EDUCADOR](08_MASTER_PLAN_MODO_EDUCADOR.md) | Master Plan: Modo Educador, autor de trilhas e rubrica didática | approved |
+| [09_MASTER_PLAN_CAD_MANUFATURA_E_NFT](09_MASTER_PLAN_CAD_MANUFATURA_E_NFT.md) | Master Plan: Exportador CAD 3D/Laser e Digital Twin NFT de veículos | approved |
+| [10_MASTER_PLAN_FRONTEND_GAME_ENGINE](10_MASTER_PLAN_FRONTEND_GAME_ENGINE.md) | Master Plan: Frontend Game UX/UI diegética e economia da Forja | approved |
+| [11_MASTER_PLAN_BACKEND_SYNC](11_MASTER_PLAN_BACKEND_SYNC.md) | Master Plan: Backend Local-First, sincronização edge e turmas | approved |
+| [12_MASTER_TASK_TRACKER](12_MASTER_TASK_TRACKER.md) | Rastreador mestre operacional de tarefas por fases, lotes e ondas | active |
 
 ## Onde as coisas estão
 

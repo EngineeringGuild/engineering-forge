@@ -423,6 +423,88 @@ class SoundEngine {
     osc.start();
     osc.stop(ctx.currentTime + 0.12);
   }
+
+  /**
+   * Crisp tactile microswitch click for industrial UI buttons
+   */
+  public playTactileClick(): void {
+    if (this.isMuted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 0.025);
+
+    gain.gain.setValueAtTime(0.08 * this.volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.025);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.025);
+  }
+
+  /**
+   * Subtle electromagnetic tick for button/card hover
+   */
+  public playSubtleHover(): void {
+    if (this.isMuted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.015 * this.volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.012);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.012);
+  }
+
+  /**
+   * Rotary industrial mode switch latch
+   */
+  public playModeSwitch(): void {
+    if (this.isMuted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = 'square';
+    osc1.frequency.setValueAtTime(520, ctx.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.035);
+
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.015);
+    osc2.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.05);
+
+    gain.gain.setValueAtTime(0.1 * this.volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start();
+    osc1.stop(ctx.currentTime + 0.035);
+    osc2.start(ctx.currentTime + 0.015);
+    osc2.stop(ctx.currentTime + 0.05);
+  }
 }
 
 export const soundFx = new SoundEngine();

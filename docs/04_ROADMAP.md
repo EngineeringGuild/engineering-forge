@@ -32,7 +32,11 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 | 5 | "The Living Physics" & Metagame: Partículas (faíscas/fratura), Heatmap FEA de tensão, HUD de dinâmica em tempo real, Undo/Redo stack, e Time-Scale slider (0.25x-2x) | Estruturas, Circuitos, Máquinas | ✅ concluído |
 | 6 | "The Tinkerer's Workshop & Virtual Laboratory": Sandbox paramétrico livre, Multímetro Digital (DMM), Osciloscópio (DSO), Lab de Troubleshooting reverso, Gerador de BOM/Spec Sheet (ASME/IEEE/ISO) e Bancada Multi-Física | Sandbox, Virtual Lab | ✅ concluído |
 | 7 | "Mechatronics Fusion & Systems Engineering": Fusão interdisciplinar mecatrônica — guinchos elétricos, pontes levadiças (bascule), relés, chaves fim de curso, portas lógicas (AND/OR/NOT), Seletor de Dificuldade Física (Easy/Med/Hard) e Sistema de Conquistas (Trophy Shelf) | Mecatrônica, Sistemas | ✅ concluído |
-| 8 | Deploy público real (`forge.guildeng.com`) + avaliar conta de usuário / integração BOSS / monetização | — | **em preparação** |
+| 8 | "The Tactile Cyber-Forge": Redesign industrial diegético, microinterações táteis, sonoplastia de microswitch e acessibilidade no canvas | Frontend & UX | 🚀 em execução |
+| 9 | "The Educator Academy": Editor visual de trilhas pedagógicas, restritor de inventário, cálculo de gabarito e distribuição por URL compacta | Modo Educador | 📋 especificado (DOC-08) |
+| 10 | "Digital-to-Physical & Web3": Exportador paramétrico STL/DXF para manufatura e minting NFT de veículos homologados (Proof of Engineering) | Manufatura & Web3 | 📋 especificado (DOC-09) |
+| 11 | "Cloud Classrooms & Telemetry": Sincronização Local-First, salas de aula edge, agregação de falhas da turma e validador anti-cheat | Backend & Sync | 📋 especificado (DOC-11) |
+| 12 | "Forge Economy & Tech Tree": Sistema de P&D, árvore tecnológica, garagem do inventor e economia de recursos | Metagame & Economia | 📋 especificado (DOC-10) |
 
 ## Fase 1 — Estruturas (concluída)
 

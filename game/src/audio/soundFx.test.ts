@@ -42,5 +42,8 @@ describe('SoundEngine', () => {
     expect(() => soundFx.playTireScreech()).not.toThrow();
     expect(() => soundFx.playVictory(3)).not.toThrow();
     expect(() => soundFx.playFail()).not.toThrow();
+    expect(() => soundFx.playTactileClick()).not.toThrow();
+    expect(() => soundFx.playSubtleHover()).not.toThrow();
+    expect(() => soundFx.playModeSwitch()).not.toThrow();
   });
 });
