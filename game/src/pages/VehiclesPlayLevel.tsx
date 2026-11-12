@@ -29,6 +29,10 @@ import { DifficultySelector } from '../components/DifficultySelector';
 import type { UniversalBlueprint, MachinesBlueprintData } from '../state/BlueprintManager';
 import { VehicleNftMintModal } from '../components/VehicleNftMintModal';
 import { GarageCustomizerModal } from '../components/GarageCustomizerModal';
+import { PhysicsMetrics, GameLoop } from '../components/organisms';
+import { usePhysicsStore } from '../store/physicsStore';
+import { PlayLevelHeaderNav } from '../components/PlayLevelHeaderNav';
+import { VEHICLE_LEVELS } from '../content/vehicleLevels';
 
 export function VehiclesPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
@@ -40,6 +44,7 @@ export function VehiclesPlayLevel() {
   const [showNftModal, setShowNftModal] = useState(false);
   const [showGarageModal, setShowGarageModal] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [showPhysicsMetrics, setShowPhysicsMetrics] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -52,10 +57,10 @@ export function VehiclesPlayLevel() {
   });
 
   const level = levelId ? getVehicleLevel(levelId) : undefined;
-  const isLevelUnlocked = useVehicleStore((s) => s.isLevelUnlocked);
   const currentLevelId = useVehicleStore((s) => s.currentLevelId);
   const selectedEngine = useVehicleStore((s) => s.selectedEngine);
   const selectedChassis = useVehicleStore((s) => s.selectedChassis);
+
   const testResult = useVehicleStore((s) => s.testResult);
   const startLevel = useVehicleStore((s) => s.startLevel);
   const setSelectedEngine = useVehicleStore((s) => s.setSelectedEngine);
@@ -155,7 +160,6 @@ export function VehiclesPlayLevel() {
   }, [level, currentLevelId, startLevel, restoreBuild]);
 
   if (!level) return <Navigate to="/machines" replace />;
-  if (!isLevelUnlocked(level.id)) return <Navigate to="/machines" replace />;
 
   const cost = totalVehicleCost(selectedEngine, selectedChassis);
   const overBudget = cost > level.budget;
@@ -174,12 +178,14 @@ export function VehiclesPlayLevel() {
   const handleTestDrive = () => {
     setIsSimulating(true);
     setShowResult(false);
+    usePhysicsStore.getState().startSimulation();
     runTest(elapsedSeconds);
   };
 
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+    usePhysicsStore.getState().stopSimulation();
     if (level && testResult?.passed && elapsedSeconds > 0) {
       highScoresManager.recordSolveTime(level.id, elapsedSeconds);
       progressManager.recordLevelCompletion(
@@ -196,6 +202,7 @@ export function VehiclesPlayLevel() {
     soundFx.playSnapNode();
     setIsSimulating(false);
     setShowResult(false);
+    usePhysicsStore.getState().stopSimulation();
     clearTestResult();
   };
 
@@ -203,6 +210,7 @@ export function VehiclesPlayLevel() {
     soundFx.playSnapNode();
     setIsSimulating(false);
     setShowResult(false);
+    usePhysicsStore.getState().stopSimulation();
     resetBuild();
     clearDraft();
     setTimerResetKey((k) => k + 1);
@@ -222,6 +230,16 @@ export function VehiclesPlayLevel() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-4 p-4">
+      {/* Top Level Navigation & Breadcrumbs */}
+      <PlayLevelHeaderNav
+        divisionTitle="Máquinas & Cinemática"
+        divisionPath="/machines"
+        currentLevelId={level.id}
+        currentLevelName={level.name}
+        levels={VEHICLE_LEVELS}
+        levelBasePath="/machines/level"
+      />
+
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
@@ -315,6 +333,18 @@ export function VehiclesPlayLevel() {
             <span>Glossary</span>
           </button>
           <button
+            onClick={() => setShowPhysicsMetrics((v) => !v)}
+            title="Painel de Métricas Físicas e Controle de Escala Temporal"
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors cursor-pointer ${
+              showPhysicsMetrics
+                ? 'border-cyan-400 bg-cyan-950/40 text-cyan-300 font-bold shadow-[0_0_8px_rgba(6,182,212,0.3)]'
+                : 'border-border text-fg-muted hover:border-cyan-400/60 hover:text-fg'
+            }`}
+          >
+            <span className="text-cyan-400">⚡</span>
+            <span>Física</span>
+          </button>
+          <button
             onClick={() => setShowHint((v) => !v)}
             className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
               isStuck
@@ -326,6 +356,16 @@ export function VehiclesPlayLevel() {
           </button>
         </div>
       </header>
+
+      {/* Real-time Physics Metrics & Time Controls Drawer */}
+      {showPhysicsMetrics && (
+        <div className="transition-all duration-200">
+          <PhysicsMetrics />
+        </div>
+      )}
+
+      {/* GameLoop Organism for Fixed Timestep Physics Synchronization */}
+      <GameLoop />
 
       <ContextualHintBanner
         guidance={guidance}

@@ -1,0 +1,15 @@
+# Cloudflare Pages Configuration for Engineering Forge
+[build]
+command = "npm run build --workspace=@engineering-forge/game"
+destination = "game/dist"
+root_dir = ""
+
+[build.environment]
+NODE_VERSION = "20.18.0"
+
+[[headers]]
+for = "/*"
+[headers.values]
+"X-Content-Type-Options" = "nosniff"
+"X-Frame-Options" = "SAMEORIGIN"
+"Referrer-Policy" = "strict-origin-when-cross-origin"

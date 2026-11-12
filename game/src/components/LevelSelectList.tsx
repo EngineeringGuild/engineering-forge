@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { soundFx } from '../audio/soundFx';
 
@@ -24,6 +25,10 @@ export function LevelSelectList({
   isCompleted,
   showProgressHeader = true,
 }: Props) {
+  const [inspectAll, setInspectAll] = useState(false);
+
+  const isUnlockedEffective = (id: string) => inspectAll || isLevelUnlocked(id);
+
   const completedLevels = levels.filter((lvl) => {
     const unlocked = isLevelUnlocked(lvl.id);
     const stars = starsFor(lvl.id);
@@ -36,6 +41,7 @@ export function LevelSelectList({
   }, 0);
   const maxStars = totalCount * 3;
   const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
 
   return (
     <div className="space-y-4">
@@ -82,30 +88,52 @@ export function LevelSelectList({
               style={{ width: `${percent}%` }}
             />
           </div>
+
+          {/* Quick Inspection & Free Navigation Mode Toggle */}
+          <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between text-xs font-mono">
+            <span className="text-[11px] text-fg-subtle">
+              Modo de Progressão: {inspectAll ? 'Inspeção Livre Ativa' : 'Desafio Sequencial'}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playSnapNode();
+                setInspectAll(!inspectAll);
+              }}
+              className={`px-2.5 py-1 rounded text-[11px] font-mono font-bold transition-all border cursor-pointer ${
+                inspectAll
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                  : 'bg-surface-2 text-fg-subtle border-border hover:border-accent hover:text-fg'
+              }`}
+              title="Alterna entre progressão obrigatória e modo livre de inspeção técnica de todos os desafios"
+            >
+              {inspectAll ? '🔓 MODO LIVRE: TODOS DESBLOQUEADOS' : '🔒 DESBLOQUEAR TODOS (MODO LIVRE)'}
+            </button>
+          </div>
         </div>
       )}
 
       <ol className="flex flex-col gap-3">
         {levels.map((level, index) => {
-          const unlocked = isLevelUnlocked(level.id);
+          const unlocked = isUnlockedEffective(level.id);
           const stars = starsFor(level.id);
           const completed = unlocked && (isCompleted ? isCompleted(level.id) : stars > 0);
           const statusText = unlocked
             ? completed
               ? `Completed, ${stars} of 3 stars`
               : ', not yet completed'
-            : ', locked';
+            : ', locked (clique para desbloquear em modo livre)';
 
           const cardStyle = !unlocked
-            ? 'border-border/50 bg-surface-1/40 opacity-50'
+            ? 'border-border/50 bg-surface-1/40 opacity-70 hover:opacity-100 hover:border-accent/60 cursor-pointer'
             : completed
             ? 'border-success/60 bg-surface-1/90 shadow-[0_0_15px_-2px_rgba(22,163,74,0.35)] ring-1 ring-success/30 hover:border-success hover:shadow-[0_0_20px_-2px_rgba(22,163,74,0.5)]'
             : 'border-border/90 bg-surface-1/90 hover:border-accent hover:shadow-[0_0_12px_-3px_rgba(255,106,44,0.25)]';
 
           const content = (
             <div
-              onMouseEnter={() => unlocked && soundFx.playSubtleHover()}
-              onClick={() => unlocked && soundFx.playTactileClick()}
+              onMouseEnter={() => soundFx.playSubtleHover()}
+              onClick={() => soundFx.playTactileClick()}
               className={`flex items-center justify-between rounded-xl border px-5 py-4 transition-all duration-200 active:scale-[0.99] ${cardStyle}`}
             >
               <div className="flex items-center gap-3.5 text-left">
@@ -127,8 +155,11 @@ export function LevelSelectList({
                     {index + 1}
                   </div>
                 ) : (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-2/40 text-fg-subtle/50 border border-border/30 text-xs">
-                    🔒
+                  <div
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs"
+                    title="Desbloquear em modo livre"
+                  >
+                    🔓
                   </div>
                 )}
 
@@ -147,6 +178,11 @@ export function LevelSelectList({
                         Done
                       </span>
                     )}
+                    {!unlocked && (
+                      <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-fg-subtle border border-border">
+                        Clique para Inspecionar
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-fg-muted">{level.tagline}</p>
                 </div>
@@ -162,8 +198,8 @@ export function LevelSelectList({
                     )}
                   </div>
                 ) : (
-                  <div className="text-xs font-mono text-fg-subtle/60" aria-hidden="true">
-                    Locked
+                  <div className="text-xs font-mono text-amber-400 font-bold" aria-hidden="true">
+                    Inspeção Livre →
                   </div>
                 )}
               </div>
@@ -177,9 +213,14 @@ export function LevelSelectList({
                   {content}
                 </Link>
               ) : (
-                <div className="cursor-not-allowed" aria-disabled="true">
+                <Link
+                  to={`${basePath}/${level.id}`}
+                  onClick={() => setInspectAll(true)}
+                  className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-xl"
+                  title="Acessar desafio em Modo Inspeção"
+                >
                   {content}
-                </div>
+                </Link>
               )}
             </li>
           );

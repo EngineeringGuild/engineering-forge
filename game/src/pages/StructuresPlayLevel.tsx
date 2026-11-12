@@ -28,6 +28,10 @@ import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
 import { computeTrussBuildMetrics } from '../physics/buildModePhysics';
 import { DifficultySelector } from '../components/DifficultySelector';
 import { CadExportModal } from '../components/CadExportModal';
+import { PhysicsMetrics, GameLoop } from '../components/organisms';
+import { usePhysicsStore } from '../store/physicsStore';
+import { PlayLevelHeaderNav } from '../components/PlayLevelHeaderNav';
+import { LEVELS } from '../content/levels';
 import type { UniversalBlueprint, StructuresBlueprintData } from '../state/BlueprintManager';
 
 export function StructuresPlayLevel() {
@@ -42,6 +46,7 @@ export function StructuresPlayLevel() {
   const [manifestText, setManifestText] = useState('');
   const [copiedManifest, setCopiedManifest] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [showPhysicsMetrics, setShowPhysicsMetrics] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -57,7 +62,6 @@ export function StructuresPlayLevel() {
   });
 
   const level = levelId ? getLevel(levelId) : undefined;
-  const isLevelUnlocked = useGameStore((s) => s.isLevelUnlocked);
   const currentLevelId = useGameStore((s) => s.currentLevelId);
   const builtNodes = useGameStore((s) => s.builtNodes);
   const builtMembers = useGameStore((s) => s.builtMembers);
@@ -79,6 +83,7 @@ export function StructuresPlayLevel() {
   const redo = useGameStore((s) => s.redo);
   const canUndo = useGameStore((s) => s.undoStack.length > 0);
   const canRedo = useGameStore((s) => s.redoStack.length > 0);
+
 
   // Keyboard shortcut listener for Undo (Ctrl+Z) and Redo (Ctrl+Y / Ctrl+Shift+Z)
   useEffect(() => {
@@ -293,7 +298,6 @@ export function StructuresPlayLevel() {
   }, [level, currentLevelId, startLevel, restoreBuild]);
 
   if (!level) return <Navigate to="/structures" replace />;
-  if (!isLevelUnlocked(level.id)) return <Navigate to="/structures" replace />;
 
   const cost = totalCost(level, builtNodes, builtMembers);
   const next = nextLevelId(level.id);
@@ -312,12 +316,14 @@ export function StructuresPlayLevel() {
   const handleTest = () => {
     setIsSimulating(true);
     setShowResult(false);
+    usePhysicsStore.getState().startSimulation();
     runTest(elapsedSeconds);
   };
 
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+    usePhysicsStore.getState().stopSimulation();
     if (level && testResult?.status === 'analyzed' && testResult.passed && elapsedSeconds > 0) {
       highScoresManager.recordSolveTime(level.id, elapsedSeconds);
       progressManager.recordLevelCompletion(
@@ -333,12 +339,14 @@ export function StructuresPlayLevel() {
   const handleResetSimulation = () => {
     setIsSimulating(false);
     setShowResult(false);
+    usePhysicsStore.getState().stopSimulation();
     clearTestResult();
   };
 
   const handleReset = () => {
     setIsSimulating(false);
     setShowResult(false);
+    usePhysicsStore.getState().stopSimulation();
     resetBuild();
     clearDraft();
     setTimerResetKey((k) => k + 1);
@@ -358,12 +366,23 @@ export function StructuresPlayLevel() {
 
   return (
     <div className="mx-auto flex h-svh max-w-4xl flex-col gap-4 p-4">
+      {/* Top Level Navigation & Breadcrumbs */}
+      <PlayLevelHeaderNav
+        divisionTitle="Estruturas & Treliças"
+        divisionPath="/structures"
+        currentLevelId={level.id}
+        currentLevelName={level.name}
+        levels={LEVELS}
+        levelBasePath="/structures/level"
+      />
+
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
             <p className="font-mono text-xs uppercase tracking-widest text-accent">
               {level.name}
             </p>
+
             <p className="text-sm text-fg-muted">{level.tagline}</p>
           </div>
           <ChallengeTimer
@@ -443,6 +462,18 @@ export function StructuresPlayLevel() {
             <span>Guild Register</span>
           </button>
           <button
+            onClick={() => setShowPhysicsMetrics((v) => !v)}
+            title="Painel de Métricas Físicas e Controle de Escala Temporal"
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors cursor-pointer ${
+              showPhysicsMetrics
+                ? 'border-cyan-400 bg-cyan-950/40 text-cyan-300 font-bold shadow-[0_0_8px_rgba(6,182,212,0.3)]'
+                : 'border-border text-fg-muted hover:border-cyan-400/60 hover:text-fg'
+            }`}
+          >
+            <span className="text-cyan-400">⚡</span>
+            <span>Física</span>
+          </button>
+          <button
             onClick={() => setShowHint((v) => !v)}
             className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
               isStuck
@@ -454,6 +485,16 @@ export function StructuresPlayLevel() {
           </button>
         </div>
       </header>
+
+      {/* Real-time Physics Metrics & Time Controls Drawer */}
+      {showPhysicsMetrics && (
+        <div className="transition-all duration-200">
+          <PhysicsMetrics />
+        </div>
+      )}
+
+      {/* GameLoop Organism for Fixed Timestep Physics Synchronization */}
+      <GameLoop />
 
       <ContextualHintBanner
         guidance={guidance}

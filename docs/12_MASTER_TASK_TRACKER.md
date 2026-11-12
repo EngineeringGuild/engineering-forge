@@ -10,7 +10,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 
 # Master Task Tracker: Engineering Forge
 ### Matriz de Rastreabilidade Operacional — Fases, Seções, Lotes e Ondas
-**Status Atual: 211 Testes Unitários e de Integração / 0 Falhas / 0 Warnings**
+**Status Atual: 273 Testes Unitários e de Integração / 0 Falhas / 0 Warnings**
 
 ---
 
@@ -109,6 +109,22 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 - [x] `TSK-UI-07`: Navegação por teclado (`Tab`, Setas) entre nós no canvas de Estruturas e Circuitos (`BridgeCanvas.tsx`).
 - [x] `TSK-UI-08`: Ações de teclado para fixar nós (`Space`), criar barras (`Enter`) e deletar (`Del`).
 - [x] `TSK-UI-09`: Região `aria-live` e retícula visual ativa informando coordenadas atuais e conexões para leitores de tela.
+
+#### Lote 8.3: Atomic Design System & Motor de Simulação Desacoplado — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-UI-10`: Design System Atômico: `atoms/Button`, `atoms/Input`, `atoms/Badge`, `molecules/GaugeMeter`, `molecules/StressMeter`, `molecules/IndustrialSlider`, `molecules/MaterialPicker`.
+- [x] `TSK-UI-11`: Estado Global de Simulação (`physicsStore.ts`) gerenciando gravidade nominal ($g = 9.81\,\text{m/s}^2$), escala temporal ($0.25\times \dots 2\times$), discretização $\Delta t$ e controle pause/play/step.
+- [x] `TSK-UI-12`: Organismos de Simulação e Metagame (`GameLoop.tsx`, `PhysicsMetrics.tsx`, `TechTreeOrganism.tsx`, `PatentMarketplaceOrganism.tsx`) e integração com `StructuresPlayLevel`, `CircuitsPlayLevel` e `VehiclesPlayLevel`.
+- [x] `TSK-UI-13`: Pipeline de deploy e segurança Cloudflare Pages (`public/_headers` com CSP estrito e `cloudflare-pages.toml`).
+- [x] `TSK-UI-14`: Organismo de controle de simulação (`PhysicsControls.tsx`) com toggle play/pause, reset, avanço unitário de passo ($\Delta t$) e escalonamento temporal ($0.25\times \dots 2\times$), consumindo `physicsStore`.
+- [x] `TSK-UI-15`: Molécula de presets gravitacionais (`PhysicsPresets.tsx`) com ambientes 'Earth' ($9.81\,\text{m/s}^2$), 'Moon' ($1.62\,\text{m/s}^2$) e 'Deep Space' ($0.00\,\text{m/s}^2$), atualizando o `physicsStore`.
+- [x] `TSK-UI-16`: Molécula de controle de renderização de colisores (`CollisionToggle.tsx`) e flag reativa `showCollisions` no `physicsStore` para visualização de fronteiras e hitboxes de colisão.
+- [x] `TSK-UI-17`: Molécula `SimulationTimer.tsx` calculando e formatando o tempo decorrido da simulação física ($t = \text{currentStepIndex} \times \Delta t$) com estilo industrial tabular.
+- [x] `TSK-UI-18`: Organismo `PhysicsStatusBar.tsx` atuando como container de status físico com LED indicador, gravidade, escala de velocidade, passos acumulados e cronômetro integrado.
+- [x] `TSK-UI-19`: Molécula `SimulationConsole.tsx` e tipos em `simulationConsoleTypes.ts` com terminal de eventos físicos (colisões, forças de impacto, picos de tensão e integridade do sistema).
+- [x] `TSK-UI-20`: Integração de telemetria de eventos físicos no `physicsStore` (`events`, `addSimulationEvent`, `clearSimulationEvents`) e expansão do organismo `PhysicsMetrics` com terminal `SimulationConsole` retrátil.
+- [x] `TSK-UI-21`: Revisão integral do fluxo de navegação do usuário: migração para `HashRouter` com auto-conversão em `main.tsx`, rota fallback catch-all, barra de navegação global `GlobalNavBar.tsx`, cabeçalho de navegação entre níveis `PlayLevelHeaderNav.tsx` (breadcrumbs, seletor de níveis e botões de retorno) e modo livre de inspeção técnica em `LevelSelectList.tsx`.
+
+
 
 ---
 

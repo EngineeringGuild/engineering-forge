@@ -72,20 +72,37 @@ Para sustentar simulações de física em 60 FPS com milhares de nós e partícu
 
 ### 3.2 Design System Industrial: Metodologia Atomic Design
 A hierarquia de componentes da interface da Forja segue o padrão Atomic Design estrito:
-1. **Átomos (Atoms):**
-   - LEDs indicadores de status (`LedIndicator.tsx` — Verde nominal, Âmbar alerta, Vermelho colapso).
-   - Botões táteis com som mecânico embutido (`TactileButton.tsx`).
-   - Visores numéricos digitais com fonte monospace tabular (`SevenSegmentDisplay.tsx`).
-2. **Moléculas (Molecules):**
-   - Mini-medidores analógicos de tensão / compressão (`StressMeter.tsx`).
-   - Seletor de materiais com indicação de módulo elástico ($E$) e custo (`MaterialPicker.tsx`).
-   - Sliders táteis de ajuste paramétrico (`IndustrialSlider.tsx`).
-3. **Organismos (Organisms):**
-   - HUD analítico em tempo real (`BuildModePhysicsHUD.tsx`).
-   - Painel de instrumentação laboratorial (`DigitalMultimeter.tsx`, `DigitalOscilloscope.tsx`).
-   - Bancada da Garagem do Inventor (`GarageCustomizerModal.tsx`).
+1. **Átomos (Atoms) em `game/src/components/atoms/` & `atomic/`:**
+   - `Button.tsx`: Botão primário/secundário/accent com token `.industrial-panel` e acionamento sonoro tátil (`soundFx.ts`).
+   - `Input.tsx`: Campo de entrada numérico/texto industrial com indicador de unidades (kN, MPa, V, Ω, kg) e estado de erro.
+   - `Badge.tsx`: Selos e estampas técnicas (`asme`, `crypto`, `accent`, `success`, `warning`, `danger`) com LED pulsante opcional.
+   - `LedIndicator.tsx`: LEDs indicadores de status (Verde nominal, Âmbar alerta, Vermelho colapso, Ciano telemetria).
+   - `SevenSegmentDisplay.tsx`: Visores numéricos digitais com fonte monospace tabular e cores customizáveis.
+2. **Moléculas (Molecules) em `game/src/components/molecules/`:**
+   - `StressMeter.tsx`: Mini-medidores analógicos de tensão / compressão com fator de segurança.
+   - `MaterialPicker.tsx`: Seletor de materiais com indicação de módulo elástico ($E$) e custo.
+   - `IndustrialSlider.tsx`: Sliders táteis de ajuste paramétrico e sensibilidade.
+   - `GaugeMeter.tsx`: Manômetro analógico rotativo com deflexão angular de $-120^\circ$ a $+120^\circ$, zonas de perigo e readout digital.
+   - `PhysicsPresets.tsx` & `physicsPresetConstants.ts`: Seletor de ambientes gravitacionais ('Earth' $9.81\,\text{m/s}^2$, 'Moon' $1.62\,\text{m/s}^2$, 'Deep Space' $0.00\,\text{m/s}^2$).
+   - `CollisionToggle.tsx`: Interruptor diegético para alternar a visualização de limites e caixas de colisão física (`showCollisions`).
+   - `SimulationTimer.tsx`: Cronômetro analítico determinístico que calcula o tempo decorrido da simulação ($t = \text{currentStepIndex} \times \Delta t$) com precisão tabular industrial.
+   - `SimulationConsole.tsx` & `simulationConsoleTypes.ts`: Console terminal de rolagem de eventos físicos em tempo real (colisões, forças de impacto, picos de tensão, cinemática).
+3. **Organismos (Organisms) em `game/src/components/organisms/`:**
+   - `GameLoop.tsx`: Loop de simulação com acumulador de passo fixo (*fixed-timestep*) desacoplado da taxa de renderização visual.
+   - `PhysicsMetrics.tsx`: Painel de telemetria temporal, gravidade e aceleração com `PhysicsPresets`, controles integrados e terminal `SimulationConsole` expansível.
+   - `PhysicsControls.tsx`: Deck de comando de simulação (Play/Pause, Reset, Passo +1 $\Delta t$ e seletor de velocidade $0.25\times \dots 2\times$).
+   - `PhysicsStatusBar.tsx`: Barra horizontal de status físico atuando como container com LED de simulação ativa, gravidade, escala e cronômetro.
+   - `TelemetryHudOrganism.tsx`: HUD analítico em tempo real com leitura de deformação e integridade.
+   - `TechTreeOrganism.tsx`: Árvore de pesquisa não-linear modular com saldo da carteira da guilda e desbloqueio de patentes.
+   - `PatentMarketplaceOrganism.tsx`: Bolsa comunitária de patentes de blueprints e royalties.
+   - `BuildModePhysicsHUD.tsx`: Telemetria estática em tempo de construção (CoG, massa, reações de apoio).
+   - `DigitalMultimeter.tsx` & `TroubleshootingLab.tsx`: Instrumentação de bancada laboratorial.
+   - `GlobalNavBar.tsx`: Barra de navegação global em todas as telas com atalhos de corredores disciplinares e saldos da carteira.
+   - `PlayLevelHeaderNav.tsx`: Cabeçalho de navegação contextual entre níveis com breadcrumbs, seletor de níveis e botões de retorno.
 4. **Templates & Telas (Templates & Pages):**
    - Espaço de trabalho de construção de pontes (`StructuresPlayLevel.tsx`).
+   - Espaço de trabalho de circuitos elétricos (`CircuitsPlayLevel.tsx`).
+   - Pista de teste de máquinas e veículos (`VehiclesPlayLevel.tsx`).
    - Centro de Comando da Forja (`PackSelect.tsx`).
    - Terminal da Academia do Educador (`EducatorAcademyPage.tsx`).
 

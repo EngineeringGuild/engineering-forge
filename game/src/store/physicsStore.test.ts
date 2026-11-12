@@ -13,6 +13,7 @@ describe('Physics Simulation Store (physicsStore.ts)', () => {
     expect(state.timeScale).toBe(1);
     expect(state.isPaused).toBe(false);
     expect(state.isSimulating).toBe(false);
+    expect(state.showCollisions).toBe(false);
   });
 
   it('updates gravity and time scale multipliers', () => {
@@ -44,5 +45,47 @@ describe('Physics Simulation Store (physicsStore.ts)', () => {
     store.stopSimulation();
     expect(usePhysicsStore.getState().isSimulating).toBe(false);
     expect(usePhysicsStore.getState().currentStepIndex).toBe(0);
+  });
+
+  it('toggles and manages showCollisions boundary visualization flag', () => {
+    const store = usePhysicsStore.getState();
+    expect(store.showCollisions).toBe(false);
+
+    store.toggleShowCollisions();
+    expect(usePhysicsStore.getState().showCollisions).toBe(true);
+
+    store.setShowCollisions(false);
+    expect(usePhysicsStore.getState().showCollisions).toBe(false);
+
+    store.setShowCollisions(true);
+    expect(usePhysicsStore.getState().showCollisions).toBe(true);
+
+    store.resetSimulationState();
+    expect(usePhysicsStore.getState().showCollisions).toBe(false);
+  });
+
+  it('manages real-time physics event telemetry stream and buffer limits', () => {
+    const store = usePhysicsStore.getState();
+    expect(store.events.length).toBeGreaterThanOrEqual(4);
+
+    store.addSimulationEvent({
+      type: 'collision',
+      message: 'Colisão inelástica em teste',
+      severity: 'warning',
+      details: { impulse: 150 },
+    });
+
+    const updatedEvents = usePhysicsStore.getState().events;
+    expect(updatedEvents[0].message).toBe('Colisão inelástica em teste');
+    expect(updatedEvents[0].type).toBe('collision');
+    expect(updatedEvents[0].severity).toBe('warning');
+    expect(updatedEvents[0].id).toBeDefined();
+    expect(updatedEvents[0].timestamp).toBeDefined();
+
+    store.clearSimulationEvents();
+    expect(usePhysicsStore.getState().events).toHaveLength(0);
+
+    store.resetSimulationState();
+    expect(usePhysicsStore.getState().events.length).toBeGreaterThanOrEqual(4);
   });
 });

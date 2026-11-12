@@ -98,12 +98,14 @@ export function MechatronicsLevelSelect() {
                     {completed ? 'Review Solution' : 'Engage System →'}
                   </Link>
                 ) : (
-                  <button
-                    disabled
-                    className="w-full rounded-lg bg-surface-2/50 py-2 text-xs font-bold text-fg-subtle cursor-not-allowed border border-border/30"
+                  <Link
+                    to={`/mechatronics/level/${lvl.id}`}
+                    onClick={() => soundFx.playTactileClick()}
+                    className="block w-full text-center rounded-lg py-2 text-xs font-bold transition-all active:scale-95 bg-surface-2/80 text-amber-300 hover:border-amber-400/80 border border-border"
+                    title="Acessar desafio em modo livre de inspeção da Guilda"
                   >
-                    Complete Prior Challenge
-                  </button>
+                    Inspeção Livre →
+                  </Link>
                 )}
               </div>
             </div>

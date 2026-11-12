@@ -5,6 +5,7 @@ import { useMechatronicsStore } from '../state/mechatronicsStore';
 import { MechatronicsCanvas } from '../components/MechatronicsCanvas';
 import { TechnicalSpecReportModal } from '../components/TechnicalSpecReportModal';
 import { DifficultySelector } from '../components/DifficultySelector';
+import { PlayLevelHeaderNav } from '../components/PlayLevelHeaderNav';
 
 export function MechatronicsPlayLevel() {
   const { levelId } = useParams<{ levelId: string }>();
@@ -58,6 +59,16 @@ export function MechatronicsPlayLevel() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-5 p-6 font-mono">
+      {/* Top Level Navigation & Breadcrumbs */}
+      <PlayLevelHeaderNav
+        divisionTitle="Mecatrônica & Sistemas"
+        divisionPath="/mechatronics"
+        currentLevelId={currentLevel.id}
+        currentLevelName={currentLevel.name}
+        levels={MECHATRONICS_LEVELS}
+        levelBasePath="/mechatronics/level"
+      />
+
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
         <div>

@@ -26,6 +26,10 @@ import { designSaveManager, type SavedDesign } from '../state/DesignSaveManager'
 import { BuildModePhysicsHUD } from '../components/BuildModePhysicsHUD';
 import { computeCircuitBuildMetrics } from '../physics/buildModePhysics';
 import { DifficultySelector } from '../components/DifficultySelector';
+import { PhysicsMetrics, GameLoop } from '../components/organisms';
+import { usePhysicsStore } from '../store/physicsStore';
+import { PlayLevelHeaderNav } from '../components/PlayLevelHeaderNav';
+import { CIRCUIT_LEVELS } from '../content/circuitLevels';
 import type { UniversalBlueprint, CircuitsBlueprintData } from '../state/BlueprintManager';
 
 export function CircuitsPlayLevel() {
@@ -36,6 +40,7 @@ export function CircuitsPlayLevel() {
   const [showBlueprintModal, setShowBlueprintModal] = useState(false);
   const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [showPhysicsMetrics, setShowPhysicsMetrics] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -48,7 +53,6 @@ export function CircuitsPlayLevel() {
   });
 
   const level = levelId ? getCircuitLevel(levelId) : undefined;
-  const isLevelUnlocked = useCircuitStore((s) => s.isLevelUnlocked);
   const currentLevelId = useCircuitStore((s) => s.currentLevelId);
   const builtNodes = useCircuitStore((s) => s.builtNodes);
   const builtEdges = useCircuitStore((s) => s.builtEdges);
@@ -60,6 +64,7 @@ export function CircuitsPlayLevel() {
   const removeNode = useCircuitStore((s) => s.removeNode);
   const addEdge = useCircuitStore((s) => s.addEdge);
   const removeEdge = useCircuitStore((s) => s.removeEdge);
+
   const setSelectedMaterial = useCircuitStore((s) => s.setSelectedMaterial);
   const setPendingNode = useCircuitStore((s) => s.setPendingNode);
   const runTest = useCircuitStore((s) => s.runTest);
@@ -205,7 +210,6 @@ export function CircuitsPlayLevel() {
   }, [level, currentLevelId, startLevel, restoreBuild]);
 
   if (!level) return <Navigate to="/circuits" replace />;
-  if (!isLevelUnlocked(level.id)) return <Navigate to="/circuits" replace />;
 
   const cost = totalCircuitCost(level, builtNodes, builtEdges);
   const next = nextCircuitLevelId(level.id);
@@ -224,12 +228,14 @@ export function CircuitsPlayLevel() {
   const handleTest = () => {
     setIsSimulating(true);
     setShowResult(false);
+    usePhysicsStore.getState().startSimulation();
     runTest(elapsedSeconds);
   };
 
   const handleSimulationFinish = () => {
     setIsSimulating(false);
     setShowResult(true);
+    usePhysicsStore.getState().stopSimulation();
     if (level && testResult?.status === 'analyzed' && testResult.passed && elapsedSeconds > 0) {
       highScoresManager.recordSolveTime(level.id, elapsedSeconds);
       progressManager.recordLevelCompletion(
@@ -245,12 +251,14 @@ export function CircuitsPlayLevel() {
   const handleResetSimulation = () => {
     setIsSimulating(false);
     setShowResult(false);
+    usePhysicsStore.getState().stopSimulation();
     clearTestResult();
   };
 
   const handleReset = () => {
     setIsSimulating(false);
     setShowResult(false);
+    usePhysicsStore.getState().stopSimulation();
     resetBuild();
     clearDraft();
     setTimerResetKey((k) => k + 1);
@@ -270,6 +278,16 @@ export function CircuitsPlayLevel() {
 
   return (
     <div className="mx-auto flex h-svh max-w-4xl flex-col gap-4 p-4">
+      {/* Top Level Navigation & Breadcrumbs */}
+      <PlayLevelHeaderNav
+        divisionTitle="Circuitos Elétricos"
+        divisionPath="/circuits"
+        currentLevelId={level.id}
+        currentLevelName={level.name}
+        levels={CIRCUIT_LEVELS}
+        levelBasePath="/circuits/level"
+      />
+
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
@@ -339,6 +357,18 @@ export function CircuitsPlayLevel() {
             <span>Glossary</span>
           </button>
           <button
+            onClick={() => setShowPhysicsMetrics((v) => !v)}
+            title="Painel de Métricas Físicas e Controle de Escala Temporal"
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors cursor-pointer ${
+              showPhysicsMetrics
+                ? 'border-cyan-400 bg-cyan-950/40 text-cyan-300 font-bold shadow-[0_0_8px_rgba(6,182,212,0.3)]'
+                : 'border-border text-fg-muted hover:border-cyan-400/60 hover:text-fg'
+            }`}
+          >
+            <span className="text-cyan-400">⚡</span>
+            <span>Física</span>
+          </button>
+          <button
             onClick={() => setShowHint((v) => !v)}
             className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
               isStuck
@@ -350,6 +380,16 @@ export function CircuitsPlayLevel() {
           </button>
         </div>
       </header>
+
+      {/* Real-time Physics Metrics & Time Controls Drawer */}
+      {showPhysicsMetrics && (
+        <div className="transition-all duration-200">
+          <PhysicsMetrics />
+        </div>
+      )}
+
+      {/* GameLoop Organism for Fixed Timestep Physics Synchronization */}
+      <GameLoop />
 
       <ContextualHintBanner
         guidance={guidance}
