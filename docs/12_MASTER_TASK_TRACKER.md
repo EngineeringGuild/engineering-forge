@@ -151,16 +151,16 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 
 ---
 
-### 📋 ONDA 5: FASE 11 — Backend, Sync Local-First & Salas de Nuvem (DOC-11)
-- [ ] `TSK-BCK-01`: Camada de persistência local unificada em IndexedDB com suporte a sincronização assíncrona.
-- [ ] `TSK-BCK-02`: API Serverless de Turmas (Cloudflare Workers / Node) para compartilhamento em nuvem.
-- [ ] `TSK-BCK-03`: Ingestão de eventos de telemetria de alta performance para consolidação de métricas da turma.
-- [ ] `TSK-BCK-04`: Validador anti-cheat no servidor com re-execução determinística da simulação de física.
+### 🚀 ONDA 5: FASE 11 — Backend, Sync Local-First & Salas de Nuvem (DOC-11) — ✅ CONCLUÍDO & HOMOLOGADO
+- [x] `TSK-BCK-01`: Camada de persistência local unificada em IndexedDB/Local-First com suporte a fila offline e resolução LWW (`syncEngine.ts`).
+- [x] `TSK-BCK-02`: API Serverless de Turmas (Cloudflare Workers / Node) para compartilhamento em nuvem com esquemas Zod.
+- [x] `TSK-BCK-03`: Ingestão de eventos de telemetria de alta performance para consolidação de métricas da turma.
+- [x] `TSK-BCK-04`: Validador anti-cheat determinístico no servidor com re-execução da simulação física via DSM (`syncEngine.ts`).
 
 ---
 
-### 🚀 ONDA 6: FASE 12 — Economia da Forja, Garagem & Tech Tree (DOC-10)
+### 🚀 ONDA 6: FASE 12 — Economia da Forja, Garagem & Tech Tree (DOC-10) — ✅ CONCLUÍDO & HOMOLOGADO
 - [x] `TSK-ECO-01`: Sistema monetário da Forja (Créditos $\mathcal{F}\$, Sucata de Aço, Pontos de P&D e XP de Engenheiro) (`forgeEconomyStore.ts`).
 - [x] `TSK-ECO-02`: Interface interativa da Árvore Tecnológica com desbloqueio de materiais e peças avançadas (`TechTreeModal.tsx`).
 - [x] `TSK-ECO-03`: Garagem do Inventor com customização de chassis, rodas, trem de força e centro de massa (`garageVehicle.ts`, `GarageCustomizerModal.tsx`).
-- [ ] `TSK-ECO-04`: Sistema de patentes e royalties de blueprints entre jogadores da guilda.
+- [x] `TSK-ECO-04`: Sistema de patentes e royalties de blueprints entre jogadores da guilda (`patentExchangeStore.ts`, `PatentExchangeModal.tsx`).

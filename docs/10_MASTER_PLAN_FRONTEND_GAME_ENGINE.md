@@ -1,7 +1,7 @@
 ---
 idea: IDEA-010
 doc: 10_MASTER_PLAN_FRONTEND_GAME_ENGINE
-version: 1.0.0
+version: 2.0.0
 standard: GUILD-DOC-STANDARD@0.2.0
 status: approved
 updated: 2026-11-11
@@ -9,8 +9,8 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 ---
 
 # Master Plan: Arquitetura de Frontend de Jogos, UX/UI Diegética & Economia de Jogo
-### High-Complexity Game Frontend, Tactile Industrial UI & Game Economics
-**Da Interface Web Básica ao Centro de Comando Industrial da Forja de Engenharia**
+### High-Performance Versioned Frontend Architecture, Atomic Design & Canvas Optimization
+**Da Interface Web Básica ao Centro de Comando Industrial da Forja de Engenharia (Game Studio Workflow)**
 
 ---
 
@@ -19,7 +19,7 @@ linear: https://linear.app/engineering-guild/project/idea-010-engineering-forge-
 O jogador não deve sentir que está usando um software acadêmico árido ou um formulário web; ele deve se sentir no comando de um **Laboratório Industrial Cyber-Físico de Alta Precisão**:
 - **Estética Visual Diegética:** Chapas metálicas escovadas, rebites de titânio, telas CRT/VFD com scanlines sutis de monitoramento, iluminação de LED âmbar e laranja de forja (`#ff6a2c`), instrumentos com ponteiros analógicos e indicadores em matriz de pontos.
 - **Sensação Tátil (Juice & Microinterações):**
-  - Cliques mecânicos com feedback de áudio sintetizado em frequências ressonantes.
+  - Cliques mecânicos com feedback de áudio sintetizado em frequências ressonantes (Web Audio API microswitches).
   - Hover states com ruído sutil de indução eletromagnética e glow volumétrico.
   - Animações fluidas de transição usando curvas cúbicas de amortecimento físico (*spring physics / cubic-bezier(0.16, 1, 0.3, 1)*).
 - **Gamificação e Economia Profunda:**
@@ -41,24 +41,76 @@ O jogador não deve sentir que está usando um software acadêmico árido ou um 
 │   SVG / Canvas 2D · Grid Magnético · Heatmap FEA · Partículas Dinâmicas│
 ├────────────────────────────────────────────────────────────────────────┤
 │                    CAMADA 2: STATE & ECONOMY REPOSITORIES              │
-│   Zustand Stores com Persistência Híbrida (Memory + Local + Cloud Sync)│
+│   Zustand Slices com Persistência Híbrida (Memory + Local + Cloud Sync)│
 ├────────────────────────────────────────────────────────────────────────┤
 │                   CAMADA 1: DESIGN SYSTEM CORE TOKENS                  │
-│   Industrial Theme Tokens · Som Procedural Web Audio · Shaders/Filtros │
+│   Atomic Design Tokens · Som Procedural Web Audio · Shaders/Filtros    │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 3. Sistema Econômico da Forja (Game Economy & Tokenomics)
+## 3. Arquitetura de Frontend Versionada de Alto Desempenho (Game Studio Workflow)
 
-### 3.1 Os Quatro Recursos da Forja
+Para sustentar simulações de física em 60 FPS com milhares de nós e partículas simultâneas sem engasgos de lixo de memória (GC pauses) ou travamento da main thread, a arquitetura do frontend adota padrões estritos de estúdio profissional:
+
+### 3.1 Gerenciamento de Estado Escalável: Zustand Slices com Seletores Seletivos
+1. **Desacoplamento por Domínio Físico & Metagame:**
+   - `gameStore.ts`: Estado estático de estruturas e histórico de Undo/Redo.
+   - `circuitStore.ts`: Estado topológico de circuitos elétricos DC e nós.
+   - `vehicleStore.ts`: Trem de força, chassi e telemetria newtoniana.
+   - `forgeEconomyStore.ts`: Moedas da Forja ($\mathcal{F}\$$, RP, Sucata, XP), patentes e nós da Árvore Tecnológica.
+   - `educatorStore.ts`: Trilhas didáticas, turmas locais e pacotes `.forge-class`.
+2. **Seletores Granulares de Renderização:**
+   - Proibido consumo de store global direto em componentes de alta frequência de atualização (ex: relógio de simulação ou medidores HUD).
+   - Uso obrigatório de seletores granulares com comparação rasa (`useShallow`) para evitar re-renderizações desnecessárias em 60 FPS:
+     ```ts
+     const { currentSpeed, engineRpm } = useVehicleStore(
+       useShallow((s) => ({ currentSpeed: s.currentSpeed, engineRpm: s.engineRpm }))
+     );
+     ```
+
+### 3.2 Design System Industrial: Metodologia Atomic Design
+A hierarquia de componentes da interface da Forja segue o padrão Atomic Design estrito:
+1. **Átomos (Atoms):**
+   - LEDs indicadores de status (`LedIndicator.tsx` — Verde nominal, Âmbar alerta, Vermelho colapso).
+   - Botões táteis com som mecânico embutido (`TactileButton.tsx`).
+   - Visores numéricos digitais com fonte monospace tabular (`SevenSegmentDisplay.tsx`).
+2. **Moléculas (Molecules):**
+   - Mini-medidores analógicos de tensão / compressão (`StressMeter.tsx`).
+   - Seletor de materiais com indicação de módulo elástico ($E$) e custo (`MaterialPicker.tsx`).
+   - Sliders táteis de ajuste paramétrico (`IndustrialSlider.tsx`).
+3. **Organismos (Organisms):**
+   - HUD analítico em tempo real (`BuildModePhysicsHUD.tsx`).
+   - Painel de instrumentação laboratorial (`DigitalMultimeter.tsx`, `DigitalOscilloscope.tsx`).
+   - Bancada da Garagem do Inventor (`GarageCustomizerModal.tsx`).
+4. **Templates & Telas (Templates & Pages):**
+   - Espaço de trabalho de construção de pontes (`StructuresPlayLevel.tsx`).
+   - Centro de Comando da Forja (`PackSelect.tsx`).
+   - Terminal da Academia do Educador (`EducatorAcademyPage.tsx`).
+
+### 3.3 Otimização de Performance para Canvas de Alta Complexidade
+1. **Estratégia de Renderização em Múltiplas Camadas (Multi-Layer Canvas):**
+   - *Camada 0 (Fundo Estático):* Terreno, leito de rio, pilares e apoios fixos — desenhados **uma única vez** em canvas estático fora da tela (Offscreen Canvas / Bitmap caching).
+   - *Camada 1 (Estrutura Dinâmica):* Barras, deformações elásticas e heatmap de tensão — redesenhados apenas quando ocorrem alterações de esforço.
+   - *Camada 2 (Efeitos de Partículas & Faíscas):* Sistema de partículas autônomo com buffer circular pré-alocado (Zero-Allocation Loop).
+2. **Prevenção de Garbage Collection (GC) e Alocação Zero:**
+   - Vetores de cálculo e matrizes de transformação são reutilizados via objetos de trabalho alocados estaticamente (`reusableVectorA`, `scratchMatrix`).
+   - Partículas mortas são recicladas via *Object Pooling*, evitando instanciações com `new` durante o loop de animação `requestAnimationFrame`.
+3. **Agendamento de Alta Resolução:**
+   - Separação entre a taxa de atualização física (passo de tempo fixo de $\Delta t = 1/60\text{ s}$) e a interpolação visual do canvas para evitar artefatos de jitter.
+
+---
+
+## 4. Sistema Econômico da Forja (Game Economy & Tokenomics)
+
+### 4.1 Os Quatro Recursos da Forja
 1. **Créditos da Forja ($\mathcal{F}\$):** Moeda operacional obtida ao resolver contratos e níveis respeitando as restrições orçamentárias. Usada para fabricar protótipos e comprar peças standard.
 2. **Sucata de Aço & Ligas Nobres (Scrap & Alloys):** Matéria-prima física acumulada por reciclagem de testes e bônus de eficiência.
 3. **Pontos de Pesquisa (P&D / RP - Research Points):** Concedidos ao atingir fatores de segurança ótimos ($SF \in [1.2, 1.8]$) e resolver níveis no modo difícil. Usados exclusivamente na Árvore Tecnológica.
 4. **Reputação de Engenheiro (XP):** Nível de senioridade do jogador (*Apprentice $\to$ Journeyman $\to$ Specialist $\to$ Chief Engineer*), determinando acesso a contratos de maior complexidade.
 
-### 3.2 O Core Loop de Retenção
+### 4.2 O Core Loop de Retenção
 ```
        ┌───────────────────────────────┐
        │     RECEBER CONTRATO          │
@@ -99,34 +151,6 @@ O jogador não deve sentir que está usando um software acadêmico árido ou um 
 
 ---
 
-## 4. Fases de Execução do Frontend & UX
-
-### 💎 Fase F-1 — Redesign Cyber-Industrial & Microinterações Táteis
-**Objetivo:** Transformação imediata da aparência e sonoridade de toda a plataforma existente.
-- **Implementação do Design System Industrial:**
-  - Painéis com acabamento chanfrado e contornos de precisão aeroespacial (`border-border/80`, gradientes metálicos sutis `from-surface-1 to-surface-2`).
-  - Efeito sutil de display CRT retro-futurista nas telas de instrumentação e cabeçalhos.
-  - Indicadores de status luminosos (LEDs pulsantes verdes para nominal, âmbar para tensão, vermelho para sobrecarga).
-- **Sonoplastia Tátil de Interface:**
-  - Cliques mecânicos de microswitch ao alternar ferramentas, abas e níveis.
-  - Hover hum de baixa frequência ao passar o cursor sobre nós de treliça e componentes elétricos.
-- **Responsividade e Grid de Níveis:**
-  - Visualização em cards industriais com mini-gráficos de estresse e percentual de maestria.
-
-### 🏎️ Fase F-2 — A Garagem do Inventor & Customização Veicular
-**Objetivo:** Interface dedicada para testes de montagem de veículos e personalização de chassis.
-- Inspeção 2D detalhada de chassi, trem de força, distribuição de massa e centro de gravidade (CoG).
-- Bancada de ajuste dinâmico de calibração de suspensão e pneus (coeficiente de atrito $\mu$).
-
-### 🧬 Fase F-3 — Árvore Tecnológica & Loja de Componentes
-**Objetivo:** Progressão não linear estilo RPG técnico.
-- Grafo visual interativo de tecnologias com nós interligados:
-  - *Ramo Estrutural:* Madeira $\to$ Aço Estrutural ASTM A36 $\to$ Cabos de Aço Trançado $\to$ Titânio Ti-6Al-4V $\to$ Compósitos de Fibra de Carbono.
-  - *Ramo Eletroeletrônico:* Lâmpada Incandescente $\to$ Resistor Cerâmico $\to$ Diodo Semicondutor $\to$ Transistor MOSFET $\to$ Portas Lógicas TTL.
-  - *Ramo de Trem de Força:* Motor DC com Escovas $\to$ Redutor de Engrenagens Planetárias $\to$ Motor Brushless de Alto Torque $\to$ Turbina Turbo-Híbrida.
-
-### ⌨️ Fase F-4 — Acessibilidade Espacial no Canvas (Fechando a Lacuna da Fase 4f)
-**Objetivo:** Permitir a construção e conexão completa de nós no canvas SVG via teclado e leitores de tela.
-- Navegação espacial em grade magnética via teclas `Tab` e setas direcionais (`ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`).
-- Teclas de atalho industriais: `Space` para fixar nó, `Enter` para conectar membro, `Delete/Backspace` para remover, `M` para ciclar materiais.
-- Anúncios de acessibilidade via `aria-live="polite"` detalhando a coordenada e conexão atual.
+## 5. Próximas Etapas e Entregas (Onda 6 — Fase 12.4)
+- **Lote 12.4 (`TSK-ECO-04`):** Sistema de Patentes Comunitárias e Royalties de Blueprints entre Engenheiros da Guilda.
+  - Registro de projetos com autor original, taxa de licenciamento em Créditos $\mathcal{F}\$ e histórico de comissões passivas para inventores.

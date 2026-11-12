@@ -4,6 +4,7 @@ import { useGlobalProgress } from '../state/useProgressTracker';
 import { SoundSettingsModal } from '../components/SoundSettingsModal';
 import { AchievementsModal } from '../components/AchievementsModal';
 import { TechTreeModal } from '../components/TechTreeModal';
+import { PatentExchangeModal } from '../components/PatentExchangeModal';
 import { useForgeEconomyStore } from '../state/forgeEconomyStore';
 import { soundFx } from '../audio/soundFx';
 
@@ -78,6 +79,7 @@ export function PackSelect() {
   const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showTechTree, setShowTechTree] = useState(false);
+  const [showPatentsModal, setShowPatentsModal] = useState(false);
   const wallet = useForgeEconomyStore((s) => s.wallet);
 
   const rank = useMemo(() => getEngineerRank(globalProgress.percent), [globalProgress.percent]);
@@ -113,6 +115,18 @@ export function PackSelect() {
             >
               <span>🧬</span>
               <span>P&D ({wallet.researchPoints} RP)</span>
+            </button>
+            <button
+              onClick={() => {
+                soundFx.playTactileClick();
+                setShowPatentsModal(true);
+              }}
+              onMouseEnter={() => soundFx.playSubtleHover()}
+              title="Bolsa de Patentes & Royalties de Blueprints"
+              className="flex items-center gap-1.5 rounded border border-emerald-500/40 bg-surface-2/80 px-2.5 py-1 font-mono text-xs text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400 transition-all active:scale-95"
+            >
+              <span>📜</span>
+              <span>Patentes</span>
             </button>
             <button
               onClick={() => {
@@ -409,6 +423,10 @@ export function PackSelect() {
 
         {showTechTree && (
           <TechTreeModal onClose={() => setShowTechTree(false)} />
+        )}
+
+        {showPatentsModal && (
+          <PatentExchangeModal onClose={() => setShowPatentsModal(false)} />
         )}
       </div>
     </div>
