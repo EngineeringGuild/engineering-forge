@@ -1,0 +1,67 @@
+# Tipos de trabalho do backlog mestre — repositórios do programa ECO (Guild, adaptação 1, 2026-11-16).
+# Fonte lida por tools/backlog_mestre.py. Padrão: TXT-439-GUILD; modelo: parque-uranio .guild/collaboration/BACKLOG_MESTRE.md.
+# Cada tarefa declara o tipo em plano/TAREFAS.yaml (campo `tipo`, em minúsculas; aqui em maiúsculas).
+# `aceite` é a lista que o autor confere antes de entregar e que o revisor confere depois. Autor nunca revisa a própria entrega.
+# A essa lista a ferramenta soma o aceite PRÓPRIO da tarefa: o `pronto_quando` e a `verificacao` do plano.
+versao: 1.0.0
+tipos:
+  DOCUMENTO:
+    o_que: documento de plano, desenho, especificação, registro ou dossiê
+    aceite:
+      - cabeçalho do padrão de documentos (idea, doc, version, standard, status, updated)
+      - toda afirmação de fato com fonte (arquivo do repositório ou referência externa com endereço)
+      - número proposto e não decidido marcado PROPOSTA
+      - nenhum texto promete valor em dinheiro a jogador ou usuário
+      - nada apagado nem reescrito fora da tarefa
+    evidencia: o arquivo do campo evidencia + RETORNO
+    pre_revisao: [claude-cto]
+    veredito: claude-cto
+  PESQUISA:
+    o_que: estudo de fontes, comparação ou medida
+    aceite:
+      - quando há medida, a previsão está escrita no documento antes do resultado
+      - fonte primária citada com seção ou página; resumo de terceiros não é fonte única
+      - erro de cada previsão registrado; o que muda no plano dito no fim
+      - o que não foi achado está escrito como "não encontrei", nunca completado por suposição
+    evidencia: documento de pesquisa + dados brutos, se houver + RETORNO
+    pre_revisao: [claude-cto]
+    veredito: claude-cto
+  CODIGO:
+    o_que: código, ferramenta, componente ou serviço
+    aceite:
+      - verificação completa do repositório (instalar, lint, tipos, teste, construir) com a saída gravada em plano/verificacoes/<tarefa>.txt
+      - o teste citado na verificação da tarefa existe e passa
+      - nenhum parâmetro de economia escrito no código (vem da política ou do plano)
+      - nenhum segredo, nenhuma dependência ou serviço pago
+      - nada apagado fora do escopo da tarefa
+    evidencia: PR + saída da verificação + RETORNO
+    pre_revisao: [claude-cto]
+    veredito: claude-cto
+  TESTE:
+    o_que: teste, medida ou simulação reproduzível
+    aceite:
+      - roteiro que reproduz o teste está no repositório, com semente fixa quando há sorteio
+      - previsão escrita antes quando o teste mede
+      - saída gravada; "não rodou" escrito como "não rodou"
+    evidencia: roteiro + saída + RETORNO
+    pre_revisao: [claude-cto]
+    veredito: claude-cto
+  INFRA:
+    o_que: repositório, ramo, proteção, ambiente, segredo, publicação, configuração do GitHub
+    aceite:
+      - o efeito é observável por um comando que outra pessoa roda
+      - nenhum segredo em arquivo; no repositório só o nome da variável
+      - como desfazer está escrito no registro
+      - apagar, arquivar, renomear ou mudar visibilidade só com o sim do Caio registrado com as palavras dele
+    evidencia: registro da ação + comando de conferência + RETORNO
+    pre_revisao: [claude-cto]
+    veredito: claude-cto
+  DECISAO:
+    o_que: preparar e levar uma decisão ao Caio
+    aceite:
+      - pergunta, opções com consequência e recomendação escritas antes de perguntar
+      - resposta do Caio registrada com data e com as palavras dele
+      - estado da decisão mudado na fonte pela ferramenta do plano (guild_plano.py decidir)
+    evidencia: registro de decisões
+    pre_revisao: []
+    veredito: caio

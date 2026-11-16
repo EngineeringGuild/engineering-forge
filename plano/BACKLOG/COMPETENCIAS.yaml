@@ -1,0 +1,67 @@
+# Competências e limites por agente — engineering-forge (Guild, adaptação 1, 2026-11-16). Fonte lida por tools/backlog_mestre.py.
+# dono = tipos que o agente entrega inteiros; prepara = preparo de tarefa de outro dono; revisa = pré-revisão de entrega de outro.
+# limite_em_curso = reservas abertas ao mesmo tempo (DONO + PREPARA); revisão não conta.
+# O plano da Guild não nomeia agente: o dono de cada tarefa sai daqui, por seção (dono_por_secao) ou por alcance (dono_por_alcance).
+# horas_por_esforco converte o esforço P, M, G do plano em horas; é estimativa declarada, não medida.
+# Agente inativo é função ainda sem agente designado pelo Caio: as tarefas dele aparecem na saúde como sem quem execute.
+versao: 1.0.0
+validade_da_reserva_h: 72
+horas_por_esforco:
+  P: 2
+  M: 6
+  G: 12
+dono_de_decisao: claude-cto
+dono_por_alcance:
+  repo: gemini-aistudio
+  entre_repos: executor-programa
+  infra: executor-programa
+agentes:
+  claude-cto:
+    ativo: true
+    papel: 'PM do programa ECO (Caio, 13/11): mantém planos e tarefas, libera lotes, pré-revisa e dá o veredito; integra entre repositórios'
+    dono:
+    - DECISAO
+    - DOCUMENTO
+    - CODIGO
+    - PESQUISA
+    - INFRA
+    - TESTE
+    prepara: []
+    revisa:
+    - DOCUMENTO
+    - PESQUISA
+    - CODIGO
+    - TESTE
+    - INFRA
+    limite_em_curso: 3
+  gemini-aistudio:
+    ativo: true
+    papel: AI Studio, um aplicativo por repositório; só enxerga este repositório; trabalha no ramo aistudio/<sigla> (Caio, 12/11)
+    dono:
+    - DOCUMENTO
+    - PESQUISA
+    - CODIGO
+    - TESTE
+    prepara:
+    - DOCUMENTO
+    - PESQUISA
+    revisa: []
+    limite_em_curso: 2
+  executor-programa:
+    ativo: false
+    papel: 'executor das tarefas entre repositórios e de infraestrutura; agente a designar pelo Caio (13/11: ''vou colocar outra agente para executar'')'
+    dono:
+    - DOCUMENTO
+    - PESQUISA
+    - CODIGO
+    - TESTE
+    - INFRA
+    prepara:
+    - INFRA
+    - CODIGO
+    revisa:
+    - DOCUMENTO
+    - CODIGO
+    limite_em_curso: 3
+regras_de_tipo: []
+tipos_declarados: {}

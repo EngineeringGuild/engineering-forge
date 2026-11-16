@@ -1,0 +1,63 @@
+origem: gerado por Engineering-Guild/tools/guild_plano.py a partir dos seis plano/TAREFAS.yaml; não editar
+decisoes:
+- id: D-01
+  estado: ABERTA
+- id: D-02
+  estado: ABERTA
+- id: D-03
+  estado: ABERTA
+- id: D-04
+  estado: ABERTA
+- id: D-05
+  estado: ABERTA
+- id: D-06
+  estado: DECIDIDA
+- id: D-07
+  estado: ABERTA
+- id: D-08
+  estado: ABERTA
+- id: D-09
+  estado: ABERTA
+- id: D-10
+  estado: DECIDIDA
+- id: D-11
+  estado: ABERTA
+- id: D-12
+  estado: ABERTA
+- id: D-13
+  estado: ABERTA
+- id: D-14
+  estado: ABERTA
+- id: D-15
+  estado: ABERTA
+- id: D-16
+  estado: ABERTA
+- id: D-17
+  estado: ABERTA
+- id: D-18
+  estado: ABERTA
+- id: D-19
+  estado: ABERTA
+- id: D-20
+  estado: ABERTA
+- id: D-21
+  estado: ABERTA
+tarefas_fechadas:
+- CAS-0.2-01
+- CAS-0.2-02
+- CAS-0.3-03
+- ECO-0.5-01
+- ECO-0.5-02
+- ECO-0.5-03
+- ENG-0.3-03
+- GLD-0.1-02
+- GLD-0.1-04
+- GLD-0.1-05
+- GLD-0.1-06
+- GLD-1.1-01
+- GLD-1.1-02
+- GLD-1.1-03
+- HER-0.2-01
+- HER-0.2-02
+- HER-0.3-01
+- HER-0.4-01

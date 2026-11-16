@@ -1,0 +1,4 @@
+# Trabalho que existe fora do plano (issues, handoffs, rastreadores antigos), com o ponteiro de onde veio.
+# Some da lista quando `absorvida_por` aponta uma tarefa do plano. Campos obrigatórios: id, titulo, tipo, dono, horas, prioridade (A, B, C), aceite, origem.
+versao: 1.0.0
+tarefas: []
