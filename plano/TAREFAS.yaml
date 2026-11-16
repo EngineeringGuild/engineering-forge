@@ -1,0 +1,246 @@
+esquema: guild-plano/2
+projeto: engineering-forge
+sigla: FRG
+versao_do_plano: 0.2.0
+conforme:
+  guild_master_plan: 2.0.0-proposta.2
+  guild_plan_standard: 0.2.0
+esforco:
+  unidade: meia sessão de trabalho (estimativa declarada)
+  P: 1
+  M: 2
+  G: 4
+fases:
+- id: 13
+  nome: A Forja no ecossistema (Onda 7)
+  objetivo: Ligar a Forja à identidade e à economia comuns sem mudar o que ela é
+  saida: Créditos e XP pelo razão de teste, projeto homologado como item e missão cruzada funcionando
+  secoes:
+  - id: '13.1'
+    nome: Alinhamento documental
+    tarefas:
+    - id: FRG-13.1-01
+      titulo: Decisão sobre a escada N0 a N3 e o estado real da cunhagem
+      como: Registrar em 03_DECISIONS que o que existe hoje de carteira e cunhagem é rede de teste no máximo, e
+        que a visão sem blockchain vale para o jogador comum
+      pronto_quando: Decisão DEC-010 registrada como proposta
+      verificacao: Linha nova no registro, sem editar as antigas
+      evidencia: docs/03_DECISIONS.md
+      tipo: decisao
+      alcance: repo
+      esforco: P
+      depende_de: []
+      estado: A_FAZER
+    - id: FRG-13.1-02
+      titulo: Atualizar índice, arquitetura e roteiro
+      como: Acrescentar o documento 13 e a Onda 7; não reescrever o que existe
+      pronto_quando: Os três citam o documento 13
+      verificacao: Diferença só acrescenta linhas
+      evidencia: docs/00_INDEX.md
+      tipo: doc
+      alcance: repo
+      esforco: P
+      depende_de: []
+      estado: A_FAZER
+    - id: FRG-13.1-03
+      titulo: Identidade do projeto para o hub
+      como: Criar .guild/project.yaml; o hub lista a Forja como não declarada
+      pronto_quando: Arquivo valida
+      verificacao: Validação de esquema
+      evidencia: .guild/project.yaml
+      tipo: doc
+      alcance: repo
+      esforco: P
+      depende_de: []
+      estado: A_FAZER
+    - id: FRG-13.1-04
+      titulo: Tabela de recursos com fonte e sumidouro
+      como: 'Para créditos, sucata, pontos de P&D e XP: de onde entra, por onde sai, e se circula na Guild, lendo
+        o código da economia da Forja'
+      pronto_quando: Cada recurso com fonte, sumidouro e nível
+      verificacao: Cada fonte e sumidouro cita o arquivo de código
+      evidencia: docs/RECURSOS_E_CIRCULACAO.md
+      tipo: doc
+      alcance: entre_repos
+      esforco: M
+      depende_de: []
+      estado: A_FAZER
+    - id: FRG-13.1-05
+      titulo: Rever os textos de interface contra a regra de nenhuma promessa de valor
+      como: Listar as telas que falam de token, NFT ou carteira e propor a troca de texto
+      pronto_quando: Lista de telas com o texto atual e o proposto
+      verificacao: Busca por token, NFT e carteira no código não acha tela fora da lista
+      evidencia: docs/REVISAO_DE_TEXTOS.md
+      tipo: doc
+      alcance: repo
+      esforco: M
+      depende_de: []
+      estado: A_FAZER
+  - id: '13.2'
+    nome: Identidade e eventos
+    tarefas:
+    - id: FRG-13.2-01
+      titulo: Adaptador de identidade
+      como: Convidado vira Guild ID preservando o progresso local
+      pronto_quando: Progresso intacto depois de criar a conta
+      verificacao: Teste de fusão
+      evidencia: game/src/guild/identidade.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - ECO-0.3-01
+      estado: A_FAZER
+    - id: FRG-13.2-02
+      titulo: Fila local de eventos econômicos
+      como: Fila idempotente com reenvio; o jogo nunca espera o servidor
+      pronto_quando: Rede caindo no meio não duplica crédito
+      verificacao: Teste com falha de rede simulada
+      evidencia: game/src/guild/filaDeEventos.ts
+      tipo: codigo
+      alcance: repo
+      esforco: M
+      depende_de:
+      - ECO-0.3-02
+      estado: A_FAZER
+    - id: FRG-13.2-03
+      titulo: Validador na borda e ligação ao razão de teste
+      como: Função na borda que reexecuta a simulação de física de forma determinística, confere que a solução passa
+        e assina o evento
+      pronto_quando: Testes de conformidade da economia passam; solução adulterada é recusada
+      verificacao: Saída da conformidade e do teste de adulteração
+      evidencia: server/validador/
+      tipo: codigo
+      alcance: entre_repos
+      esforco: G
+      depende_de:
+      - FRG-13.2-01
+      - FRG-13.2-02
+      - ECO-2.1-01
+      - ECO-2.1-02
+      estado: A_FAZER
+    - id: FRG-13.2-04
+      titulo: Estado a confirmar na interface
+      como: Crédito pendente aparece distinto do confirmado
+      pronto_quando: Os dois estados visíveis
+      verificacao: Teste de interface
+      evidencia: game/src/components/
+      tipo: codigo
+      alcance: repo
+      esforco: P
+      depende_de:
+      - FRG-13.2-02
+      estado: A_FAZER
+  - id: '13.3'
+    nome: Itens, missões e acessos
+    tarefas:
+    - id: FRG-13.3-01
+      titulo: Projeto homologado como item
+      como: Ponte, circuito ou veículo aprovado vira item do contrato, com a telemetria da homologação na origem
+      pronto_quando: Item valida contra o esquema
+      verificacao: Validação de esquema
+      evidencia: game/src/guild/itens.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - ECO-0.3-04
+      estado: A_FAZER
+    - id: FRG-13.3-02
+      titulo: Missões do dia e sequência de presença
+      como: Usar o serviço de missões da economia
+      pronto_quando: Credita uma vez por dia por conta
+      verificacao: Teste da segunda tentativa
+      evidencia: game/src/guild/missoes.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - ECO-3.1-02
+      - FRG-13.2-01
+      estado: A_FAZER
+    - id: FRG-13.3-03
+      titulo: Acesso por selo
+      como: Áreas e conteúdos liberados por selo do Guild ID
+      pronto_quando: Uma área de teste abre só com o selo
+      verificacao: Teste com e sem o selo
+      evidencia: game/src/guild/acesso.ts
+      tipo: codigo
+      alcance: repo
+      esforco: M
+      depende_de:
+      - FRG-13.2-01
+      estado: A_FAZER
+    - id: FRG-13.3-04
+      titulo: Emitir o evento da missão cruzada com o Heroes
+      como: Ao concluir um pacote de níveis, emitir o evento que o Heroes consome
+      pronto_quando: Evento emitido e aceito pelo razão
+      verificacao: Extrato
+      evidencia: game/src/guild/missoesCruzadas.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - FRG-13.2-03
+      - FRG-13.3-01
+      estado: A_FAZER
+  - id: '13.4'
+    nome: Mineração opcional e perfil
+    tarefas:
+    - id: FRG-13.4-01
+      titulo: Mineração opcional pela biblioteca do ENG
+      como: A simulação de física tem prioridade sobre o minerador; a versão publicada na loja usa a variante sem
+        o núcleo
+      pronto_quando: Liga e desliga com consentimento; a simulação não perde quadros com o minerador ligado
+      verificacao: Medida de quadros com e sem o minerador
+      evidencia: game/src/guild/mineracao.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - ENG-2.1-03
+      - FRG-13.2-01
+      estado: A_FAZER
+    - id: FRG-13.4-02
+      titulo: Envio opcional de medidas ao perfil de aprendizado
+      como: Tentativas, erro conceitual recorrente e custo da solução, só com consentimento; turma de escola segue
+        a regra de menores
+      pronto_quando: Sem consentimento nada sai do aparelho
+      verificacao: Teste de rede sem consentimento
+      evidencia: game/src/guild/perfil.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - GLD-3.2-05
+      - FRG-13.2-01
+      decisao: D-18
+      estado: A_FAZER
+  - id: '13.5'
+    nome: Cunhagem em rede de teste
+    tarefas:
+    - id: FRG-13.5-01
+      titulo: Cunhagem pela carteira embutida da Guild
+      como: Passar a cunhagem do documento 09 para a carteira embutida, em rede de teste
+      pronto_quando: Certificado cunhado em rede de teste a partir de item no nível de cunhagem
+      verificacao: Conferir o endereço na rede de teste
+      evidencia: game/src/guild/cunhagem.ts
+      tipo: codigo
+      alcance: infra
+      esforco: M
+      depende_de:
+      - ECO-4.1-02
+      - FRG-13.3-01
+      estado: A_FAZER
+    - id: FRG-13.5-02
+      titulo: Royalties de blueprint em moeda interna
+      como: Uso de um blueprint de outro jogador credita o autor pelo razão; fecha a tarefa antiga TSK-ECO-04
+      pronto_quando: Crédito ao autor aparece no extrato
+      verificacao: Extrato das duas contas
+      evidencia: game/src/guild/royalties.ts
+      tipo: codigo
+      alcance: entre_repos
+      esforco: M
+      depende_de:
+      - FRG-13.2-03
+      estado: A_FAZER
